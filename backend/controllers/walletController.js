@@ -146,11 +146,15 @@ const requestWithdrawal = async (req, res) => {
 };
 
 const addFunds = async (req, res) => {
-  const { amount } = req.body;
+  const { amount, method, referenceId } = req.body;
   const depositAmount = Number(amount);
 
   if (!depositAmount || depositAmount <= 0) {
     return res.status(400).json({ message: 'Invalid deposit amount.' });
+  }
+
+  if (!method || !referenceId) {
+    return res.status(400).json({ message: 'Payment method and reference ID are required.' });
   }
 
   try {
@@ -158,23 +162,21 @@ const addFunds = async (req, res) => {
     
     if (!wallet) {
       wallet = new Wallet({ userId: req.user.id, balance: 0 });
+      await wallet.save();
     }
 
-    // Add balance
-    wallet.balance += depositAmount;
-    await wallet.save();
-
-    // Create completed coin_purchase transaction
+    // Create pending coin_purchase transaction
     const tx = new Transaction({
       userId: req.user.id,
       amount: depositAmount,
       type: 'coin_purchase',
-      status: 'completed',
-      description: `Purchased ${depositAmount} Coins`
+      status: 'pending',
+      referenceId: referenceId,
+      description: `Pending deposit request for ${depositAmount} Coins via ${method.toUpperCase()} (Ref: ${referenceId})`
     });
     await tx.save();
 
-    res.json({ message: 'Funds added successfully.', transaction: tx, newBalance: wallet.balance });
+    res.json({ message: 'Deposit request submitted successfully. Awaiting admin approval.', transaction: tx, newBalance: wallet.balance });
   } catch (error) {
     console.error('Add Funds Error:', error);
     res.status(500).json({ message: error.message });

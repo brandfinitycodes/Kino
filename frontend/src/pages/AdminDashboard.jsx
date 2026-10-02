@@ -43,6 +43,7 @@ const AdminDashboard = () => {
   const [campaigns, setCampaigns] = useState([]);
   const [deals, setDeals] = useState([]);
   const [withdrawals, setWithdrawals] = useState([]);
+  const [deposits, setDeposits] = useState([]);
   const [transactions, setTransactions] = useState([]);
   const [kycSubmissions, setKycSubmissions] = useState([]);
   const [kycStats, setKycStats] = useState(null);
@@ -123,6 +124,15 @@ const AdminDashboard = () => {
       setWithdrawals(res.data);
     } catch (err) {
       console.error('Error fetching pending withdrawals:', err);
+    }
+  };
+
+  const fetchDeposits = async () => {
+    try {
+      const res = await axios.get('/admin/deposits');
+      setDeposits(res.data);
+    } catch (err) {
+      console.error('Error fetching pending deposits:', err);
     }
   };
 
@@ -225,6 +235,7 @@ const AdminDashboard = () => {
     if (user?.role === 'superadmin' || user?.role === 'admin') {
       promises.push(fetchUsers());
       promises.push(fetchWithdrawals());
+      promises.push(fetchDeposits());
       promises.push(fetchTransactions());
     }
     if (user?.role === 'superadmin' || user?.role === 'admin' || user?.role === 'moderator') {
@@ -340,6 +351,28 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleDepositAction = async (deposit, action) => {
+    try {
+      setActionLoading(true);
+      let res;
+      if (action === 'approve') {
+        res = await axios.post(`/admin/deposits/${deposit._id}/approve`);
+        showToast(res.data.message || 'Deposit approved.');
+      } else {
+        res = await axios.post(`/admin/deposits/${deposit._id}/reject`);
+        showToast(res.data.message || 'Deposit rejected.');
+      }
+      await fetchDeposits();
+      await fetchTransactions();
+      await fetchStats();
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Deposit action failed.');
+    } finally {
+      setActionLoading(false);
+      setConfirmModal({ show: false, type: '', data: null });
+    }
+  };
+
   const handleDisputeResolution = async (deal, action, creatorAmount = null, brandAmount = null) => {
     try {
       setActionLoading(true);
@@ -416,6 +449,12 @@ const AdminDashboard = () => {
       icon: <Wallet size={20} />,
       count: withdrawals.length
     },
+    {
+      id: 'deposits',
+      label: 'Deposit Requests',
+      icon: <CreditCard size={20} />,
+      count: deposits.length
+    },
     { id: 'clearance', label: 'Clearance Queue', icon: <CreditCard size={20} /> },
     {
       id: 'kyc',
@@ -429,8 +468,8 @@ const AdminDashboard = () => {
   ];
 
   const roleAllowedTabs = {
-    superadmin: ['stats', 'users', 'campaigns', 'deals', 'withdrawals', 'clearance', 'kyc', 'ledger', 'social-monitor', 'audit-logs'],
-    admin: ['stats', 'users', 'campaigns', 'deals', 'withdrawals', 'clearance', 'kyc', 'ledger', 'social-monitor'],
+    superadmin: ['stats', 'users', 'campaigns', 'deals', 'withdrawals', 'deposits', 'clearance', 'kyc', 'ledger', 'social-monitor', 'audit-logs'],
+    admin: ['stats', 'users', 'campaigns', 'deals', 'withdrawals', 'deposits', 'clearance', 'kyc', 'ledger', 'social-monitor'],
     moderator: ['stats', 'campaigns', 'kyc', 'social-monitor'],
     support: ['stats', 'deals', 'kyc', 'social-monitor']
   };
@@ -491,6 +530,15 @@ const AdminDashboard = () => {
     const query = searchQuery.toLowerCase();
 
     return name.includes(query) || email.includes(query);
+  });
+
+  const filteredDeposits = deposits.filter(d => {
+    const name = (d.user?.name || '').toLowerCase();
+    const email = (d.user?.email || '').toLowerCase();
+    const reference = (d.referenceId || '').toLowerCase();
+    const query = searchQuery.toLowerCase();
+
+    return name.includes(query) || email.includes(query) || reference.includes(query);
   });
 
   const filteredKycSubmissions = kycSubmissions.filter(p => {
@@ -1176,6 +1224,106 @@ const AdminDashboard = () => {
                             <div className="flex flex-col items-center justify-center">
                               <Wallet size={32} className="text-gray-300 mb-4" />
                               <h3 className="text-gray-400 font-black uppercase tracking-widest text-xs">No pending payouts</h3>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Tab 5.1: Deposit Requests */}
+          {activeTab === 'deposits' && (
+            <motion.div key="deposits" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} className="flex flex-col gap-8">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex flex-col gap-2">
+                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em]">Console Management</span>
+                  <h1 className="text-3xl sm:text-4xl font-black font-display text-gray-900 tracking-tight">Deposit Requests</h1>
+                </div>
+
+                <div className="w-full sm:w-64 relative group">
+                  <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#EA580C]" />
+                  <input
+                    type="text"
+                    placeholder="Search brand, email, ref..."
+                    value={searchQuery}
+                    onChange={e => setSearchQuery(e.target.value)}
+                    className="w-full pl-11 pr-4 py-3 rounded-xl bg-white border border-gray-200 text-xs font-bold outline-none focus:border-[#EA580C]/50 focus:ring-4 focus:ring-[#EA580C]/5"
+                  />
+                </div>
+              </div>
+
+              <div className="bg-white border border-gray-200 rounded-[2rem] shadow-sm overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="border-b border-gray-100 bg-gray-50/50">
+                        <th className="px-6 py-4.5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Brand Profile</th>
+                        <th className="px-6 py-4.5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Deposit Info</th>
+                        <th className="px-6 py-4.5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Requested Amount</th>
+                        <th className="px-6 py-4.5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {filteredDeposits.length > 0 ? (
+                        filteredDeposits.map(d => (
+                          <tr key={d._id} className="hover:bg-gray-50/30 transition-all">
+                            <td className="px-6 py-5.5">
+                              <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center font-display font-black text-blue-600 text-xs shrink-0 shadow-sm">
+                                  {d.user?.name ? d.user.name.substring(0, 2).toUpperCase() : 'BR'}
+                                </div>
+                                <div>
+                                  <h4 className="text-[14px] font-black text-gray-900 tracking-tight">{d.user?.name || 'Unknown Brand'}</h4>
+                                  <p className="text-[11px] font-bold text-gray-400 mt-0.5">{d.user?.email || 'N/A'}</p>
+                                </div>
+                              </div>
+                            </td>
+
+                            <td className="px-6 py-5.5">
+                              <div className="flex flex-col gap-1">
+                                <span className="text-[11px] font-bold text-gray-700">
+                                  Ref: <span className="text-gray-900 font-black">{d.referenceId || 'N/A'}</span>
+                                </span>
+                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">
+                                  {new Date(d.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                                </p>
+                              </div>
+                            </td>
+
+                            <td className="px-6 py-5.5">
+                              <span className="text-[14px] text-emerald-600 font-black">
+                                🪙{(d.amount || 0).toLocaleString()}
+                              </span>
+                            </td>
+
+                            <td className="px-6 py-5.5 text-right">
+                              <div className="flex items-center justify-end gap-2.5">
+                                <button
+                                  onClick={() => setConfirmModal({ show: true, type: 'approveDeposit', data: d })}
+                                  className="h-9 w-9 bg-emerald-50 text-emerald-600 hover:bg-emerald-500 hover:text-white border border-emerald-100 rounded-xl transition-all shadow-sm flex items-center justify-center active:scale-90"
+                                >
+                                  <Check size={16} strokeWidth={2.5} />
+                                </button>
+                                <button
+                                  onClick={() => setConfirmModal({ show: true, type: 'rejectDeposit', data: d })}
+                                  className="h-9 w-9 bg-red-50 text-red-500 hover:bg-red-500 hover:text-white border border-red-100 rounded-xl transition-all shadow-sm flex items-center justify-center active:scale-90"
+                                >
+                                  <X size={16} strokeWidth={2.5} />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan="4" className="py-20 text-center">
+                            <div className="flex flex-col items-center justify-center">
+                              <CreditCard size={32} className="text-gray-300 mb-4" />
+                              <h3 className="text-gray-400 font-black uppercase tracking-widest text-xs">No pending deposit requests</h3>
                             </div>
                           </td>
                         </tr>
@@ -1936,13 +2084,15 @@ const AdminDashboard = () => {
                   onClick={async () => {
                     if (confirmModal.type === 'approveWithdrawal') await handleWithdrawalAction(confirmModal.data, 'approve', utrRef);
                     if (confirmModal.type === 'rejectWithdrawal') await handleWithdrawalAction(confirmModal.data, 'reject');
+                    if (confirmModal.type === 'approveDeposit') await handleDepositAction(confirmModal.data, 'approve');
+                    if (confirmModal.type === 'rejectDeposit') await handleDepositAction(confirmModal.data, 'reject');
                     if (confirmModal.type === 'disputeRelease') await handleDisputeResolution(confirmModal.data, 'release');
                     if (confirmModal.type === 'disputeRefund') await handleDisputeResolution(confirmModal.data, 'refund');
                     if (confirmModal.type === 'rejectCampaign') await handleCampaignModeration(confirmModal.data, 'paused', rejectionReason);
                     if (confirmModal.type === 'disputeSplit') await handleDisputeResolution(confirmModal.data, 'split', creatorSplitAmount, (confirmModal.data?.budget || 0) - creatorSplitAmount);
                   }}
                   disabled={actionLoading || (confirmModal.type === 'rejectCampaign' && !rejectionReason.trim())}
-                  className={`w-full sm:w-1/2 py-3.5 text-white font-black rounded-xl shadow-lg text-xs uppercase tracking-widest transition-all ${confirmModal.type === 'rejectWithdrawal' || confirmModal.type === 'disputeRefund' || confirmModal.type === 'rejectCampaign'
+                  className={`w-full sm:w-1/2 py-3.5 text-white font-black rounded-xl shadow-lg text-xs uppercase tracking-widest transition-all ${confirmModal.type === 'rejectWithdrawal' || confirmModal.type === 'rejectDeposit' || confirmModal.type === 'disputeRefund' || confirmModal.type === 'rejectCampaign'
                       ? 'bg-red-500 hover:bg-red-600 shadow-red-500/20'
                       : confirmModal.type === 'disputeSplit'
                         ? 'bg-indigo-500 hover:bg-indigo-600 shadow-indigo-500/20'

@@ -793,6 +793,146 @@ const markPayoutPaid = async (req, res) => {
   }
 };
 
+const getPendingDeposits = async (req, res) => {
+  try {
+    const transactions = await Transaction.find({ type: 'coin_purchase', status: 'pending' })
+      .populate('userId', 'email name')
+      .sort({ createdAt: -1 });
+
+    const userIds = transactions.map(t => t.userId ? t.userId._id : null).filter(Boolean);
+    const brandProfiles = await BrandProfile.find({ userId: { $in: userIds } });
+
+    const brandMap = {};
+    brandProfiles.forEach(profile => {
+      brandMap[profile.userId.toString()] = profile;
+    });
+
+    const deposits = transactions.map(t => {
+      const uId = t.userId ? t.userId._id.toString() : null;
+      const brandProfile = uId ? brandMap[uId] : null;
+      const userName = brandProfile?.businessName || brandProfile?.ownerName || t.userId?.name || 'Unknown User';
+
+      return {
+        _id: t._id,
+        amount: t.amount,
+        status: t.status,
+        description: t.description,
+        referenceId: t.referenceId,
+        createdAt: t.createdAt,
+        user: {
+          id: uId,
+          email: t.userId ? t.userId.email : 'Deleted User',
+          name: userName,
+        }
+      };
+    });
+
+    res.json(deposits);
+  } catch (error) {
+    console.error('Error fetching pending deposits:', error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const approveDeposit = async (req, res) => {
+  const { id } = req.params;
+  
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    const transaction = await Transaction.findById(id).session(session);
+    if (!transaction) {
+      await session.abortTransaction();
+      session.endSession();
+      return res.status(404).json({ message: 'Deposit request transaction not found.' });
+    }
+    if (transaction.type !== 'coin_purchase' || transaction.status !== 'pending') {
+      await session.abortTransaction();
+      session.endSession();
+      return res.status(400).json({ message: 'Invalid or already processed deposit request.' });
+    }
+
+    let wallet = await Wallet.findOne({ userId: transaction.userId }).session(session);
+    if (!wallet) {
+      wallet = new Wallet({ userId: transaction.userId, balance: 0 });
+    }
+
+    // Add funds to wallet
+    wallet.balance += transaction.amount;
+    await wallet.save({ session });
+
+    // Mark as completed
+    transaction.status = 'completed';
+    await transaction.save({ session });
+
+    await session.commitTransaction();
+    session.endSession();
+
+    // Audit log
+    if (req.user?.id) {
+      const adminUser = await User.findById(req.user.id);
+      if (adminUser) {
+        await AdminAuditLog.create({
+          adminId: req.user.id,
+          adminEmail: adminUser.email,
+          adminRole: req.user.role,
+          action: 'APPROVE_DEPOSIT',
+          targetId: transaction.userId,
+          details: `Approved deposit transaction ID ${transaction._id} of amount 🪙${transaction.amount} for user ${transaction.userId}.`
+        });
+      }
+    }
+
+    res.json({ message: 'Deposit approved successfully.', transaction, newBalance: wallet.balance });
+  } catch (error) {
+    if (session.inTransaction()) {
+      await session.abortTransaction();
+    }
+    session.endSession();
+    console.error('Error approving deposit:', error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const rejectDeposit = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const transaction = await Transaction.findById(id);
+    if (!transaction) {
+      return res.status(404).json({ message: 'Deposit request transaction not found.' });
+    }
+    if (transaction.type !== 'coin_purchase' || transaction.status !== 'pending') {
+      return res.status(400).json({ message: 'Invalid or already processed deposit request.' });
+    }
+
+    transaction.status = 'failed';
+    transaction.description += ' (Rejected by Admin)';
+    await transaction.save();
+
+    // Audit log
+    if (req.user?.id) {
+      const adminUser = await User.findById(req.user.id);
+      if (adminUser) {
+        await AdminAuditLog.create({
+          adminId: req.user.id,
+          adminEmail: adminUser.email,
+          adminRole: req.user.role,
+          action: 'REJECT_DEPOSIT',
+          targetId: transaction.userId,
+          details: `Rejected deposit transaction ID ${transaction._id} of amount 🪙${transaction.amount} for user ${transaction.userId}.`
+        });
+      }
+    }
+
+    res.json({ message: 'Deposit request rejected.', transaction });
+  } catch (error) {
+    console.error('Error rejecting deposit:', error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   getPendingWithdrawals,
   approveWithdrawal,
@@ -809,7 +949,10 @@ module.exports = {
   getAdminAuditLogs,
   getAdminSocialMonitor,
   getClearanceQueue,
-  markPayoutPaid
+  markPayoutPaid,
+  getPendingDeposits,
+  approveDeposit,
+  rejectDeposit
 };
 
 

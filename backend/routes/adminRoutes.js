@@ -16,7 +16,10 @@ const {
   getAdminAuditLogs,
   getAdminSocialMonitor,
   getClearanceQueue,
-  markPayoutPaid
+  markPayoutPaid,
+  getPendingDeposits,
+  approveDeposit,
+  rejectDeposit
 } = require('../controllers/adminController');
 const { authMiddleware, checkRole } = require('../middleware/authMiddleware');
 
@@ -31,6 +34,11 @@ router.get('/stats', authMiddleware, checkRole(allAdmins), getAdminStats);
 router.get('/withdrawals', authMiddleware, checkRole(superAndAdmin), getPendingWithdrawals);
 router.post('/withdrawals/:id/approve', authMiddleware, checkRole(superAndAdmin), approveWithdrawal);
 router.post('/withdrawals/:id/reject', authMiddleware, checkRole(superAndAdmin), rejectWithdrawal);
+
+// Deposits
+router.get('/deposits', authMiddleware, checkRole(superAndAdmin), getPendingDeposits);
+router.post('/deposits/:id/approve', authMiddleware, checkRole(superAndAdmin), approveDeposit);
+router.post('/deposits/:id/reject', authMiddleware, checkRole(superAndAdmin), rejectDeposit);
 
 // User Management
 router.get('/users', authMiddleware, checkRole(superAndAdmin), getAdminUsers);
