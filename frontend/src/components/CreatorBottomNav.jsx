@@ -73,7 +73,7 @@ const CreatorBottomNav = ({ activeTab }) => {
           <Link
             key={tab.id}
             to={tab.path}
-            className="flex flex-col items-center gap-1 min-w-[65px] relative group active:scale-95 transition-transform"
+            className="flex flex-col items-center gap-1 flex-1 min-w-0 max-w-[70px] relative group active:scale-95 transition-transform"
           >
             <div className={`relative p-2.5 rounded-full transition-all duration-300 ${isActive ? 'bg-[#4f46e5] text-white shadow-[0_8px_20px_rgba(79,70,229,0.3)]' : 'text-gray-400 group-hover:text-gray-600'}`}>
               <Icon size={20} strokeWidth={isActive ? 2.5 : 2} />

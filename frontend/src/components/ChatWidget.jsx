@@ -95,7 +95,7 @@ function ChatWidget({ dealId, isCompleted }) {
             initial={{ opacity: 0, y: -10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.95 }}
-            className="absolute top-full right-0 mt-4 z-[100] w-80 sm:w-96 h-[450px] bg-surface-container-low border border-outline-variant/10 rounded-[2rem] shadow-[0_30px_60px_rgba(0,0,0,0.5)] flex flex-col overflow-hidden backdrop-blur-2xl"
+            className="fixed sm:absolute bottom-[90px] sm:bottom-auto sm:top-full left-4 right-4 sm:left-auto sm:right-0 sm:mt-4 z-[999] sm:w-96 h-[60vh] sm:h-[450px] max-h-[500px] bg-surface-container-low border border-outline-variant/10 rounded-[2rem] shadow-[0_30px_60px_rgba(0,0,0,0.5)] flex flex-col overflow-hidden backdrop-blur-2xl"
           >
             {/* Header */}
             <div className="p-6 bg-surface-container border-b border-outline-variant/10 flex justify-between items-center">

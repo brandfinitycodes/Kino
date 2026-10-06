@@ -70,9 +70,9 @@ const BuyCoinsModal = ({ isOpen, onClose, onSuccess }) => {
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          className="relative w-full max-w-2xl bg-white rounded-[32px] overflow-hidden shadow-2xl z-10"
+          className="relative w-full max-w-2xl bg-white rounded-[32px] overflow-hidden shadow-2xl z-10 max-h-[95vh] flex flex-col"
         >
-          <div className="p-5 sm:p-8 pb-4 sm:pb-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+          <div className="p-5 sm:p-8 pb-4 sm:pb-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 shrink-0">
             <div>
               <h2 className="text-xl sm:text-2xl font-black text-gray-900 tracking-tight">Top Up Wallet</h2>
               <p className="text-xs sm:text-sm font-medium text-gray-500 mt-1">Purchase Coins to fund deals and campaigns.</p>
@@ -82,7 +82,7 @@ const BuyCoinsModal = ({ isOpen, onClose, onSuccess }) => {
             </button>
           </div>
 
-          <div className="p-5 sm:p-8">
+          <div className="p-5 sm:p-8 overflow-y-auto flex-1">
             {error && (
               <div className="mb-6 p-4 bg-red-50 text-red-600 rounded-xl text-sm font-bold border border-red-100">
                 {error}

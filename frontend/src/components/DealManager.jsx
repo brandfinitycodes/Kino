@@ -65,7 +65,7 @@ function DealManager({ deal, onUpdate, user: userProp }) {
   return (
     <div className="p-6 sm:p-8 rounded-[2.5rem_1rem_2.5rem_1rem] bg-surface-container/15 backdrop-blur-xl border border-outline-variant/10 hover:border-secondary transition-all shadow-2xl group">
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-10">
-        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 text-center sm:text-left w-full lg:w-auto">
+        <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-5 text-left w-full lg:w-auto">
           <div className="w-16 h-16 rounded-2xl bg-surface-container/15 backdrop-blur-md flex items-center justify-center text-secondary border border-outline-variant/10 shadow-xl shrink-0 group-hover:scale-105 transition-transform duration-500">
             <Building2 size={32} />
           </div>
@@ -78,14 +78,14 @@ function DealManager({ deal, onUpdate, user: userProp }) {
                 ? `${(deal.packageTier ? deal.packageTier.charAt(0).toUpperCase() + deal.packageTier.slice(1) : 'Custom')} Tier Package Order` 
                 : (deal.campaignId?.title || deal.applicationId?.campaignId?.title || deal.title || 'Campaign Deal')}
             </h3>
-            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 mt-3">
+            <div className="flex flex-wrap items-center justify-start gap-3 mt-3">
               <span className="text-lg font-black text-secondary">{displayBudget.toLocaleString()} 🪙</span>
               <span className="w-1 h-1 rounded-full bg-outline-variant hidden sm:inline" />
               <span className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/60">Payment: {formatStatus(deal.paymentDetails?.status || 'pending')}</span>
             </div>
           </div>
         </div>
-        <div className="flex flex-col items-center sm:items-end gap-3 w-full lg:w-auto border-t lg:border-t-0 border-outline-variant/5 pt-4 lg:pt-0 shrink-0">
+        <div className="flex flex-col items-start sm:items-end gap-3 w-full lg:w-auto border-t lg:border-t-0 border-outline-variant/5 pt-4 lg:pt-0 shrink-0">
           <div className="flex flex-wrap items-center gap-3">
              <ChatWidget dealId={deal._id} isCompleted={normalizedStatus === 'completed'} />
              <span className={`px-4 py-2 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] border shadow-2xl ${getStatusBadgeColor(normalizedStatus)}`}>
@@ -254,8 +254,8 @@ function DealManager({ deal, onUpdate, user: userProp }) {
               )}
 
               {normalizedStatus === 'completed' && (
-                <div className="bg-surface-container/10 backdrop-blur-md border border-emerald-500/20 p-6 rounded-[1.5rem_0.5rem_1.5rem_0.5rem] text-center relative">
-                  <div className="w-12 h-12 rounded-full bg-surface-container/20 flex items-center justify-center text-emerald-400 mx-auto mb-4 border border-emerald-500/20">
+                <div className="bg-surface-container/10 backdrop-blur-md border border-emerald-500/20 p-6 rounded-[1.5rem_0.5rem_1.5rem_0.5rem] text-left sm:text-center relative">
+                  <div className="w-12 h-12 rounded-full bg-surface-container/20 flex items-center justify-center text-emerald-400 mb-4 sm:mx-auto border border-emerald-500/20">
                     <CheckCircle size={24} />
                   </div>
                   <h4 className="font-black text-emerald-400 text-lg mb-1">Deal Completed</h4>
@@ -274,8 +274,8 @@ function DealManager({ deal, onUpdate, user: userProp }) {
           {currentRole === 'creator' && (
             <div className="pt-6 border-t border-outline-variant/10">
               {normalizedStatus === 'pending_payment' && (
-                <div className="bg-surface-container/10 backdrop-blur-md rounded-[1.5rem_0.5rem_1.5rem_0.5rem] p-6 border border-outline-variant/10 text-center">
-                  <Clock size={32} className="mx-auto text-on-surface-variant/30 mb-4 animate-pulse" />
+                <div className="bg-surface-container/10 backdrop-blur-md rounded-[1.5rem_0.5rem_1.5rem_0.5rem] p-6 border border-outline-variant/10 text-left sm:text-center">
+                  <Clock size={32} className="text-on-surface-variant/30 mb-4 animate-pulse sm:mx-auto" />
                   <p className="text-sm text-on-surface-variant leading-relaxed">Waiting for the brand to fund the funds-secured. <strong>Avoid starting work</strong> until payment is secured.</p>
                 </div>
               )}
@@ -359,8 +359,8 @@ function DealManager({ deal, onUpdate, user: userProp }) {
               )}
 
               {normalizedStatus === 'completed' && (
-                <div className="bg-surface-container/10 backdrop-blur-md border border-emerald-500/20 p-8 rounded-[2rem_0.5rem_2rem_0.5rem] text-center shadow-xl shadow-emerald-500/5 relative">
-                  <div className="w-16 h-16 rounded-full bg-surface-container/20 flex items-center justify-center text-emerald-400 mx-auto mb-4 border border-emerald-500/30">
+                <div className="bg-surface-container/10 backdrop-blur-md border border-emerald-500/20 p-8 rounded-[2rem_0.5rem_2rem_0.5rem] text-left sm:text-center shadow-xl shadow-emerald-500/5 relative">
+                  <div className="w-16 h-16 rounded-full bg-surface-container/20 flex items-center justify-center text-emerald-400 mb-4 sm:mx-auto border border-emerald-500/30">
                     <CheckCircle size={32} />
                   </div>
                   <h4 className="text-2xl font-black text-on-surface mb-2 tracking-tight">Success!</h4>

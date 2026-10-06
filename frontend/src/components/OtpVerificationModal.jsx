@@ -104,7 +104,7 @@ const OtpVerificationModal = ({ isOpen, onClose, email, onVerificationSuccess, t
           initial={{ opacity: 0, scale: 0.95, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 10 }}
-          className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-slate-100 relative overflow-hidden text-center"
+          className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-slate-100 relative text-center max-h-[95vh] overflow-y-auto flex flex-col"
         >
           {/* Close Button */}
           <button

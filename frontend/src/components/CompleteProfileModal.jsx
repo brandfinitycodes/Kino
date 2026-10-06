@@ -120,7 +120,7 @@ const CompleteProfileModal = ({ isOpen, onClose, user, initialProfile, onComplet
 
   return (
     <div className="fixed inset-0 z-[250] flex items-center justify-center p-4 bg-gray-900/70 backdrop-blur-sm select-none">
-      <div className="w-full max-w-md bg-white border border-orange-100 rounded-[2.5rem] p-6 sm:p-8 shadow-2xl relative text-left">
+      <div className="w-full max-w-md bg-white border border-orange-100 rounded-[2.5rem] p-6 sm:p-8 shadow-2xl relative text-left max-h-[95vh] overflow-y-auto flex flex-col">
         <button
           onClick={onClose}
           className="absolute top-5 right-5 p-2 bg-gray-50 hover:bg-gray-100 rounded-xl text-gray-400 hover:text-gray-700 transition-colors"

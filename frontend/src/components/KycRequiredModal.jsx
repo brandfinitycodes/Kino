@@ -35,7 +35,7 @@ const KycRequiredModal = ({ isOpen, onClose, message, kycStatus }) => {
 
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm animate-reveal-up select-none">
-      <div className="w-full max-w-md bg-white rounded-3xl p-6 sm:p-8 shadow-2xl border border-white text-center relative">
+      <div className="w-full max-w-md bg-white rounded-3xl p-6 sm:p-8 shadow-2xl border border-white text-center relative max-h-[95vh] overflow-y-auto flex flex-col">
         <button 
           onClick={onClose} 
           className="absolute top-4 right-4 p-2 bg-gray-50 hover:bg-gray-100 rounded-xl text-gray-400 hover:text-gray-700 transition-all cursor-pointer"
