@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { motion, AnimatePresence, useScroll, useTransform, useMotionValue, useInView, animate, useMotionValueEvent } from 'framer-motion';
-const PhoneMockup = lazy(() => import('../components/PhoneMockup'));
+import PhoneMockup from '../components/PhoneMockup';
 import { ReactLenis } from 'lenis/react';
 import 'lenis/dist/lenis.css';
 import {
@@ -1397,11 +1397,6 @@ const Home = () => {
 
         {/* ================= SHARED ANIMATING PHONE ================= */}
         {coordsLoaded && (
-          <Suspense fallback={
-            <div className="absolute pointer-events-none flex items-center justify-center bg-transparent" style={{ left: coords.heroLeft, top: coords.heroTop, width: coords.heroWidth, height: coords.heroHeight }}>
-              <div className="w-10 h-10 border-4 border-solid border-orange-500 border-t-transparent rounded-full animate-spin"></div>
-            </div>
-          }>
             <PhoneMockup
               transforms={{
                 transformStr: phoneTransformStr,
@@ -1456,7 +1451,6 @@ const Home = () => {
                 analyticsData
               }}
             />
-          </Suspense>
         )}
       </main>
     </div>

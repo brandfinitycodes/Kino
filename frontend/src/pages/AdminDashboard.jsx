@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import axios from '../utils/axios';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Layers,
   Wallet,
@@ -37,31 +38,19 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('stats');
 
-  // Data States
-  const [stats, setStats] = useState(null);
-  const [users, setUsers] = useState([]);
-  const [campaigns, setCampaigns] = useState([]);
-  const [deals, setDeals] = useState([]);
-  const [withdrawals, setWithdrawals] = useState([]);
-  const [deposits, setDeposits] = useState([]);
-  const [transactions, setTransactions] = useState([]);
-  const [kycSubmissions, setKycSubmissions] = useState([]);
-  const [kycStats, setKycStats] = useState(null);
-  const [auditLogs, setAuditLogs] = useState([]);
-  const [socialMonitor, setSocialMonitor] = useState([]);
-
-  const [loading, setLoading] = useState(true);
-  const [actionLoading, setActionLoading] = useState(false);
-
-  // KYC Review States
-  const [kycStatusFilter, setKycStatusFilter] = useState('PENDING');
-  const [selectedKyc, setSelectedKyc] = useState(null);
-  const [kycDocs, setKycDocs] = useState([]);
-  const [zoom, setZoom] = useState(1);
-  const [rotation, setRotation] = useState(0);
-  const [activeDocUrl, setActiveDocUrl] = useState('');
-  const [showRejectModal, setShowRejectModal] = useState(false);
-  const [kycRejectionReason, setKycRejectionReason] = useState('');
+  
+  const queryClient = useQueryClient();
+  
+  // Data States (React Query)
+  const { data: statsData } = useQuery({
+    queryKey: ['admin', 'stats'],
+    queryFn: async () => {
+      const res = await axios.get('/admin/stats');
+      return res.data;
+    },
+    enabled: !!user
+  });
+  const stats = statsData || null;
 
   // Interaction/Filter/Search States
   const [searchQuery, setSearchQuery] = useState('');
@@ -69,6 +58,142 @@ const AdminDashboard = () => {
   const [campaignStatusFilter, setCampaignStatusFilter] = useState('pending'); // 'pending', 'active', 'all'
   const [dealStatusFilter, setDealStatusFilter] = useState('all'); // 'all', 'disputed'
   const [ledgerTypeFilter, setLedgerTypeFilter] = useState('all'); // 'all', 'credit', 'debit', 'funds_secured_hold', 'funds_secured_release'
+  const [kycStatusFilter, setKycStatusFilter] = useState('PENDING');
+
+  // React Query infinite hooks
+  const { data: usersData, fetchNextPage: fetchNextUsers, hasNextPage: hasNextUsers, isFetchingNextPage: isFetchingUsers } = useInfiniteQuery({
+    queryKey: ['admin', 'users', searchQuery, userRoleFilter],
+    queryFn: async ({ pageParam = 1 }) => {
+      const res = await axios.get('/admin/users', { params: { page: pageParam, limit: 50, search: searchQuery, role: userRoleFilter } });
+      return res.data;
+    },
+    getNextPageParam: (lastPage) => lastPage.currentPage < lastPage.totalPages ? lastPage.currentPage + 1 : undefined,
+    enabled: !!user && (user.role === 'superadmin' || user.role === 'admin')
+  });
+
+  const { data: campaignsData, fetchNextPage: fetchNextCampaigns, hasNextPage: hasNextCampaigns, isFetchingNextPage: isFetchingCampaigns } = useInfiniteQuery({
+    queryKey: ['admin', 'campaigns', searchQuery, campaignStatusFilter],
+    queryFn: async ({ pageParam = 1 }) => {
+      const res = await axios.get('/admin/campaigns', { params: { page: pageParam, limit: 50, search: searchQuery, status: campaignStatusFilter } });
+      return res.data;
+    },
+    getNextPageParam: (lastPage) => lastPage.currentPage < lastPage.totalPages ? lastPage.currentPage + 1 : undefined,
+    enabled: !!user && ['superadmin', 'admin', 'moderator'].includes(user.role)
+  });
+
+  const { data: dealsData, fetchNextPage: fetchNextDeals, hasNextPage: hasNextDeals, isFetchingNextPage: isFetchingDeals } = useInfiniteQuery({
+    queryKey: ['admin', 'deals', searchQuery, dealStatusFilter],
+    queryFn: async ({ pageParam = 1 }) => {
+      const res = await axios.get('/admin/deals', { params: { page: pageParam, limit: 50, search: searchQuery, status: dealStatusFilter } });
+      return res.data;
+    },
+    getNextPageParam: (lastPage) => lastPage.currentPage < lastPage.totalPages ? lastPage.currentPage + 1 : undefined,
+    enabled: !!user && ['superadmin', 'admin', 'support'].includes(user.role)
+  });
+
+  const { data: withdrawalsData, fetchNextPage: fetchNextWithdrawals, hasNextPage: hasNextWithdrawals, isFetchingNextPage: isFetchingWithdrawals } = useInfiniteQuery({
+    queryKey: ['admin', 'withdrawals', searchQuery],
+    queryFn: async ({ pageParam = 1 }) => {
+      const res = await axios.get('/admin/withdrawals', { params: { page: pageParam, limit: 50, search: searchQuery } });
+      return res.data;
+    },
+    getNextPageParam: (lastPage) => lastPage.currentPage < lastPage.totalPages ? lastPage.currentPage + 1 : undefined,
+    enabled: !!user && ['superadmin', 'admin'].includes(user.role)
+  });
+
+  const { data: depositsData, fetchNextPage: fetchNextDeposits, hasNextPage: hasNextDeposits, isFetchingNextPage: isFetchingDeposits } = useInfiniteQuery({
+    queryKey: ['admin', 'deposits', searchQuery],
+    queryFn: async ({ pageParam = 1 }) => {
+      const res = await axios.get('/admin/deposits', { params: { page: pageParam, limit: 50, search: searchQuery } });
+      return res.data;
+    },
+    getNextPageParam: (lastPage) => lastPage.currentPage < lastPage.totalPages ? lastPage.currentPage + 1 : undefined,
+    enabled: !!user && ['superadmin', 'admin'].includes(user.role)
+  });
+
+  const { data: transactionsData, fetchNextPage: fetchNextTransactions, hasNextPage: hasNextTransactions, isFetchingNextPage: isFetchingTransactions } = useInfiniteQuery({
+    queryKey: ['admin', 'transactions', searchQuery, ledgerTypeFilter],
+    queryFn: async ({ pageParam = 1 }) => {
+      const res = await axios.get('/admin/transactions', { params: { page: pageParam, limit: 50, search: searchQuery, type: ledgerTypeFilter } });
+      return res.data;
+    },
+    getNextPageParam: (lastPage) => lastPage.currentPage < lastPage.totalPages ? lastPage.currentPage + 1 : undefined,
+    enabled: !!user && ['superadmin', 'admin'].includes(user.role)
+  });
+
+  const { data: kycData, fetchNextPage: fetchNextKyc, hasNextPage: hasNextKyc, isFetchingNextPage: isFetchingKyc } = useInfiniteQuery({
+    queryKey: ['admin', 'kyc', searchQuery, kycStatusFilter],
+    queryFn: async ({ pageParam = 1 }) => {
+      const res = await axios.get('/kyc/admin', { params: { page: pageParam, limit: 50, search: searchQuery, status: kycStatusFilter } });
+      return res.data;
+    },
+    getNextPageParam: (lastPage) => lastPage.currentPage < lastPage.totalPages ? lastPage.currentPage + 1 : undefined,
+    enabled: !!user
+  });
+
+  const { data: auditLogsData, fetchNextPage: fetchNextAuditLogs, hasNextPage: hasNextAuditLogs, isFetchingNextPage: isFetchingAuditLogs } = useInfiniteQuery({
+    queryKey: ['admin', 'audit-logs', searchQuery],
+    queryFn: async ({ pageParam = 1 }) => {
+      const res = await axios.get('/admin/audit-logs', { params: { page: pageParam, limit: 50, search: searchQuery } });
+      return res.data;
+    },
+    getNextPageParam: (lastPage) => lastPage.currentPage < lastPage.totalPages ? lastPage.currentPage + 1 : undefined,
+    enabled: !!user && user.role === 'superadmin'
+  });
+
+  const { data: socialMonitorData, fetchNextPage: fetchNextSocialMonitor, hasNextPage: hasNextSocialMonitor, isFetchingNextPage: isFetchingSocialMonitor } = useInfiniteQuery({
+    queryKey: ['admin', 'social-monitor', searchQuery],
+    queryFn: async ({ pageParam = 1 }) => {
+      const res = await axios.get('/admin/social-monitor', { params: { page: pageParam, limit: 50, search: searchQuery } });
+      return res.data;
+    },
+    getNextPageParam: (lastPage) => lastPage.currentPage < lastPage.totalPages ? lastPage.currentPage + 1 : undefined,
+    enabled: !!user
+  });
+  
+  const { data: clearanceData, fetchNextPage: fetchNextClearance, hasNextPage: hasNextClearance, isFetchingNextPage: isFetchingClearance } = useInfiniteQuery({
+    queryKey: ['admin', 'clearance', searchQuery],
+    queryFn: async ({ pageParam = 1 }) => {
+      const res = await axios.get('/admin/clearance', { params: { page: pageParam, limit: 50, search: searchQuery } });
+      return res.data;
+    },
+    getNextPageParam: (lastPage) => lastPage.currentPage < lastPage.totalPages ? lastPage.currentPage + 1 : undefined,
+    enabled: !!user && ['superadmin', 'admin'].includes(user.role)
+  });
+
+  // Extract flat arrays (memoized to prevent heavy re-renders)
+  const filteredUsers = useMemo(() => usersData?.pages.flatMap(p => p.data || []) || [], [usersData]);
+  const filteredCampaigns = useMemo(() => campaignsData?.pages.flatMap(p => p.data || []) || [], [campaignsData]);
+  const filteredDeals = useMemo(() => dealsData?.pages.flatMap(p => p.data || []) || [], [dealsData]);
+  const filteredWithdrawals = useMemo(() => withdrawalsData?.pages.flatMap(p => p.data || []) || [], [withdrawalsData]);
+  const filteredDeposits = useMemo(() => depositsData?.pages.flatMap(p => p.data || []) || [], [depositsData]);
+  const filteredTransactions = useMemo(() => transactionsData?.pages.flatMap(p => p.data || []) || [], [transactionsData]);
+  const filteredKycSubmissions = useMemo(() => kycData?.pages.flatMap(p => p.profiles || []) || [], [kycData]);
+  const filteredAuditLogs = useMemo(() => auditLogsData?.pages.flatMap(p => p.data || []) || [], [auditLogsData]);
+  const filteredSocialMonitor = useMemo(() => socialMonitorData?.pages.flatMap(p => p.data || []) || [], [socialMonitorData]);
+  const clearanceQueueList = useMemo(() => clearanceData?.pages.flatMap(p => p.data || []) || [], [clearanceData]);
+
+  // For compatibility with old sidebar counts which used non-filtered data (we can just use the flat list or totalItems)
+  // But wait, the sidebar items use the lists. We'll provide mock lists with correct length.
+  const users = { length: usersData?.pages[0]?.totalItems || 0 };
+  const campaigns = filteredCampaigns; // For counting pending campaigns
+  const deals = filteredDeals;
+  const withdrawals = filteredWithdrawals;
+  const deposits = filteredDeposits;
+  const kycSubmissions = filteredKycSubmissions;
+  const kycStats = kycData?.pages[0]?.stats || null;
+
+  const [loading, setLoading] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
+
+  // KYC Review States
+  const [selectedKyc, setSelectedKyc] = useState(null);
+  const [kycDocs, setKycDocs] = useState([]);
+  const [zoom, setZoom] = useState(1);
+  const [rotation, setRotation] = useState(0);
+  const [activeDocUrl, setActiveDocUrl] = useState('');
+  const [showRejectModal, setShowRejectModal] = useState(false);
+  const [kycRejectionReason, setKycRejectionReason] = useState('');
 
   const [toast, setToast] = useState('');
   const [confirmModal, setConfirmModal] = useState({ show: false, type: '', data: null });
@@ -80,97 +205,6 @@ const AdminDashboard = () => {
   const showToast = (msg) => {
     setToast(msg);
     setTimeout(() => setToast(''), 3000);
-  };
-
-  const fetchStats = async () => {
-    try {
-      const res = await axios.get('/admin/stats');
-      setStats(res.data);
-    } catch (err) {
-      console.error('Error fetching admin stats:', err);
-    }
-  };
-
-  const fetchUsers = async () => {
-    try {
-      const res = await axios.get('/admin/users');
-      setUsers(res.data);
-    } catch (err) {
-      console.error('Error fetching admin users:', err);
-    }
-  };
-
-  const fetchCampaigns = async () => {
-    try {
-      const res = await axios.get('/admin/campaigns');
-      setCampaigns(res.data);
-    } catch (err) {
-      console.error('Error fetching admin campaigns:', err);
-    }
-  };
-
-  const fetchDeals = async () => {
-    try {
-      const res = await axios.get('/admin/deals');
-      setDeals(res.data);
-    } catch (err) {
-      console.error('Error fetching admin deals:', err);
-    }
-  };
-
-  const fetchWithdrawals = async () => {
-    try {
-      const res = await axios.get('/admin/withdrawals');
-      setWithdrawals(res.data);
-    } catch (err) {
-      console.error('Error fetching pending withdrawals:', err);
-    }
-  };
-
-  const fetchDeposits = async () => {
-    try {
-      const res = await axios.get('/admin/deposits');
-      setDeposits(res.data);
-    } catch (err) {
-      console.error('Error fetching pending deposits:', err);
-    }
-  };
-
-  const fetchTransactions = async () => {
-    try {
-      const res = await axios.get('/admin/transactions');
-      setTransactions(res.data);
-    } catch (err) {
-      console.error('Error fetching admin transactions:', err);
-    }
-  };
-
-  const fetchKycSubmissions = async () => {
-    try {
-      const res = await axios.get('/kyc/admin');
-      setKycSubmissions(res.data.profiles || []);
-      setKycStats(res.data.stats || null);
-    } catch (err) {
-      console.error('Error fetching KYC submissions:', err);
-    }
-  };
-
-  const fetchAuditLogs = async () => {
-    try {
-      const res = await axios.get('/admin/audit-logs');
-      setAuditLogs(res.data);
-    } catch (err) {
-      console.error('Error fetching admin audit logs:', err);
-    }
-  };
-
-  const fetchSocialMonitor = async () => {
-    try {
-      const res = await axios.get('/admin/social-monitor');
-      setSocialMonitor(res.data);
-    } catch (err) {
-      console.error('Error fetching admin social monitoring:', err);
-    }
   };
 
   const handleInspectKyc = async (profile) => {
@@ -191,6 +225,10 @@ const AdminDashboard = () => {
     } finally {
       setActionLoading(false);
     }
+  };
+
+  const refreshAllData = async () => {
+    await queryClient.invalidateQueries({ queryKey: ['admin'] });
   };
 
   const handleApproveKyc = async (profileId) => {
@@ -227,46 +265,6 @@ const AdminDashboard = () => {
     }
   };
 
-  const refreshAllData = async () => {
-    const promises = [
-      fetchStats(),
-      fetchKycSubmissions()
-    ];
-    if (user?.role === 'superadmin' || user?.role === 'admin') {
-      promises.push(fetchUsers());
-      promises.push(fetchWithdrawals());
-      promises.push(fetchDeposits());
-      promises.push(fetchTransactions());
-    }
-    if (user?.role === 'superadmin' || user?.role === 'admin' || user?.role === 'moderator') {
-      promises.push(fetchCampaigns());
-    }
-    if (user?.role === 'superadmin' || user?.role === 'admin' || user?.role === 'support') {
-      promises.push(fetchDeals());
-    }
-    if (user?.role === 'superadmin') {
-      promises.push(fetchAuditLogs());
-    }
-    if (user?.role) {
-      promises.push(fetchSocialMonitor());
-    }
-    try {
-      await Promise.all(promises);
-    } catch (err) {
-      console.error('Error refreshing dashboard data:', err);
-    }
-  };
-
-  useEffect(() => {
-    if (!user) return;
-    const initData = async () => {
-      setLoading(true);
-      await refreshAllData();
-      setLoading(false);
-    };
-    initData();
-  }, [user]);
-
   // Close modals when switching dashboard tabs
   useEffect(() => {
     setSelectedKyc(null);
@@ -285,8 +283,7 @@ const AdminDashboard = () => {
       setActionLoading(true);
       const res = await axios.post(`/admin/users/${targetUser._id}/verify`);
       showToast(res.data.message || 'User verification status updated.');
-      await fetchUsers();
-      await fetchStats();
+      await queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
     } catch (err) {
       showToast(err.response?.data?.message || 'Verification update failed.');
     } finally {
@@ -299,8 +296,7 @@ const AdminDashboard = () => {
       setActionLoading(true);
       const res = await axios.post(`/admin/users/${targetUser._id}/suspend`);
       showToast(res.data.message || 'User suspension status updated.');
-      await fetchUsers();
-      await fetchStats();
+      await queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
     } catch (err) {
       showToast(err.response?.data?.message || 'Suspension update failed.');
     } finally {
@@ -317,8 +313,7 @@ const AdminDashboard = () => {
       }
       const res = await axios.post(`/admin/campaigns/${campaign._id}/moderate`, payload);
       showToast(res.data.message || `Campaign status set to ${status}.`);
-      await fetchCampaigns();
-      await fetchStats();
+      await queryClient.invalidateQueries({ queryKey: ['admin', 'campaigns'] });
     } catch (err) {
       showToast(err.response?.data?.message || 'Campaign moderation failed.');
     } finally {
@@ -339,9 +334,7 @@ const AdminDashboard = () => {
         res = await axios.post(`/admin/withdrawals/${withdrawal._id}/reject`);
         showToast(res.data.message || 'Withdrawal rejected and funds refunded.');
       }
-      await fetchWithdrawals();
-      await fetchTransactions();
-      await fetchStats();
+      await queryClient.invalidateQueries({ queryKey: ['admin', 'withdrawals'] });
     } catch (err) {
       showToast(err.response?.data?.message || 'Withdrawal action failed.');
     } finally {
@@ -362,9 +355,7 @@ const AdminDashboard = () => {
         res = await axios.post(`/admin/deposits/${deposit._id}/reject`);
         showToast(res.data.message || 'Deposit rejected.');
       }
-      await fetchDeposits();
-      await fetchTransactions();
-      await fetchStats();
+      await queryClient.invalidateQueries({ queryKey: ['admin', 'deposits'] });
     } catch (err) {
       showToast(err.response?.data?.message || 'Deposit action failed.');
     } finally {
@@ -383,9 +374,7 @@ const AdminDashboard = () => {
       }
       const res = await axios.post(`/admin/deals/${deal._id}/resolve`, payload);
       showToast(res.data.message || `Dispute resolved with action: ${action}.`);
-      await fetchDeals();
-      await fetchTransactions();
-      await fetchStats();
+      await queryClient.invalidateQueries({ queryKey: ['admin', 'deals'] });
     } catch (err) {
       showToast(err.response?.data?.message || 'Dispute resolution failed.');
     } finally {
@@ -426,148 +415,6 @@ const AdminDashboard = () => {
     document.body.removeChild(link);
     showToast('Ledger CSV download started.');
   };
-
-  // UI Sidebar Config with Live Badges (Dynamic by Role)
-  const allSidebarItems = [
-    { id: 'stats', label: 'Console Overview', icon: <Layers size={20} /> },
-    { id: 'users', label: 'User Directory', icon: <Users size={20} /> },
-    {
-      id: 'campaigns',
-      label: 'Campaign Moderation',
-      icon: <Compass size={20} />,
-      count: campaigns.filter(c => c.status === 'pending').length
-    },
-    {
-      id: 'deals',
-      label: 'Deal Arbitration',
-      icon: <Briefcase size={20} />,
-      count: deals.filter(d => d.status === 'disputed').length
-    },
-    {
-      id: 'withdrawals',
-      label: 'Payout Approvals',
-      icon: <Wallet size={20} />,
-      count: withdrawals.length
-    },
-    {
-      id: 'deposits',
-      label: 'Deposit Requests',
-      icon: <CreditCard size={20} />,
-      count: deposits.length
-    },
-    { id: 'clearance', label: 'Clearance Queue', icon: <CreditCard size={20} /> },
-    {
-      id: 'kyc',
-      label: 'KYC Submissions',
-      icon: <ShieldAlert size={20} />,
-      count: kycSubmissions.filter(p => p.status === 'PENDING').length
-    },
-    { id: 'ledger', label: 'Financial Ledger', icon: <FileText size={20} /> },
-    { id: 'social-monitor', label: 'Social Monitor', icon: <TrendingUp size={20} /> },
-    { id: 'audit-logs', label: 'Audit Logs', icon: <FileText size={20} /> }
-  ];
-
-  const roleAllowedTabs = {
-    superadmin: ['stats', 'users', 'campaigns', 'deals', 'withdrawals', 'deposits', 'clearance', 'kyc', 'ledger', 'social-monitor', 'audit-logs'],
-    admin: ['stats', 'users', 'campaigns', 'deals', 'withdrawals', 'deposits', 'clearance', 'kyc', 'ledger', 'social-monitor'],
-    moderator: ['stats', 'campaigns', 'kyc', 'social-monitor'],
-    support: ['stats', 'deals', 'kyc', 'social-monitor']
-  };
-
-  const allowedTabs = roleAllowedTabs[user?.role] || ['stats'];
-  const sidebarItems = allSidebarItems.filter(item => allowedTabs.includes(item.id));
-
-  // Filtering Logic
-  const filteredUsers = users.filter(u => {
-    const name = (u.profile?.name || u.profile?.businessName || '').toLowerCase();
-    const email = (u.email || '').toLowerCase();
-    const role = (u.role || '');
-    const query = searchQuery.toLowerCase();
-
-    const matchesSearch = name.includes(query) || email.includes(query);
-    const matchesRole = userRoleFilter === 'all' || role === userRoleFilter;
-
-    return matchesSearch && matchesRole;
-  });
-
-  const filteredCampaigns = campaigns.filter(c => {
-    const title = (c.title || '').toLowerCase();
-    const brandName = (c.brandId?.businessName || '').toLowerCase();
-    const query = searchQuery.toLowerCase();
-
-    const matchesSearch = title.includes(query) || brandName.includes(query);
-    const matchesStatus = campaignStatusFilter === 'all' || c.status === campaignStatusFilter;
-
-    return matchesSearch && matchesStatus;
-  });
-
-  const filteredDeals = deals.filter(d => {
-    const brandName = (d.brandId?.businessName || d.applicationId?.campaignId?.brandId?.businessName || '').toLowerCase();
-    const creatorName = (d.creatorId?.name || '').toLowerCase();
-    const dealId = (d._id || '').toLowerCase();
-    const query = searchQuery.toLowerCase();
-
-    const matchesSearch = brandName.includes(query) || creatorName.includes(query) || dealId.includes(query);
-    const matchesStatus = dealStatusFilter === 'all' || d.status === dealStatusFilter;
-
-    return matchesSearch && matchesStatus;
-  });
-
-  const filteredTransactions = transactions.filter(t => {
-    const email = (t.userId?.email || '').toLowerCase();
-    const desc = (t.description || '').toLowerCase();
-    const query = searchQuery.toLowerCase();
-
-    const matchesSearch = email.includes(query) || desc.includes(query);
-    const matchesType = ledgerTypeFilter === 'all' || t.type === ledgerTypeFilter;
-
-    return matchesSearch && matchesType;
-  });
-
-  const filteredWithdrawals = withdrawals.filter(w => {
-    const name = (w.user?.name || '').toLowerCase();
-    const email = (w.user?.email || '').toLowerCase();
-    const query = searchQuery.toLowerCase();
-
-    return name.includes(query) || email.includes(query);
-  });
-
-  const filteredDeposits = deposits.filter(d => {
-    const name = (d.user?.name || '').toLowerCase();
-    const email = (d.user?.email || '').toLowerCase();
-    const reference = (d.referenceId || '').toLowerCase();
-    const query = searchQuery.toLowerCase();
-
-    return name.includes(query) || email.includes(query) || reference.includes(query);
-  });
-
-  const filteredKycSubmissions = kycSubmissions.filter(p => {
-    const email = (p.userId?.email || '').toLowerCase();
-    const name = (p.personalInfo?.fullName || p.personalInfo?.companyName || '').toLowerCase();
-    const verificationId = (p.verificationId || '').toLowerCase();
-    const query = searchQuery.toLowerCase();
-
-    const matchesSearch = email.includes(query) || name.includes(query) || verificationId.includes(query);
-    const matchesStatus = kycStatusFilter === 'all' || p.status === kycStatusFilter;
-
-    return matchesSearch && matchesStatus;
-  });
-
-  const filteredSocialMonitor = socialMonitor.filter(c => {
-    const name = (c.name || '').toLowerCase();
-    const email = (c.userId?.email || '').toLowerCase();
-    const handle = (c.instagramProfile?.username || '').toLowerCase();
-    const query = searchQuery.toLowerCase();
-    return name.includes(query) || email.includes(query) || handle.includes(query);
-  });
-
-  const filteredAuditLogs = auditLogs.filter(log => {
-    const email = (log.adminEmail || '').toLowerCase();
-    const action = (log.action || '').toLowerCase();
-    const details = (log.details || '').toLowerCase();
-    const query = searchQuery.toLowerCase();
-    return email.includes(query) || action.includes(query) || details.includes(query);
-  });
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -1797,7 +1644,63 @@ const AdminDashboard = () => {
             </motion.div>
           )}
 
+        
         </AnimatePresence>
+
+        {/* Global Pagination Controls */}
+        <div className="mt-8 flex justify-center pb-12">
+          {activeTab === 'users' && hasNextUsers && (
+            <button onClick={() => fetchNextUsers()} disabled={isFetchingUsers} className="px-6 py-3 bg-gray-900 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-[#EA580C] transition-colors">
+              {isFetchingUsers ? 'Loading...' : 'Load More Users'}
+            </button>
+          )}
+          {activeTab === 'campaigns' && hasNextCampaigns && (
+            <button onClick={() => fetchNextCampaigns()} disabled={isFetchingCampaigns} className="px-6 py-3 bg-gray-900 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-[#EA580C] transition-colors">
+              {isFetchingCampaigns ? 'Loading...' : 'Load More Campaigns'}
+            </button>
+          )}
+          {activeTab === 'deals' && hasNextDeals && (
+            <button onClick={() => fetchNextDeals()} disabled={isFetchingDeals} className="px-6 py-3 bg-gray-900 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-[#EA580C] transition-colors">
+              {isFetchingDeals ? 'Loading...' : 'Load More Deals'}
+            </button>
+          )}
+          {activeTab === 'withdrawals' && hasNextWithdrawals && (
+            <button onClick={() => fetchNextWithdrawals()} disabled={isFetchingWithdrawals} className="px-6 py-3 bg-gray-900 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-[#EA580C] transition-colors">
+              {isFetchingWithdrawals ? 'Loading...' : 'Load More Withdrawals'}
+            </button>
+          )}
+          {activeTab === 'deposits' && hasNextDeposits && (
+            <button onClick={() => fetchNextDeposits()} disabled={isFetchingDeposits} className="px-6 py-3 bg-gray-900 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-[#EA580C] transition-colors">
+              {isFetchingDeposits ? 'Loading...' : 'Load More Deposits'}
+            </button>
+          )}
+          {activeTab === 'clearance' && hasNextClearance && (
+            <button onClick={() => fetchNextClearance()} disabled={isFetchingClearance} className="px-6 py-3 bg-gray-900 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-[#EA580C] transition-colors">
+              {isFetchingClearance ? 'Loading...' : 'Load More Clearance'}
+            </button>
+          )}
+          {activeTab === 'kyc' && hasNextKyc && (
+            <button onClick={() => fetchNextKyc()} disabled={isFetchingKyc} className="px-6 py-3 bg-gray-900 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-[#EA580C] transition-colors">
+              {isFetchingKyc ? 'Loading...' : 'Load More KYC'}
+            </button>
+          )}
+          {activeTab === 'ledger' && hasNextTransactions && (
+            <button onClick={() => fetchNextTransactions()} disabled={isFetchingTransactions} className="px-6 py-3 bg-gray-900 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-[#EA580C] transition-colors">
+              {isFetchingTransactions ? 'Loading...' : 'Load More Transactions'}
+            </button>
+          )}
+          {activeTab === 'social-monitor' && hasNextSocialMonitor && (
+            <button onClick={() => fetchNextSocialMonitor()} disabled={isFetchingSocialMonitor} className="px-6 py-3 bg-gray-900 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-[#EA580C] transition-colors">
+              {isFetchingSocialMonitor ? 'Loading...' : 'Load More Social Monitor'}
+            </button>
+          )}
+          {activeTab === 'audit-logs' && hasNextAuditLogs && (
+            <button onClick={() => fetchNextAuditLogs()} disabled={isFetchingAuditLogs} className="px-6 py-3 bg-gray-900 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-[#EA580C] transition-colors">
+              {isFetchingAuditLogs ? 'Loading...' : 'Load More Audit Logs'}
+            </button>
+          )}
+        </div>
+
       </div>
 
       {/* Details Inspector Modal */}

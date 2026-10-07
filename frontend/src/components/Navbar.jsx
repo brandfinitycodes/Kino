@@ -215,8 +215,8 @@ const Navbar = () => {
             </Link>
             <div 
               className="relative ml-1"
-              onMouseEnter={() => setIsProfileOpen(true)}
-              onMouseLeave={() => setIsProfileOpen(false)}
+              onMouseEnter={() => { if (window.innerWidth >= 640) setIsProfileOpen(true); }}
+              onMouseLeave={() => { if (window.innerWidth >= 640) setIsProfileOpen(false); }}
             >
               <button
                 onClick={() => setIsProfileOpen(!isProfileOpen)}

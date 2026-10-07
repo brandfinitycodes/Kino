@@ -13,10 +13,12 @@ function ChatWidget({ dealId, isCompleted }) {
   const socket = useSocket();
   const { user } = useAuth();
   const isKycApproved = user?.role === 'admin' || user?.kycStatus === 'APPROVED';
-  const messagesEndRef = useRef(null);
+  const messagesContainerRef = useRef(null);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+    }
   };
 
   useEffect(() => {
@@ -78,7 +80,7 @@ function ChatWidget({ dealId, isCompleted }) {
   const currentUserId = user?.id || user?._id;
 
   return (
-    <div className="relative">
+    <div className="relative z-[60]">
       <motion.button
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
@@ -92,13 +94,14 @@ function ChatWidget({ dealId, isCompleted }) {
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: -10, scale: 0.95 }}
+            initial={{ opacity: 0, y: 15, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -10, scale: 0.95 }}
-            className="fixed sm:absolute bottom-[90px] sm:bottom-auto sm:top-full left-4 right-4 sm:left-auto sm:right-0 sm:mt-4 z-[999] sm:w-96 h-[60vh] sm:h-[450px] max-h-[500px] bg-surface-container-low border border-outline-variant/10 rounded-[2rem] shadow-[0_30px_60px_rgba(0,0,0,0.5)] flex flex-col overflow-hidden backdrop-blur-2xl"
+            exit={{ opacity: 0, y: 15, scale: 0.95 }}
+            transition={{ type: "spring", damping: 25, stiffness: 200 }}
+            className="absolute top-[70px] left-0 sm:left-auto sm:right-0 w-[320px] max-w-[90vw] sm:w-[400px] h-[65vh] sm:h-[450px] bg-surface-container-low border border-outline-variant/10 rounded-[2rem] shadow-[0_30px_60px_rgba(0,0,0,0.5)] flex flex-col overflow-hidden backdrop-blur-3xl origin-top-left sm:origin-top-right z-[10000]"
           >
             {/* Header */}
-            <div className="p-6 bg-surface-container border-b border-outline-variant/10 flex justify-between items-center">
+            <div className="p-5 sm:p-6 bg-surface-container border-b border-outline-variant/10 flex justify-between items-center shrink-0">
               <div>
                 <h4 className="font-black text-on-surface text-lg tracking-tight">Collaboration Chat</h4>
                 <div className="flex items-center gap-2">
@@ -109,15 +112,15 @@ function ChatWidget({ dealId, isCompleted }) {
               <button
                 type="button"
                 onClick={(e) => { e.preventDefault(); e.stopPropagation(); setIsOpen(false); }}
-                className="w-10 h-10 rounded-xl hover:bg-surface-container-highest flex items-center justify-center text-on-surface-variant transition-colors relative z-[60] cursor-pointer shrink-0"
+                className="w-10 h-10 rounded-full bg-surface-container-high hover:bg-surface-container-highest flex items-center justify-center text-on-surface-variant transition-colors relative z-[60] cursor-pointer shrink-0 shadow-sm"
                 title="Close Chat"
               >
-                <X size={20} />
+                <X size={18} />
               </button>
             </div>
 
             {/* Messages Area */}
-            <div className={`flex-1 overflow-y-auto p-6 space-y-6 scrollbar-hide ${!isKycApproved ? 'blur-sm select-none pointer-events-none' : ''}`}>
+            <div ref={messagesContainerRef} className={`flex-1 overflow-y-auto p-6 space-y-6 scrollbar-hide ${!isKycApproved ? 'blur-sm select-none pointer-events-none' : ''}`}>
               {messages.map((msg, i) => {
                 const isMe = msg.senderId === currentUserId;
                 return (
@@ -134,7 +137,6 @@ function ChatWidget({ dealId, isCompleted }) {
                   </div>
                 );
               })}
-              <div ref={messagesEndRef} />
             </div>
 
             {/* Footer / Input */}

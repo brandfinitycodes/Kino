@@ -71,7 +71,7 @@ const ChatOverlay = ({ deal, onClose, currentUser }) => {
         animate={{ opacity: 1, x: 0 }}
         exit={{ opacity: 0, x: 400 }}
         transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-        className="fixed top-0 md:top-20 right-0 w-full md:w-[450px] h-full md:h-[calc(100vh-80px)] bg-white shadow-[-10px_0_40px_rgba(0,0,0,0.1)] z-[110] flex flex-col border-l border-gray-100"
+        className="fixed top-[80px] right-0 w-full md:w-[450px] h-[calc(100dvh-160px)] md:h-[calc(100vh-80px)] bg-white shadow-[-10px_0_40px_rgba(0,0,0,0.1)] z-[9999] flex flex-col border-l border-gray-100"
       >
         {/* Header */}
         <div className="p-6 border-b border-gray-100 bg-gray-50 flex items-center justify-between">

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import axios from '../utils/axios';
 import BrandCard from '../components/BrandCard';
 import { useAuth } from '../context/AuthContext';
@@ -6,51 +6,47 @@ import { Search, Briefcase, Zap, ShieldCheck, Sparkles, SlidersHorizontal, Filte
 import { Link } from 'react-router-dom';
 import CreatorBottomNav from '../components/CreatorBottomNav';
 import BrandBottomNav from '../components/BrandBottomNav';
+import { useInfiniteQuery } from '@tanstack/react-query';
 
 const INDUSTRIES = ['All', 'Tech', 'Fashion', 'Beauty', 'Food', 'Travel', 'Fitness', 'Gaming', 'Finance', 'Other'];
 
 const BrandListing = () => {
   const { user } = useAuth();
-  const [brands, setBrands] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [industryFilter, setIndustryFilter] = useState('All');
-  const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalItems, setTotalItems] = useState(0);
 
-  useEffect(() => {
-    const fetchBrands = async () => {
-      setLoading(true);
-      try {
-        const res = await axios.get('/brands', {
-          params: { page, limit: 12, search: searchTerm, industry: industryFilter }
-        });
-        const responseData = res.data.data || res.data || [];
-        if (page === 1) {
-          setBrands(responseData);
-        } else {
-          setBrands(prev => [...(prev || []), ...responseData]);
-        }
-        setTotalPages(res.data.totalPages);
-        setTotalItems(res.data.totalItems);
-      } catch (err) {
-        console.error('Failed to fetch brands', err);
-      } finally {
-        setLoading(false);
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetching,
+    isFetchingNextPage,
+    status
+  } = useInfiniteQuery({
+    queryKey: ['brands', searchTerm, industryFilter],
+    queryFn: async ({ pageParam = 1 }) => {
+      const res = await axios.get('/brands', {
+        params: { page: pageParam, limit: 50, search: searchTerm, industry: industryFilter }
+      });
+      return res.data;
+    },
+    getNextPageParam: (lastPage) => {
+      if (lastPage.currentPage < lastPage.totalPages) {
+        return lastPage.currentPage + 1;
       }
-    };
+      return undefined;
+    }
+  });
 
-    const timeoutId = setTimeout(fetchBrands, 500);
-    return () => clearTimeout(timeoutId);
-  }, [searchTerm, industryFilter, page]);
+  const brands = useMemo(() => {
+    return data?.pages.flatMap(page => page.data || []) || [];
+  }, [data]);
 
-  useEffect(() => {
-    setPage(1);
-  }, [searchTerm, industryFilter]);
+  const totalItems = data?.pages[0]?.totalItems || 0;
+  const loading = status === 'pending';
 
   const filtered = useMemo(() => {
-    if (!brands || !brands.length) return [];
+    if (!brands.length) return [];
     return brands.filter(b => {
       if (user && (b.userId?._id === user._id || b.userId === user._id)) {
         return false;
@@ -141,14 +137,14 @@ const BrandListing = () => {
                 </div>
               ))}
             </div>
-            {page < totalPages && (
+            {hasNextPage && (
               <div className="mt-12 flex justify-center">
                 <button
-                  onClick={() => setPage(p => p + 1)}
-                  disabled={loading}
+                  onClick={() => fetchNextPage()}
+                  disabled={isFetchingNextPage}
                   className="px-8 py-4 rounded-2xl bg-white border border-gray-200 text-gray-900 font-black text-[10px] uppercase tracking-widest hover:border-indigo-600 hover:text-indigo-600 transition-all shadow-sm disabled:opacity-50 flex items-center gap-2"
                 >
-                  {loading ? <><Loader2 size={16} className="animate-spin" /> Loading...</> : 'Load More Brands'}
+                  {isFetchingNextPage ? <><Loader2 size={16} className="animate-spin" /> Loading...</> : 'Load More Brands'}
                 </button>
               </div>
             )}

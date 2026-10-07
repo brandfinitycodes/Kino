@@ -1,4 +1,5 @@
 import React, { lazy, Suspense } from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
@@ -91,6 +92,8 @@ const PageLoader = () => (
   </div>
 );
 
+const queryClient = new QueryClient();
+
 const App = () => {
   // Wake up Render free tier backend on initial load
   React.useEffect(() => {
@@ -108,8 +111,9 @@ const App = () => {
   };
 
   return (
-    <AuthProvider>
-      <ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <ThemeProvider>
         <SocketProvider>
           <Router>
             <AnimatePresence>
@@ -242,7 +246,8 @@ const App = () => {
           </Router>
         </SocketProvider>
       </ThemeProvider>
-    </AuthProvider>
+      </AuthProvider>
+    </QueryClientProvider>
   );
 }
 

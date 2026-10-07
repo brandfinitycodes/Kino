@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from '../utils/axios';
 import { useAuth } from '../context/AuthContext';
 import { 
@@ -17,6 +17,11 @@ function DealManager({ deal, onUpdate, user: userProp }) {
   const [error, setError] = useState('');
   const [showDisputeModal, setShowDisputeModal] = useState(false);
   const [disputeReason, setDisputeReason] = useState('');
+
+  // Scroll to top when deal is opened
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [deal._id]);
 
   // Handle older database entries that might have used hyphens or no budget field
   const normalizedStatus = (deal.status || '').replace('-', '_');
