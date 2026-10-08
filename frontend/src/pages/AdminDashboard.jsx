@@ -64,7 +64,7 @@ const AdminDashboard = () => {
   const { data: usersData, fetchNextPage: fetchNextUsers, hasNextPage: hasNextUsers, isFetchingNextPage: isFetchingUsers } = useInfiniteQuery({
     queryKey: ['admin', 'users', searchQuery, userRoleFilter],
     queryFn: async ({ pageParam = 1 }) => {
-      const res = await axios.get('/admin/users', { params: { page: pageParam, limit: 50, search: searchQuery, role: userRoleFilter } });
+      const res = await axios.get('/admin/users', { params: { page: pageParam, limit: 50, search: searchQuery, role: userRoleFilter === 'all' ? undefined : userRoleFilter } });
       return res.data;
     },
     getNextPageParam: (lastPage) => lastPage.currentPage < lastPage.totalPages ? lastPage.currentPage + 1 : undefined,
@@ -74,7 +74,7 @@ const AdminDashboard = () => {
   const { data: campaignsData, fetchNextPage: fetchNextCampaigns, hasNextPage: hasNextCampaigns, isFetchingNextPage: isFetchingCampaigns } = useInfiniteQuery({
     queryKey: ['admin', 'campaigns', searchQuery, campaignStatusFilter],
     queryFn: async ({ pageParam = 1 }) => {
-      const res = await axios.get('/admin/campaigns', { params: { page: pageParam, limit: 50, search: searchQuery, status: campaignStatusFilter } });
+      const res = await axios.get('/admin/campaigns', { params: { page: pageParam, limit: 50, search: searchQuery, status: campaignStatusFilter === 'all' ? undefined : campaignStatusFilter } });
       return res.data;
     },
     getNextPageParam: (lastPage) => lastPage.currentPage < lastPage.totalPages ? lastPage.currentPage + 1 : undefined,
@@ -84,7 +84,7 @@ const AdminDashboard = () => {
   const { data: dealsData, fetchNextPage: fetchNextDeals, hasNextPage: hasNextDeals, isFetchingNextPage: isFetchingDeals } = useInfiniteQuery({
     queryKey: ['admin', 'deals', searchQuery, dealStatusFilter],
     queryFn: async ({ pageParam = 1 }) => {
-      const res = await axios.get('/admin/deals', { params: { page: pageParam, limit: 50, search: searchQuery, status: dealStatusFilter } });
+      const res = await axios.get('/admin/deals', { params: { page: pageParam, limit: 50, search: searchQuery, status: dealStatusFilter === 'all' ? undefined : dealStatusFilter } });
       return res.data;
     },
     getNextPageParam: (lastPage) => lastPage.currentPage < lastPage.totalPages ? lastPage.currentPage + 1 : undefined,
@@ -114,7 +114,7 @@ const AdminDashboard = () => {
   const { data: transactionsData, fetchNextPage: fetchNextTransactions, hasNextPage: hasNextTransactions, isFetchingNextPage: isFetchingTransactions } = useInfiniteQuery({
     queryKey: ['admin', 'transactions', searchQuery, ledgerTypeFilter],
     queryFn: async ({ pageParam = 1 }) => {
-      const res = await axios.get('/admin/transactions', { params: { page: pageParam, limit: 50, search: searchQuery, type: ledgerTypeFilter } });
+      const res = await axios.get('/admin/transactions', { params: { page: pageParam, limit: 50, search: searchQuery, type: ledgerTypeFilter === 'all' ? undefined : ledgerTypeFilter } });
       return res.data;
     },
     getNextPageParam: (lastPage) => lastPage.currentPage < lastPage.totalPages ? lastPage.currentPage + 1 : undefined,
@@ -124,7 +124,7 @@ const AdminDashboard = () => {
   const { data: kycData, fetchNextPage: fetchNextKyc, hasNextPage: hasNextKyc, isFetchingNextPage: isFetchingKyc } = useInfiniteQuery({
     queryKey: ['admin', 'kyc', searchQuery, kycStatusFilter],
     queryFn: async ({ pageParam = 1 }) => {
-      const res = await axios.get('/kyc/admin', { params: { page: pageParam, limit: 50, search: searchQuery, status: kycStatusFilter } });
+      const res = await axios.get('/kyc/admin', { params: { page: pageParam, limit: 50, search: searchQuery, status: kycStatusFilter === 'all' ? undefined : kycStatusFilter } });
       return res.data;
     },
     getNextPageParam: (lastPage) => lastPage.currentPage < lastPage.totalPages ? lastPage.currentPage + 1 : undefined,
@@ -162,20 +162,97 @@ const AdminDashboard = () => {
   });
 
   // Extract flat arrays (memoized to prevent heavy re-renders)
-  const filteredUsers = useMemo(() => usersData?.pages.flatMap(p => p.data || []) || [], [usersData]);
-  const filteredCampaigns = useMemo(() => campaignsData?.pages.flatMap(p => p.data || []) || [], [campaignsData]);
-  const filteredDeals = useMemo(() => dealsData?.pages.flatMap(p => p.data || []) || [], [dealsData]);
-  const filteredWithdrawals = useMemo(() => withdrawalsData?.pages.flatMap(p => p.data || []) || [], [withdrawalsData]);
-  const filteredDeposits = useMemo(() => depositsData?.pages.flatMap(p => p.data || []) || [], [depositsData]);
-  const filteredTransactions = useMemo(() => transactionsData?.pages.flatMap(p => p.data || []) || [], [transactionsData]);
-  const filteredKycSubmissions = useMemo(() => kycData?.pages.flatMap(p => p.profiles || []) || [], [kycData]);
-  const filteredAuditLogs = useMemo(() => auditLogsData?.pages.flatMap(p => p.data || []) || [], [auditLogsData]);
-  const filteredSocialMonitor = useMemo(() => socialMonitorData?.pages.flatMap(p => p.data || []) || [], [socialMonitorData]);
-  const clearanceQueueList = useMemo(() => clearanceData?.pages.flatMap(p => p.data || []) || [], [clearanceData]);
+  const extractData = (p) => Array.isArray(p) ? p : (p.data || p.profiles || []);
+
+  const filteredUsers = useMemo(() => {
+    const raw = usersData?.pages.flatMap(p => extractData(p)) || [];
+    return raw.filter(u => {
+      const name = (u.profile?.name || u.profile?.businessName || '').toLowerCase();
+      const email = (u.email || '').toLowerCase();
+      const query = searchQuery.toLowerCase();
+      return (name.includes(query) || email.includes(query)) && (userRoleFilter === 'all' || u.role === userRoleFilter);
+    });
+  }, [usersData, searchQuery, userRoleFilter]);
+
+  const filteredCampaigns = useMemo(() => {
+    const raw = campaignsData?.pages.flatMap(p => extractData(p)) || [];
+    return raw.filter(c => {
+      const title = (c.title || '').toLowerCase();
+      const brandName = (c.brandId?.businessName || '').toLowerCase();
+      const query = searchQuery.toLowerCase();
+      return (title.includes(query) || brandName.includes(query)) && (campaignStatusFilter === 'all' || c.status === campaignStatusFilter);
+    });
+  }, [campaignsData, searchQuery, campaignStatusFilter]);
+
+  const filteredDeals = useMemo(() => {
+    const raw = dealsData?.pages.flatMap(p => extractData(p)) || [];
+    return raw.filter(d => {
+      const brandName = (d.brandId?.businessName || d.applicationId?.campaignId?.brandId?.businessName || '').toLowerCase();
+      const creatorName = (d.creatorId?.name || '').toLowerCase();
+      const query = searchQuery.toLowerCase();
+      return (brandName.includes(query) || creatorName.includes(query)) && (dealStatusFilter === 'all' || d.status === dealStatusFilter);
+    });
+  }, [dealsData, searchQuery, dealStatusFilter]);
+
+  const filteredWithdrawals = useMemo(() => {
+    const raw = withdrawalsData?.pages.flatMap(p => extractData(p)) || [];
+    return raw.filter(w => {
+      const query = searchQuery.toLowerCase();
+      return (w.userId?.name || '').toLowerCase().includes(query) || (w.userId?.email || '').toLowerCase().includes(query);
+    });
+  }, [withdrawalsData, searchQuery]);
+
+  const filteredDeposits = useMemo(() => {
+    const raw = depositsData?.pages.flatMap(p => extractData(p)) || [];
+    return raw.filter(d => {
+      const query = searchQuery.toLowerCase();
+      return (d.userId?.name || '').toLowerCase().includes(query) || (d.userId?.email || '').toLowerCase().includes(query) || (d.referenceId || '').toLowerCase().includes(query);
+    });
+  }, [depositsData, searchQuery]);
+
+  const filteredTransactions = useMemo(() => {
+    const raw = transactionsData?.pages.flatMap(p => extractData(p)) || [];
+    return raw.filter(t => {
+      const query = searchQuery.toLowerCase();
+      return ((t.userId?.email || '').toLowerCase().includes(query) || (t.description || '').toLowerCase().includes(query)) && (ledgerTypeFilter === 'all' || t.type === ledgerTypeFilter);
+    });
+  }, [transactionsData, searchQuery, ledgerTypeFilter]);
+
+  const filteredKycSubmissions = useMemo(() => {
+    const raw = kycData?.pages.flatMap(p => extractData(p)) || [];
+    return raw.filter(p => {
+      const query = searchQuery.toLowerCase();
+      return ((p.userId?.email || '').toLowerCase().includes(query) || (p.personalInfo?.fullName || '').toLowerCase().includes(query)) && (kycStatusFilter === 'all' || p.status === kycStatusFilter);
+    });
+  }, [kycData, searchQuery, kycStatusFilter]);
+
+  const filteredAuditLogs = useMemo(() => {
+    const raw = auditLogsData?.pages.flatMap(p => extractData(p)) || [];
+    return raw.filter(log => {
+      const query = searchQuery.toLowerCase();
+      return (log.adminEmail || '').toLowerCase().includes(query) || (log.action || '').toLowerCase().includes(query);
+    });
+  }, [auditLogsData, searchQuery]);
+
+  const filteredSocialMonitor = useMemo(() => {
+    const raw = socialMonitorData?.pages.flatMap(p => extractData(p)) || [];
+    return raw.filter(c => {
+      const query = searchQuery.toLowerCase();
+      return (c.name || '').toLowerCase().includes(query) || (c.instagramProfile?.username || '').toLowerCase().includes(query);
+    });
+  }, [socialMonitorData, searchQuery]);
+
+  const clearanceQueueList = useMemo(() => {
+    const raw = clearanceData?.pages.flatMap(p => extractData(p)) || [];
+    return raw.filter(d => {
+      const query = searchQuery.toLowerCase();
+      return (d.brandId?.businessName || '').toLowerCase().includes(query);
+    });
+  }, [clearanceData, searchQuery]);
 
   // For compatibility with old sidebar counts which used non-filtered data (we can just use the flat list or totalItems)
   // But wait, the sidebar items use the lists. We'll provide mock lists with correct length.
-  const users = { length: usersData?.pages[0]?.totalItems || 0 };
+  const users = filteredUsers;
   const campaigns = filteredCampaigns; // For counting pending campaigns
   const deals = filteredDeals;
   const withdrawals = filteredWithdrawals;
@@ -183,6 +260,24 @@ const AdminDashboard = () => {
   const kycSubmissions = filteredKycSubmissions;
   const kycStats = kycData?.pages[0]?.stats || null;
 
+  const sidebarItems = [
+    { id: 'stats', label: 'Overview', icon: <TrendingUp size={20} /> },
+    { id: 'users', label: 'Users', icon: <Users size={20} />, badge: users?.length || 0 },
+    { id: 'campaigns', label: 'Campaigns', icon: <Compass size={20} />, badge: campaigns?.filter(c => c.status === 'pending').length || 0 },
+    { id: 'deals', label: 'Deals', icon: <Briefcase size={20} />, badge: deals?.filter(d => d.status === 'disputed').length || 0 },
+    { id: 'withdrawals', label: 'Withdrawals', icon: <CreditCard size={20} />, badge: withdrawals?.length || 0 },
+    { id: 'deposits', label: 'Deposits', icon: <Wallet size={20} />, badge: deposits?.filter(d => d.status === 'pending').length || 0 },
+    { id: 'clearance', label: 'Clearance Queue', icon: <CheckCircle size={20} /> },
+    { id: 'ledger', label: 'Ledger', icon: <Layers size={20} /> },
+    { id: 'kyc', label: 'KYC Reviews', icon: <FileText size={20} />, badge: kycStats?.pending || 0 },
+    { id: 'social-monitor', label: 'Social Monitor', icon: <ShieldAlert size={20} /> },
+    { id: 'audit-logs', label: 'Audit Logs', icon: <Clock size={20} /> }
+  ].filter(item => {
+    if (['users', 'social-monitor'].includes(item.id) && user?.role === 'support') return false;
+    if (['clearance', 'withdrawals', 'deposits', 'deals', 'audit-logs', 'social-monitor'].includes(item.id) && user?.role === 'moderator') return false;
+    if (item.id === 'audit-logs' && user?.role !== 'superadmin') return false;
+    return true;
+  });
   const [loading, setLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
 
