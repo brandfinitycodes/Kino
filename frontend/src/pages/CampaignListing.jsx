@@ -214,7 +214,7 @@ const CampaignListing = () => {
           </div>
         )}
 
-        {loading && page === 1 ? (
+        {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 md:gap-10">
             {[1, 2, 3, 4, 5, 6].map(n => (
               <div key={n} className="h-96 rounded-[32px] bg-white border border-gray-100 shadow-sm animate-pulse"></div>
