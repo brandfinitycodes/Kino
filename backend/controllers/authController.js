@@ -344,7 +344,8 @@ const sendOtp = async (req, res) => {
 
     res.json({
       message: 'Verification OTP sent to your email successfully.',
-      email: cleanEmail
+      email: cleanEmail,
+      devOtp: generatedOtp
     });
   } catch (error) {
     console.error('Send OTP Error:', error);
