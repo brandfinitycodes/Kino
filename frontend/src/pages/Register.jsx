@@ -14,6 +14,7 @@ const Register = () => {
   const [name, setName] = useState('');
   const [businessName, setBusinessName] = useState('');
   const [email, setEmail] = useState('');
+  const [emailError, setEmailError] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -28,6 +29,21 @@ const Register = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { register, googleRegister } = useAuth();
+
+  const validateEmail = (val) => {
+    setEmail(val);
+    if (!val) {
+      setEmailError('');
+      return;
+    }
+    // Robust Regex validation for email (user@domain.com)
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+    if (!emailRegex.test(val)) {
+      setEmailError('Please enter a valid email address.');
+    } else {
+      setEmailError('');
+    }
+  };
   const navigate = useNavigate();
   const roleRef = React.useRef(role);
 
@@ -135,6 +151,10 @@ const Register = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (loading) return;
+    if (emailError || !email) {
+      setError('Please provide a valid email address.');
+      return;
+    }
     if (password !== confirmPassword) {
       setError('Passwords do not match.');
       return;
@@ -358,16 +378,19 @@ const Register = () => {
                   {isBrand ? 'Work Email' : 'Email Address'}
                 </label>
                 <div className="relative">
-                  <Mail className="absolute left-4 sm:left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-amber-500 transition-colors" size={16} />
+                  <Mail className={`absolute left-4 sm:left-5 top-1/2 -translate-y-1/2 transition-colors ${emailError ? 'text-red-400 group-focus-within:text-red-500' : 'text-slate-400 group-focus-within:text-amber-500'}`} size={16} />
                   <input
                     type="email"
                     required
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full pl-11 sm:pl-12 pr-4 py-2.5 bg-slate-50/50 border-2 border-slate-100/80 rounded-2xl focus:bg-white outline-none transition-all text-xs sm:text-sm text-slate-900 font-medium placeholder:text-slate-400 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10"
+                    onChange={(e) => validateEmail(e.target.value)}
+                    className={`w-full pl-11 sm:pl-12 pr-4 py-2.5 bg-slate-50/50 border-2 rounded-2xl focus:bg-white outline-none transition-all text-xs sm:text-sm text-slate-900 font-medium placeholder:text-slate-400 focus:ring-4 ${emailError ? 'border-red-400 focus:border-red-500 focus:ring-red-500/10' : 'border-slate-100/80 focus:border-amber-500 focus:ring-amber-500/10'}`}
                     placeholder="name@example.com"
                   />
                 </div>
+                {emailError && (
+                  <p className="text-[10px] text-red-500 font-bold ml-2 mt-0.5 animate-reveal-up">{emailError}</p>
+                )}
               </div>
 
               {/* Password Field */}

@@ -106,7 +106,7 @@ const getAllApplications = async (req, res) => {
 
 const updateApplicationStatus = async (req, res) => {
   const { status } = req.body;
-  const allowedStatuses = ['accepted', 'rejected', 'confirmed_by_creator'];
+  const allowedStatuses = ['accepted', 'rejected', 'confirmed_by_creator', 'rejected_by_creator'];
   if (!allowedStatuses.includes(status)) {
     return res.status(400).json({ message: `Invalid status. Must be one of: ${allowedStatuses.join(', ')}` });
   }
@@ -127,10 +127,10 @@ const updateApplicationStatus = async (req, res) => {
       }
     }
 
-    // Step 2: Only a creator can confirm, and only after brand has accepted
-    if (status === 'confirmed_by_creator') {
+    // Step 2: Only a creator can confirm or reject after brand has accepted
+    if (status === 'confirmed_by_creator' || status === 'rejected_by_creator') {
       if (req.user.role !== 'creator') {
-        return res.status(403).json({ message: 'Only creators can confirm applications.' });
+        return res.status(403).json({ message: 'Only creators can confirm or reject applications.' });
       }
       if (application.status !== 'accepted') {
         return res.status(400).json({ message: 'Application must be accepted by the brand first.' });
@@ -140,8 +140,19 @@ const updateApplicationStatus = async (req, res) => {
     application.status = status;
     await application.save();
 
-    // Auto-create deal if brand accepts the application or creator confirms
-    if (status === 'accepted' || status === 'confirmed_by_creator') {
+    // Update Campaign Status based on the Application Status
+    const Campaign = require('../models/Campaign');
+    const campaignId = application.campaignId?._id || application.campaignId;
+    if (campaignId) {
+      if (status === 'accepted') {
+        await Campaign.findByIdAndUpdate(campaignId, { status: 'inactive' });
+      } else if (status === 'rejected_by_creator') {
+        await Campaign.findByIdAndUpdate(campaignId, { status: 'active' });
+      }
+    }
+
+    // Auto-create deal ONLY when creator confirms reassurance
+    if (status === 'confirmed_by_creator') {
       const Deal = require('../models/Deal');
       const existingDeal = await Deal.findOne({ applicationId: application._id });
       if (!existingDeal) {
@@ -174,7 +185,7 @@ const updateApplicationStatus = async (req, res) => {
             message: `Your application for "${campaignTitle}" has been ${status}. ${status === 'accepted' ? 'Please check Active Deals to view requirement details.' : ''}`
           });
         }
-      } else if (status === 'confirmed_by_creator') {
+      } else if (status === 'confirmed_by_creator' || status === 'rejected_by_creator') {
         let brandUserId = application.campaignId?.brandId?.userId;
         if (!brandUserId && application.campaignId?.brandId) {
           const BrandProfile = require('../models/BrandProfile');
@@ -182,9 +193,12 @@ const updateApplicationStatus = async (req, res) => {
           brandUserId = brandProf?.userId || application.campaignId.brandId;
         }
         if (brandUserId) {
+          const actionMsg = status === 'confirmed_by_creator' 
+            ? 'has confirmed their collaboration' 
+            : 'has declined the collaboration after acceptance';
           await Notification.create({
             userId: brandUserId,
-            message: `A creator has confirmed their collaboration for "${campaignTitle}". A deal is ready to be created.`
+            message: `A creator ${actionMsg} for "${campaignTitle}".`
           });
         }
       }

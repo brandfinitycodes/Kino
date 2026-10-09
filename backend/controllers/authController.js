@@ -305,6 +305,14 @@ const sendOtp = async (req, res) => {
 
   try {
     const cleanEmail = email.toLowerCase().trim();
+    
+    // Phase 2: Duplicate Check
+    const existingUser = await User.findOne({ email: cleanEmail });
+    if (existingUser) {
+      // User requested to show "Invalid credentials" instead of "Email already in use" to prevent account enumeration
+      return res.status(400).json({ message: 'Invalid credentials. Please try again or log in.' });
+    }
+
     const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
 
     await Otp.deleteMany({ email: cleanEmail });
@@ -314,12 +322,12 @@ const sendOtp = async (req, res) => {
 
     await sendEmail({
       to: cleanEmail,
-      subject: 'InfluencerHub - Your Security Verification OTP',
-      text: `Your 6-digit verification code for InfluencerHub is: ${generatedOtp}. It will expire in 10 minutes.`,
+      subject: 'Kino - Your Security Verification OTP',
+      text: `Your 6-digit verification code for Kino is: ${generatedOtp}. It will expire in 10 minutes.`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 16px;">
           <div style="text-align: center; margin-bottom: 20px;">
-            <h2 style="color: #EA580C; margin: 0; font-size: 24px;">InfluencerHub</h2>
+            <h2 style="color: #EA580C; margin: 0; font-size: 24px;">Kino</h2>
             <p style="color: #666; font-size: 14px; margin-top: 5px;">Security Email Verification</p>
           </div>
           <div style="background-color: #FAF9F6; padding: 25px; border-radius: 12px; text-align: center; margin-bottom: 20px;">
@@ -336,8 +344,7 @@ const sendOtp = async (req, res) => {
 
     res.json({
       message: 'Verification OTP sent to your email successfully.',
-      email: cleanEmail,
-      devOtp: generatedOtp
+      email: cleanEmail
     });
   } catch (error) {
     console.error('Send OTP Error:', error);

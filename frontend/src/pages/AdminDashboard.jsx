@@ -2149,17 +2149,28 @@ const AdminDashboard = () => {
                       <>
                         <div className="flex flex-col"><span className="text-[10px] uppercase text-gray-400 font-bold">Company Legal Name</span><strong className="text-gray-900 text-sm mt-0.5">{selectedKyc.personalInfo?.companyName || 'N/A'}</strong></div>
                         <div className="flex flex-col"><span className="text-[10px] uppercase text-gray-400 font-bold">Business Type</span><strong className="text-gray-900 text-sm mt-0.5">{selectedKyc.personalInfo?.businessType || 'N/A'}</strong></div>
-                        <div className="flex flex-col"><span className="text-[10px] uppercase text-gray-400 font-bold">Registration Number</span><strong className="text-gray-900 text-sm mt-0.5">{selectedKyc.personalInfo?.registrationNumber || selectedKyc.aadhaarNumber || 'N/A'}</strong></div>
-                        <div className="flex flex-col"><span className="text-[10px] uppercase text-gray-400 font-bold">GST Number</span><strong className="text-gray-900 text-sm mt-0.5">{selectedKyc.personalInfo?.gstNumber || selectedKyc.aadhaarNumber || 'N/A'}</strong></div>
+                        <div className="flex flex-col"><span className="text-[10px] uppercase text-gray-400 font-bold">GST Number</span><strong className="text-gray-900 text-sm mt-0.5">{selectedKyc.personalInfo?.gstNumber || 'N/A'}</strong></div>
+                        <div className="flex flex-col"><span className="text-[10px] uppercase text-gray-400 font-bold">Aadhaar Number</span><strong className="text-gray-900 text-sm mt-0.5">{selectedKyc.aadhaarNumber || 'N/A'}</strong></div>
+                        <div className="flex flex-col"><span className="text-[10px] uppercase text-gray-400 font-bold">Phone Number</span><strong className="text-gray-900 text-sm mt-0.5">{selectedKyc.personalInfo?.phoneNumber || selectedKyc.aadhaarLinkedPhone || 'N/A'}</strong></div>
+                        <div className="flex flex-col"><span className="text-[10px] uppercase text-gray-400 font-bold">Contact Representative</span><strong className="text-gray-900 text-sm mt-0.5">{selectedKyc.personalInfo?.contactPerson || 'N/A'}</strong></div>
                         <div className="flex flex-col col-span-2"><span className="text-[10px] uppercase text-gray-400 font-bold">HQ Address</span><strong className="text-gray-900 text-sm mt-0.5">{selectedKyc.personalInfo?.companyAddress || 'N/A'}</strong></div>
-                        <div className="flex flex-col col-span-2"><span className="text-[10px] uppercase text-gray-400 font-bold">Contact Representative</span><strong className="text-gray-900 text-sm mt-0.5">{selectedKyc.personalInfo?.contactPerson || 'N/A'}</strong></div>
                       </>
                     ) : (
                       <>
                         <div className="flex flex-col"><span className="text-[10px] uppercase text-gray-400 font-bold">Full Legal Name</span><strong className="text-gray-900 text-sm mt-0.5">{selectedKyc.personalInfo?.fullName}</strong></div>
+                        <div className="flex flex-col"><span className="text-[10px] uppercase text-gray-400 font-bold">Phone Number</span><strong className="text-gray-900 text-sm mt-0.5">{selectedKyc.personalInfo?.phoneNumber || selectedKyc.aadhaarLinkedPhone || 'N/A'}</strong></div>
+                        <div className="flex flex-col"><span className="text-[10px] uppercase text-gray-400 font-bold">Aadhaar Number</span><strong className="text-gray-900 text-sm mt-0.5">{selectedKyc.aadhaarNumber || 'N/A'}</strong></div>
+                        <div className="flex flex-col"><span className="text-[10px] uppercase text-gray-400 font-bold">Instagram URL</span>
+                          {selectedKyc.instagramUrl ? (
+                            <a href={selectedKyc.instagramUrl} target="_blank" rel="noopener noreferrer" className="text-amber-600 hover:underline text-sm mt-0.5 break-all flex items-center gap-1">
+                              View Profile <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                            </a>
+                          ) : (
+                            <strong className="text-gray-900 text-sm mt-0.5">N/A</strong>
+                          )}
+                        </div>
                         <div className="flex flex-col"><span className="text-[10px] uppercase text-gray-400 font-bold">Date of Birth</span><strong className="text-gray-900 text-sm mt-0.5">{selectedKyc.personalInfo?.dateOfBirth}</strong></div>
                         <div className="flex flex-col"><span className="text-[10px] uppercase text-gray-400 font-bold">Gender</span><strong className="text-gray-900 text-sm mt-0.5">{selectedKyc.personalInfo?.gender}</strong></div>
-                        <div className="flex flex-col"><span className="text-[10px] uppercase text-gray-400 font-bold">Phone Number</span><strong className="text-gray-900 text-sm mt-0.5">{selectedKyc.personalInfo?.phoneNumber}</strong></div>
                         <div className="flex flex-col col-span-2"><span className="text-[10px] uppercase text-gray-400 font-bold">Permanent Address</span><strong className="text-gray-900 text-sm mt-0.5">{selectedKyc.personalInfo?.address}, {selectedKyc.personalInfo?.city}, {selectedKyc.personalInfo?.state}, {selectedKyc.personalInfo?.pincode}, {selectedKyc.personalInfo?.country}</strong></div>
                       </>
                     )}

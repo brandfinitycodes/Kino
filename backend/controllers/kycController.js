@@ -184,6 +184,24 @@ const submitKyc = async (req, res) => {
     }
     await profile.save();
 
+    // If user is a creator and provided an Instagram link, update their CreatorProfile
+    if (req.user.role === 'creator' && personalInfo.instagramLink) {
+      const creatorProfile = await CreatorProfile.findOne({ userId: req.user.id });
+      if (creatorProfile) {
+        if (!creatorProfile.socialLinks) creatorProfile.socialLinks = [];
+        
+        // Check if instagram link already exists
+        const existingInstaIndex = creatorProfile.socialLinks.findIndex(link => link.platform?.toLowerCase() === 'instagram');
+        
+        if (existingInstaIndex >= 0) {
+          creatorProfile.socialLinks[existingInstaIndex].url = personalInfo.instagramLink;
+        } else {
+          creatorProfile.socialLinks.push({ platform: 'Instagram', url: personalInfo.instagramLink, handle: '' });
+        }
+        await creatorProfile.save();
+      }
+    }
+
     // Log Audit Trace
     await KycAuditLog.create({
       userId: req.user.id,
@@ -349,12 +367,14 @@ const getAdminKyc = async (req, res) => {
       let businessTypeFallback = '';
       let fullNameFallback = '';
       let avatarUrl = '';
+      let instagramUrl = '';
 
       if (profile.userType === 'creator') {
         const creator = await CreatorProfile.findOne({ userId: profile.userId._id || profile.userId });
         if (creator) {
           fullNameFallback = creator.name || '';
           avatarUrl = creator.profilePicture || (creator.instagramProfile && creator.instagramProfile.profilePicture) || '';
+          instagramUrl = creator.instagramProfile?.url || (creator.socialLinks && creator.socialLinks.find(link => link.platform?.toLowerCase() === 'instagram')?.url) || profile.personalInfo?.instagramLink || '';
         }
       } else if (profile.userType === 'brand') {
         const brand = await BrandProfile.findOne({ userId: profile.userId._id || profile.userId });
@@ -367,6 +387,7 @@ const getAdminKyc = async (req, res) => {
 
       const profileObj = profile.toObject();
       profileObj.avatarUrl = avatarUrl;
+      profileObj.instagramUrl = instagramUrl;
       if (!profileObj.personalInfo) {
         profileObj.personalInfo = {};
       }
@@ -414,12 +435,14 @@ const getAdminKycById = async (req, res) => {
     let companyNameFallback = '';
     let businessTypeFallback = '';
     let fullNameFallback = '';
+    let instagramUrl = '';
 
     if (profile.userType === 'creator') {
       const creator = await CreatorProfile.findOne({ userId: profile.userId._id || profile.userId });
       if (creator) {
         avatarUrl = creator.profilePicture || (creator.instagramProfile && creator.instagramProfile.profilePicture) || '';
         fullNameFallback = creator.name || '';
+        instagramUrl = creator.instagramProfile?.url || (creator.socialLinks && creator.socialLinks.find(link => link.platform?.toLowerCase() === 'instagram')?.url) || profile.personalInfo?.instagramLink || '';
       }
     } else if (profile.userType === 'brand') {
       const brand = await BrandProfile.findOne({ userId: profile.userId._id || profile.userId });
@@ -433,6 +456,7 @@ const getAdminKycById = async (req, res) => {
     // Convert to object and append avatarUrl and fallback details
     const profileObj = profile.toObject();
     profileObj.avatarUrl = avatarUrl;
+    profileObj.instagramUrl = instagramUrl;
     if (!profileObj.personalInfo) {
       profileObj.personalInfo = {};
     }
