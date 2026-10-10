@@ -1,41 +1,12 @@
-const nodemailer = require('nodemailer');
-const dns = require('dns');
+const { Resend } = require('resend');
 
-// Force Node.js to use IPv4 first. This prevents the ENETUNREACH IPv6 error on platforms like Render.
-if (dns.setDefaultResultOrder) {
-  dns.setDefaultResultOrder('ipv4first');
-}
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 const sendEmail = async ({ to, subject, html, text }) => {
   try {
-    // Check if SMTP options exist in environment variables
-    const hasSmtpConfig = process.env.EMAIL_USER && process.env.EMAIL_PASS;
-
-    if (hasSmtpConfig) {
-      const transporter = nodemailer.createTransport({
-        host: 'smtp.gmail.com',
-        port: 587,
-        secure: false, // upgrade later with STARTTLS
-        auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASS
-        }
-      });
-
-      const mailOptions = {
-        from: process.env.EMAIL_FROM || `"Influencer Hub" <${process.env.EMAIL_USER}>`,
-        to,
-        subject,
-        html,
-        text
-      };
-
-      const info = await transporter.sendMail(mailOptions);
-      console.log(`[EMAIL SENT] MessageId: ${info.messageId} to ${to}`);
-      return { success: true, messageId: info.messageId };
-    } else {
+    if (!process.env.RESEND_API_KEY || process.env.RESEND_API_KEY.includes('dummy')) {
       if (process.env.NODE_ENV === 'production') {
-        throw new Error('SMTP credentials (EMAIL_USER, EMAIL_PASS) are missing in production environment variables.');
+        throw new Error('Valid RESEND_API_KEY is missing in production environment variables.');
       }
       console.log('----------------------------------------------------');
       console.log(`[DEV EMAIL SIMULATION] To: ${to}`);
@@ -44,9 +15,27 @@ const sendEmail = async ({ to, subject, html, text }) => {
       console.log('----------------------------------------------------');
       return { success: true, simulated: true };
     }
+
+    // IMPORTANT: Unless you verify a domain in Resend, you MUST send FROM onboarding@resend.dev
+    // and you can ONLY send TO the email address you signed up to Resend with!
+    const { data, error } = await resend.emails.send({
+      from: process.env.EMAIL_FROM || 'Kino <onboarding@resend.dev>',
+      to: [to],
+      subject,
+      html,
+      text
+    });
+
+    if (error) {
+      console.error(`[EMAIL ERROR] Failed to send email to ${to}:`, error.message);
+      return { success: false, error: error.message };
+    }
+
+    console.log(`[EMAIL SENT] MessageId: ${data.id} to ${to}`);
+    return { success: true, messageId: data.id };
+
   } catch (error) {
     console.error(`[EMAIL ERROR] Failed to send email to ${to}:`, error.message);
-    // Return simulated success in development so verification testing never blocks
     return { success: false, error: error.message };
   }
 };
