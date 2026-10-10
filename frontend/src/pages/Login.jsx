@@ -24,20 +24,19 @@ const Login = () => {
 
   const handleGoogleCallback = async (response) => {
     try {
-      let gEmail = email;
-      if (response.credential) {
-        try {
-          const payload = JSON.parse(atob(response.credential.split('.')[1]));
-          if (payload.email) gEmail = payload.email;
-        } catch (e) {
-          console.error("Failed to parse Google ID token email:", e);
-        }
+      setLoading(true);
+      setError('');
+      const data = await googleLogin(response.credential);
+      if (data.user.role === 'admin') {
+        navigate('/admin-dashboard');
+      } else if (data.user.role === 'creator') {
+        navigate('/creator-dashboard');
+      } else {
+        navigate('/brand-dashboard');
       }
-      setPendingGoogleCredential(response.credential);
-      setOtpEmail(gEmail || email);
-      setShowOtpModal(true);
     } catch (err) {
-      setError('Google authentication failed.');
+      setError(err.response?.data?.message || 'Google authentication failed.');
+      setLoading(false);
     }
   };
 

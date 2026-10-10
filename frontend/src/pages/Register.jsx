@@ -53,21 +53,21 @@ const Register = () => {
 
   const handleGoogleCallback = async (response) => {
     try {
-      let gEmail = email;
-      if (response.credential) {
-        try {
-          const payload = JSON.parse(atob(response.credential.split('.')[1]));
-          if (payload.email) gEmail = payload.email;
-        } catch (e) {
-          console.error("Failed to parse Google ID token email:", e);
-        }
+      setLoading(true);
+      setError('');
+      sessionStorage.setItem('justRegistered', 'true');
+      const data = await googleRegister(response.credential, roleRef.current);
+      
+      if (data.user.role === 'admin') {
+        sessionStorage.removeItem('justRegistered');
+        navigate('/admin-dashboard');
+      } else {
+        navigate('/aadhaar-verification');
       }
-      setPendingGoogleCredential(response.credential);
-      setPendingRegType('GOOGLE');
-      setOtpEmail(gEmail || email);
-      setShowOtpModal(true);
     } catch (err) {
-      setError('Google registration failed.');
+      sessionStorage.removeItem('justRegistered');
+      setError(err.response?.data?.message || 'Google registration failed.');
+      setLoading(false);
     }
   };
 

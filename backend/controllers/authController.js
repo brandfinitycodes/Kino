@@ -320,39 +320,18 @@ const sendOtp = async (req, res) => {
     const otpDoc = new Otp({ email: cleanEmail, otp: generatedOtp });
     await otpDoc.save();
 
-    const emailResult = await sendEmail({
-      to: cleanEmail,
-      subject: 'Kino - Your Security Verification OTP',
-      text: `Your 6-digit verification code for Kino is: ${generatedOtp}. It will expire in 10 minutes.`,
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 16px;">
-          <div style="text-align: center; margin-bottom: 20px;">
-            <h2 style="color: #EA580C; margin: 0; font-size: 24px;">Kino</h2>
-            <p style="color: #666; font-size: 14px; margin-top: 5px;">Security Email Verification</p>
-          </div>
-          <div style="background-color: #FAF9F6; padding: 25px; border-radius: 12px; text-align: center; margin-bottom: 20px;">
-            <p style="font-size: 14px; color: #444; margin-bottom: 15px;">Use the 6-digit OTP code below to verify your email address:</p>
-            <div style="font-size: 32px; font-weight: 900; letter-spacing: 8px; color: #111; background: #fff; padding: 15px 25px; display: inline-block; border-radius: 10px; border: 2px solid #EA580C;">
-              ${generatedOtp}
-            </div>
-            <p style="font-size: 12px; color: #888; margin-top: 15px;">This verification code will expire in 10 minutes.</p>
-          </div>
-          <p style="font-size: 12px; color: #aaa; text-align: center;">If you did not request this verification email, please ignore this message.</p>
-        </div>
-      `
-    });
-
-    if (emailResult && emailResult.success === false) {
-      return res.status(500).json({ message: 'Failed to send OTP email. Please check server email configuration.' });
-    }
+    // REAL EMAIL SENDING DISABLED FOR TESTING
+    // Simply returning the devOtp to the frontend
+    console.log(`[DEV MODE] OTP generated for ${cleanEmail}: ${generatedOtp}`);
 
     res.json({
-      message: 'Verification OTP sent to your email successfully.',
-      email: cleanEmail
+      message: 'Verification OTP generated for testing.',
+      email: cleanEmail,
+      devOtp: generatedOtp
     });
   } catch (error) {
     console.error('Send OTP Error:', error);
-    res.status(500).json({ message: 'Failed to send verification OTP. Please try again.' });
+    res.status(500).json({ message: 'Failed to generate verification OTP. Please try again.' });
   }
 };
 
