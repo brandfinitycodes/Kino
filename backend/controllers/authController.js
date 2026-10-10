@@ -320,7 +320,7 @@ const sendOtp = async (req, res) => {
     const otpDoc = new Otp({ email: cleanEmail, otp: generatedOtp });
     await otpDoc.save();
 
-    await sendEmail({
+    const emailResult = await sendEmail({
       to: cleanEmail,
       subject: 'Kino - Your Security Verification OTP',
       text: `Your 6-digit verification code for Kino is: ${generatedOtp}. It will expire in 10 minutes.`,
@@ -342,10 +342,13 @@ const sendOtp = async (req, res) => {
       `
     });
 
+    if (emailResult && emailResult.success === false) {
+      return res.status(500).json({ message: 'Failed to send OTP email. Please check server email configuration.' });
+    }
+
     res.json({
       message: 'Verification OTP sent to your email successfully.',
-      email: cleanEmail,
-      devOtp: generatedOtp
+      email: cleanEmail
     });
   } catch (error) {
     console.error('Send OTP Error:', error);
