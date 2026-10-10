@@ -26,6 +26,9 @@ const sendEmail = async ({ to, subject, html, text }) => {
       console.log(`[EMAIL SENT] MessageId: ${info.messageId} to ${to}`);
       return { success: true, messageId: info.messageId };
     } else {
+      if (process.env.NODE_ENV === 'production') {
+        throw new Error('SMTP credentials (EMAIL_USER, EMAIL_PASS) are missing in production environment variables.');
+      }
       console.log('----------------------------------------------------');
       console.log(`[DEV EMAIL SIMULATION] To: ${to}`);
       console.log(`[DEV EMAIL SIMULATION] Subject: ${subject}`);
