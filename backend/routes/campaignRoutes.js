@@ -1,7 +1,7 @@
 const express = require('express');
 const { createCampaign, getAllCampaigns, getCampaignById, getMyCampaigns } = require('../controllers/campaignController');
 const { authMiddleware, checkRole } = require('../middleware/authMiddleware');
-const { requireKYC } = require('../middleware/kycMiddleware');
+const { isVerifiedMiddleware } = require('../middleware/isVerifiedMiddleware');
 
 const router = express.Router();
 
@@ -10,6 +10,6 @@ router.get('/', getAllCampaigns);
 router.get('/:id', getCampaignById);
 
 // Requires Authentication and Brand Role
-router.post('/', authMiddleware, checkRole('brand'), requireKYC, createCampaign);
+router.post('/', authMiddleware, checkRole('brand'), isVerifiedMiddleware, createCampaign);
 
 module.exports = router;
