@@ -1,5 +1,5 @@
 const express = require('express');
-const { register, login, getMe, googleLogin, googleRegister, sendOtp, verifyOtp } = require('../controllers/authController');
+const { register, login, getMe, googleLogin, googleRegister, sendOtp, verifyOtp, changePassword } = require('../controllers/authController');
 const { authMiddleware } = require('../middleware/authMiddleware');
 
 const router = express.Router();
@@ -11,6 +11,7 @@ router.post('/google-register', googleRegister);
 router.post('/send-otp', sendOtp);
 router.post('/verify-otp', verifyOtp);
 router.get('/me', authMiddleware, getMe);
+router.put('/change-password', authMiddleware, changePassword);
 
 module.exports = router;
 

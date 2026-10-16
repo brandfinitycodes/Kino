@@ -4,7 +4,7 @@ import axios from "../utils/axios";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { AnimatePresence, motion } from "framer-motion";
-import { User, Compass, Briefcase, Wallet, Settings, Folder, Home, Bell, Heart, LogOut, LayoutDashboard, CheckCircle, AlertCircle, Star, Zap } from "lucide-react";
+import { User, Compass, Briefcase, Wallet, Settings, Folder, Home, Bell, LogOut, LayoutDashboard, CheckCircle, AlertCircle, Star, Zap } from "lucide-react";
 
 // Modular Views
 import CreatorProfile from '../components/CreatorDashboard/CreatorProfile';
@@ -60,7 +60,6 @@ const CreatorDashboard = () => {
   const [message, setMessage] = useState({ text: '', type: '' });
 
   // Badge states for Top Header
-  const [wishlistCount, setWishlistCount] = useState(0);
   const [hasUnread, setHasUnread] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -72,15 +71,14 @@ const CreatorDashboard = () => {
 
   const fetchData = async () => {
     try {
-      const [profRes, appsRes, campRes, dealsRes, wallRes, transRes, notifRes, wishRes] = await Promise.all([
+      const [profRes, appsRes, campRes, dealsRes, wallRes, transRes, notifRes] = await Promise.all([
         axios.get("/creators/me").catch((err) => { console.error(err); return { data: null }; }),
         axios.get("/applications/creator").catch((err) => { console.error(err); return { data: [] }; }),
         axios.get("/campaigns?match=true").catch((err) => { console.error(err); return { data: [] }; }),
         axios.get("/deals/user").catch((err) => { console.error(err); return { data: [] }; }),
         axios.get("/wallet/my-wallet").catch(() => ({ data: null })),
         axios.get("/wallet/transactions").catch(() => ({ data: [] })),
-        axios.get("/notifications").catch(() => ({ data: [] })),
-        axios.get("/wishlists/count").catch(() => ({ data: { count: 0 } }))
+        axios.get("/notifications").catch(() => ({ data: [] }))
       ]);
       if (profRes.data) {
         setProfile(profRes.data);
@@ -99,9 +97,6 @@ const CreatorDashboard = () => {
         setHasUnread(unreads.length > 0);
         setUnreadCount(unreads.length);
       }
-      if (wishRes && wishRes.data) {
-        setWishlistCount(wishRes.data.count);
-      }
     } catch (err) {
       console.error(err);
     } finally {
@@ -113,22 +108,16 @@ const CreatorDashboard = () => {
     fetchData();
   }, []);
 
-  // Poll for notification & wishlist changes every 30s
+  // Poll for notification changes every 30s
   useEffect(() => {
     if (user) {
       const interval = setInterval(async () => {
         try {
-          const [notifRes, wishRes] = await Promise.all([
-            axios.get("/notifications").catch(() => ({ data: [] })),
-            axios.get("/wishlists/count").catch(() => ({ data: { count: 0 } }))
-          ]);
+          const notifRes = await axios.get("/notifications").catch(() => ({ data: [] }));
           if (notifRes && notifRes.data) {
             const unreads = notifRes.data.filter(n => !n.read);
             setHasUnread(unreads.length > 0);
             setUnreadCount(unreads.length);
-          }
-          if (wishRes && wishRes.data) {
-            setWishlistCount(wishRes.data.count);
           }
         } catch (err) {
           console.error(err);
@@ -271,7 +260,7 @@ const CreatorDashboard = () => {
     { id: 'applications', label: 'Applications', icon: <Folder size={20} />, count: applications.filter(a => a.status === 'accepted' || a.status === 'confirmed_by_creator').length },
     { id: 'deals', label: 'Deals', icon: <Briefcase size={20} />, count: deals.filter(d => d.status === 'in_progress' || d.status === 'revision_requested').length },
     { id: 'wallet', label: 'Wallet', icon: <Wallet size={20} /> },
-    { id: 'settings', label: 'Settings', icon: <User size={20} /> }
+    { id: 'settings', label: 'Edit Profile', icon: <User size={20} /> }
   ];
 
   if (loading) return (
@@ -357,10 +346,6 @@ const CreatorDashboard = () => {
           <span className="font-sans font-black text-[18px] text-gray-900 tracking-tight lowercase">kino</span>
         </Link>
         <div className="flex items-center gap-3">
-          <Link to="/wishlist" className="relative p-2 text-gray-500 hover:text-pink-500 hover:bg-gray-50 rounded-xl transition-all">
-            <Heart size={20} />
-            {wishlistCount > 0 && <span className="absolute top-1 right-1 min-w-[16px] h-[16px] px-1 bg-pink-500 text-white text-[8px] font-black rounded-full flex items-center justify-center border border-white">{wishlistCount}</span>}
-          </Link>
           <Link to="/notifications" className="relative p-2 text-gray-500 hover:text-[#4f46e5] hover:bg-gray-50 rounded-xl transition-all">
             <Bell size={20} className={hasUnread ? "animate-pulse text-[#4f46e5]" : ""} />
             {hasUnread && <span className="absolute top-1 right-1 min-w-[16px] h-[16px] px-1 bg-red-500 text-white text-[8px] font-black rounded-full flex items-center justify-center border border-white">{unreadCount}</span>}
@@ -392,24 +377,24 @@ const CreatorDashboard = () => {
         </div>
       </header>
 
+      {/* TOAST MESSAGES */}
+      <AnimatePresence>
+        {message.text && (
+          <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className={`fixed top-24 left-1/2 -translate-x-1/2 z-[9999] flex items-center gap-3 px-6 py-4 rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.2)] border ${message.type === 'success' ? 'bg-gray-900 text-white border-gray-800' : 'bg-red-500 text-white border-red-600'}`}>
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${message.type === 'success' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-white/20 text-white'}`}>
+              {message.type === 'success' ? <CheckCircle size={16} /> : <AlertCircle size={16} />}
+            </div>
+            <div>
+              <p className="text-[13px] font-bold">{message.type === 'success' ? 'Success' : 'Error'}</p>
+              <p className={`text-[11px] ${message.type === 'success' ? 'text-gray-400' : 'text-white/80'}`}>{message.text}</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* MAIN CONTENT AREA */}
       <main className="w-full flex-1 md:pl-64 pt-[68px] md:pt-0 pb-24 md:pb-8 px-4 md:px-8 relative z-10 flex flex-col">
         <div className="w-full max-w-[1200px] mx-auto md:mt-8">
-          
-          {/* TOAST MESSAGES */}
-          <AnimatePresence>
-            {message.text && (
-              <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className={`fixed top-24 md:top-8 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-3 px-6 py-4 rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.2)] border ${message.type === 'success' ? 'bg-gray-900 text-white border-gray-800' : 'bg-red-500 text-white border-red-600'}`}>
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${message.type === 'success' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-white/20 text-white'}`}>
-                  {message.type === 'success' ? <CheckCircle size={16} /> : <AlertCircle size={16} />}
-                </div>
-                <div>
-                  <p className="text-[13px] font-bold">{message.type === 'success' ? 'Success' : 'Error'}</p>
-                  <p className={`text-[11px] ${message.type === 'success' ? 'text-gray-400' : 'text-white/80'}`}>{message.text}</p>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
 
           {isProfileIncomplete && (
             <div className="mb-6 p-4 rounded-2xl border border-amber-500/20 bg-amber-500/10 text-amber-700 flex flex-col sm:flex-row justify-between items-center gap-4 shadow-sm backdrop-blur-md animate-reveal-up">

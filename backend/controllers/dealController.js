@@ -657,6 +657,16 @@ const fileDispute = async (req, res) => {
     if (deal.status === 'completed' || deal.status === 'disputed') {
       return res.status(400).json({ message: 'Deal cannot be disputed at this stage.' });
     }
+
+    const isDeliverableSubmitted = Boolean(
+      deal.contentUrl || 
+      deal.submittedAt || 
+      ['in_review', 'revision_requested', 'pending_clearance'].includes(deal.status)
+    );
+    if (!isDeliverableSubmitted) {
+      return res.status(400).json({ message: 'A dispute can only be filed after deliverables have been submitted.' });
+    }
+
     deal.status = 'disputed';
     deal.disputeReason = reason;
     deal.disputedAt = new Date();

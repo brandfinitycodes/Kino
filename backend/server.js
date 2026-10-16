@@ -74,7 +74,6 @@ app.use('/api/applications', applicationRoutes);
 app.use('/api/deals', dealRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/chat', chatRoutes);
-app.use('/api/wishlists', require('./routes/wishlist'));
 app.use('/api/wallet', walletRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/kyc', kycRoutes);
@@ -102,7 +101,7 @@ app.use((err, req, res, next) => {
   console.error('Unhandled Error:', err);
   
   if (err.code === 'LIMIT_FILE_SIZE') {
-    return res.status(413).json({ message: 'File too large. Maximum allowed is 100MB (subject to ImageKit plan limits).' });
+    return res.status(413).json({ message: 'File too large. Maximum allowed is 80MB (subject to ImageKit plan limits).' });
   }
 
   res.status(err.status || 500).json({

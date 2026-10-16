@@ -8,6 +8,7 @@ const Deal = require('../models/Deal');
 const BrandProfile = require('../models/BrandProfile');
 const Application = require('../models/Application');
 const AdminAuditLog = require('../models/AdminAuditLog');
+const KycProfile = require('../models/KycProfile');
 
 const getPendingWithdrawals = async (req, res) => {
   try {
@@ -212,6 +213,12 @@ const getAdminStats = async (req, res) => {
     ]);
     const pendingWithdrawalsAmount = pendingWithdrawalsResult.length > 0 ? Math.abs(pendingWithdrawalsResult[0].total) : 0;
 
+    // Additional pending action counts for badges
+    const pendingKycCount = await KycProfile.countDocuments({ status: { $in: ['PENDING', 'UNDER_REVIEW'] } });
+    const pendingCampaignsCount = await Campaign.countDocuments({ status: 'pending' });
+    const disputedDealsCount = await Deal.countDocuments({ status: 'disputed' });
+    const pendingDepositsCount = await Transaction.countDocuments({ type: 'credit', status: 'pending' });
+
     res.json({
       totalUsers,
       totalCreators,
@@ -220,7 +227,11 @@ const getAdminStats = async (req, res) => {
       totalDeals,
       totalVolume,
       pendingWithdrawalsCount,
-      pendingWithdrawalsAmount
+      pendingWithdrawalsAmount,
+      pendingKycCount,
+      pendingCampaignsCount,
+      disputedDealsCount,
+      pendingDepositsCount
     });
   } catch (error) {
     console.error('Error fetching admin stats:', error);

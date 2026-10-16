@@ -13,7 +13,7 @@ const imagekit = new ImageKit({
 const upload = multer({ 
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 100 * 1024 * 1024 // 100MB limit for videos
+    fileSize: 80 * 1024 * 1024 // 80MB limit for videos
   }
 });
 

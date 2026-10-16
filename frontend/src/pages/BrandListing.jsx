@@ -132,7 +132,7 @@ const BrandListing = () => {
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
               {filtered.map((brand, idx) => (
-                <div key={brand._id} className={`animate-reveal-up opacity-0 stagger-${(idx % 4) + 1}`}>
+                <div key={brand._id} className={`animate-reveal-up opacity-0 stagger-${(idx % 4) + 1} h-full flex flex-col`}>
                   <BrandCard brand={brand} />
                 </div>
               ))}

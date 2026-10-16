@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { UploadCloud, ArrowRight, ShieldCheck, Loader2, Sparkles, X, AlertCircle } from 'lucide-react';
 import axios from '../utils/axios';
 
@@ -13,6 +14,17 @@ const CompleteProfileModal = ({ isOpen, onClose, user, initialProfile, onComplet
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // Lock background scroll
+  useEffect(() => {
+    if (isOpen) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     if (initialProfile) {
@@ -60,8 +72,8 @@ const CompleteProfileModal = ({ isOpen, onClose, user, initialProfile, onComplet
       return;
     }
 
-    if (!file && !(initialProfile?.logo || initialProfile?.profilePicture)) {
-      setError('Please upload an avatar / logo image.');
+    if (!isBrand && !file && !initialProfile?.profilePicture) {
+      setError('Please upload an avatar image.');
       return;
     }
 
@@ -118,8 +130,10 @@ const CompleteProfileModal = ({ isOpen, onClose, user, initialProfile, onComplet
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-[250] flex items-center justify-center p-4 bg-gray-900/70 backdrop-blur-sm select-none">
+  if (!isOpen || typeof document === 'undefined') return null;
+
+  return createPortal(
+    <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-gray-900/70 backdrop-blur-sm select-none">
       <div className="w-full max-w-md bg-white border border-orange-100 rounded-[2.5rem] p-6 sm:p-8 shadow-2xl relative text-left max-h-[95vh] overflow-y-auto flex flex-col">
         <button
           onClick={onClose}
@@ -214,7 +228,8 @@ const CompleteProfileModal = ({ isOpen, onClose, user, initialProfile, onComplet
           </button>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

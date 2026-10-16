@@ -3,7 +3,7 @@ import axios from '../utils/axios';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Briefcase, Search, Wallet, Save, CircleDollarSign, Plus, LayoutDashboard, Heart, Bell, Home, User, LogOut, CheckCircle, AlertCircle } from 'lucide-react';
+import { Briefcase, Search, Wallet, Save, CircleDollarSign, Plus, LayoutDashboard, Bell, Home, User, LogOut, CheckCircle, AlertCircle, ShieldCheck, ShieldAlert, AlertTriangle, Clock } from 'lucide-react';
 import BrandBottomNav from '../components/BrandBottomNav';
 import ChatOverlay from '../components/ChatOverlay';
 import KycRequiredModal from '../components/KycRequiredModal';
@@ -44,11 +44,14 @@ const BrandDashboard = () => {
     setActiveTab(tab);
     navigate(`/brand-dashboard?tab=${tab}`);
   };
-  const [profile, setProfile] = useState({
-    businessName: '', website: '', description: '',
+  const [profile, setProfile] = useState(() => ({
+    businessName: user?.name || '',
+    logo: user?.logo || '',
+    website: '', description: '',
     ownerName: '', location: '', businessType: 'Online', industry: '', operatingFrom: '',
     preferences: { targetGender: 'Both', targetAgeGroup: 'Any', targetLocality: 'Anywhere', brandPriority: 'Reach' }
-  });
+  }));
+  const [profileLoaded, setProfileLoaded] = useState(false);
   const [campaigns, setCampaigns] = useState([]);
   const [deals, setDeals] = useState([]);
   const [allCreators, setAllCreators] = useState([]);
@@ -59,7 +62,6 @@ const BrandDashboard = () => {
   // Dashboard UI States
   const [createStep, setCreateStep] = useState(1);
   const [activeChatDeal, setActiveChatDeal] = useState(null);
-  const [wishlistCount, setWishlistCount] = useState(0);
   const [unreadCount, setUnreadCount] = useState(0);
   const [hasUnread, setHasUnread] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -103,9 +105,9 @@ const BrandDashboard = () => {
         axios.get('/creators'),
         axios.get('/deals/user'),
         axios.get('/notifications').catch(() => ({ data: [] })),
-        axios.get('/wishlists/count').catch(() => ({ data: { count: 0 } })),
         axios.get('/wallet/my-wallet').catch(() => ({ data: { balance: 0 } })),
-        axios.get('/wallet/transactions').catch(() => ({ data: [] }))
+        axios.get('/wallet/transactions').catch(() => ({ data: [] })),
+        axios.get('/kyc/status').catch(() => null)
       ]);
 
       if (results[0].status === 'fulfilled') {
@@ -127,19 +129,26 @@ const BrandDashboard = () => {
         setHasUnread(unreads.length > 0);
         setUnreadCount(unreads.length);
       }
-      if (results[5].status === 'fulfilled' && results[5].value?.data) {
-        setWishlistCount(results[5].value.data.count);
+      if (results[5].status === 'fulfilled') {
+        setWallet(results[5].value.data);
       }
       if (results[6].status === 'fulfilled') {
-        setWallet(results[6].value.data);
+        setTransactions(results[6].value.data || []);
       }
-      if (results[7].status === 'fulfilled') {
-        setTransactions(results[7].value.data || []);
+      if (results[7]?.status === 'fulfilled' && results[7]?.value?.data) {
+        const kData = results[7].value.data;
+        setUser(prev => prev ? {
+          ...prev,
+          kycStatus: kData.status,
+          kycRejectionReason: kData.rejectionReason,
+          kycVerificationId: kData.verificationId
+        } : prev);
       }
     } catch (err) {
       console.error(err);
     } finally {
       setLoading(false);
+      setProfileLoaded(true);
     }
   };
 
@@ -151,17 +160,11 @@ const BrandDashboard = () => {
     if (user) {
       const interval = setInterval(async () => {
         try {
-          const [notifRes, wishRes] = await Promise.all([
-            axios.get("/notifications").catch(() => ({ data: [] })),
-            axios.get("/wishlists/count").catch(() => ({ data: { count: 0 } }))
-          ]);
+          const notifRes = await axios.get("/notifications").catch(() => ({ data: [] }));
           if (notifRes && notifRes.data) {
             const unreads = notifRes.data.filter(n => !n.read);
             setHasUnread(unreads.length > 0);
             setUnreadCount(unreads.length);
-          }
-          if (wishRes && wishRes.data) {
-            setWishlistCount(wishRes.data.count);
           }
         } catch (err) {
           console.error(err);
@@ -171,32 +174,38 @@ const BrandDashboard = () => {
     }
   }, [user]);
 
-  const isProfileIncomplete = user && (
-    !profile.businessName || profile.businessName.startsWith('Brand-') || !profile.logo
+  const isProfileIncomplete = Boolean(
+    user && profileLoaded && (
+      !profile?.businessName || profile.businessName.startsWith('Brand-')
+    )
   );
 
   useEffect(() => {
-    if (!user) return;
+    if (!user || loading || !profileLoaded) return;
 
     if (isProfileIncomplete) {
-      if (sessionStorage.getItem('profileSetupSkipped') !== 'true') {
+      const skipKey = `profileSetupSkipped_${user.id || user._id}`;
+      if (sessionStorage.getItem('profileSetupSkipped') !== 'true' && localStorage.getItem(skipKey) !== 'true') {
         setCompleteProfileOpen(true);
       }
-    } else if (
-      user.kycStatus !== 'APPROVED' && 
-      user.kycStatus !== 'PENDING' && 
-      user.kycStatus !== 'UNDER_REVIEW' &&
-      !hasShownKycPrompt
-    ) {
-      let msg = "Identity verification is required to unlock all platform capabilities. Complete KYC to continue.";
-      if (user.kycStatus === 'REJECTED') {
-        msg = "Your verification was rejected. Please resubmit verification documents to continue.";
+    } else {
+      setCompleteProfileOpen(false);
+      if (
+        user.kycStatus !== 'APPROVED' && 
+        user.kycStatus !== 'PENDING' && 
+        user.kycStatus !== 'UNDER_REVIEW' &&
+        !hasShownKycPrompt
+      ) {
+        let msg = "Identity verification is required to unlock all platform capabilities. Complete KYC to continue.";
+        if (user.kycStatus === 'REJECTED') {
+          msg = "Your verification was rejected. Please resubmit verification documents to continue.";
+        }
+        setKycModalMessage(msg);
+        setKycModalOpen(true);
+        setHasShownKycPrompt(true);
       }
-      setKycModalMessage(msg);
-      setKycModalOpen(true);
-      setHasShownKycPrompt(true);
     }
-  }, [user, profile, hasShownKycPrompt]);
+  }, [user, profile, profileLoaded, loading, isProfileIncomplete, hasShownKycPrompt]);
 
   const handleProfileUpdate = async (e) => {
     e.preventDefault();
@@ -381,6 +390,31 @@ const BrandDashboard = () => {
             <div className="flex flex-col overflow-hidden">
               <span className="text-sm font-bold text-gray-900 truncate">{profile?.businessName || 'Brand Console'}</span>
               <span className="text-[10px] font-bold text-gray-400 truncate">{user?.email}</span>
+              <div className="mt-1">
+                {user?.kycStatus === 'APPROVED' ? (
+                  <span className="inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-wider text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100">
+                    <ShieldCheck size={10} /> Verified
+                  </span>
+                ) : user?.kycStatus === 'PENDING' || user?.kycStatus === 'UNDER_REVIEW' ? (
+                  <span className="inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-wider text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100">
+                    <Clock size={10} /> KYC Pending
+                  </span>
+                ) : user?.kycStatus === 'REJECTED' ? (
+                  <button 
+                    onClick={() => { setKycModalMessage(user?.kycRejectionReason ? `Reason: ${user.kycRejectionReason}` : "Your verification was rejected. Please resubmit verification documents."); setKycModalOpen(true); }}
+                    className="inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-wider text-red-600 bg-red-50 hover:bg-red-100 px-2 py-0.5 rounded-md border border-red-200 transition-colors"
+                  >
+                    <AlertTriangle size={10} /> Reapply KYC
+                  </button>
+                ) : (
+                  <button 
+                    onClick={() => { setKycModalMessage("Identity verification is required before creating campaigns. Complete KYC to continue."); setKycModalOpen(true); }}
+                    className="inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-wider text-amber-600 bg-amber-50 hover:bg-amber-100 px-2 py-0.5 rounded-md border border-amber-200 transition-colors"
+                  >
+                    <ShieldAlert size={10} /> Verify Brand
+                  </button>
+                )}
+              </div>
             </div>
           </div>
           <button onClick={handleLogout} className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-red-50 text-red-600 rounded-xl font-bold hover:bg-red-100 transition-colors">
@@ -398,10 +432,6 @@ const BrandDashboard = () => {
           <span className="font-sans font-black text-[18px] text-gray-900 tracking-tight lowercase">kino</span>
         </Link>
         <div className="flex items-center gap-3">
-          <Link to="/wishlist" className="relative p-2 text-gray-500 hover:text-pink-500 hover:bg-gray-50 rounded-xl transition-all">
-            <Heart size={20} />
-            {wishlistCount > 0 && <span className="absolute top-1 right-1 min-w-[16px] h-[16px] px-1 bg-[#eb4898] text-white text-[8px] font-black rounded-full flex items-center justify-center border border-white">{wishlistCount}</span>}
-          </Link>
           <Link to="/notifications" className="relative p-2 text-gray-500 hover:text-[#4f46e5] hover:bg-gray-50 rounded-xl transition-all">
             <Bell size={20} className={hasUnread ? "animate-pulse text-[#4f46e5]" : ""} />
             {hasUnread && <span className="absolute top-1 right-1 min-w-[16px] h-[16px] px-1 bg-red-500 text-white text-[8px] font-black rounded-full flex items-center justify-center border border-white">{unreadCount}</span>}
@@ -418,6 +448,31 @@ const BrandDashboard = () => {
                     <div className="px-4 py-3.5 border-b border-gray-100/60 bg-gray-50/30">
                       <p className="text-[14px] font-bold text-gray-900 tracking-tight truncate">{profile?.businessName || 'Brand Console'}</p>
                       <p className="text-[11px] font-bold text-gray-400 truncate tracking-wide">{user?.email}</p>
+                      <div className="mt-1.5">
+                        {user?.kycStatus === 'APPROVED' ? (
+                          <span className="inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-wider text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100">
+                            <ShieldCheck size={10} /> Verified
+                          </span>
+                        ) : user?.kycStatus === 'PENDING' || user?.kycStatus === 'UNDER_REVIEW' ? (
+                          <span className="inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-wider text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100">
+                            <Clock size={10} /> KYC Pending
+                          </span>
+                        ) : user?.kycStatus === 'REJECTED' ? (
+                          <button 
+                            onClick={() => { setIsProfileOpen(false); setKycModalMessage(user?.kycRejectionReason ? `Reason: ${user.kycRejectionReason}` : "Your verification was rejected. Please resubmit verification documents."); setKycModalOpen(true); }}
+                            className="inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-wider text-red-600 bg-red-50 hover:bg-red-100 px-2 py-0.5 rounded-md border border-red-200"
+                          >
+                            <AlertTriangle size={10} /> Reapply KYC
+                          </button>
+                        ) : (
+                          <button 
+                            onClick={() => { setIsProfileOpen(false); setKycModalMessage("Identity verification is required before creating campaigns. Complete KYC to continue."); setKycModalOpen(true); }}
+                            className="inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-wider text-amber-600 bg-amber-50 hover:bg-amber-100 px-2 py-0.5 rounded-md border border-amber-200"
+                          >
+                            <ShieldAlert size={10} /> Verify Brand
+                          </button>
+                        )}
+                      </div>
                     </div>
                     <div className="p-1 flex flex-col gap-0.5">
                       <button onClick={() => { handleTabChange('overview'); setIsProfileOpen(false); }} className="w-full text-left flex items-center gap-2 px-3 py-2.5 text-[13px] font-bold text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all"><Home size={14} /> Dashboard</button>
@@ -436,7 +491,7 @@ const BrandDashboard = () => {
       {/* TOAST MESSAGES */}
       <AnimatePresence>
         {message.text && (
-          <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className={`fixed top-24 md:top-8 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-3 px-6 py-4 rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.2)] border ${message.type === 'success' ? 'bg-gray-900 text-white border-gray-800' : 'bg-red-500 text-white border-red-600'}`}>
+          <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className={`fixed top-24 left-1/2 -translate-x-1/2 z-[9999] flex items-center gap-3 px-6 py-4 rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.2)] border ${message.type === 'success' ? 'bg-gray-900 text-white border-gray-800' : 'bg-red-500 text-white border-red-600'}`}>
             <div className={`w-8 h-8 rounded-full flex items-center justify-center ${message.type === 'success' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-white/20 text-white'}`}>
               {message.type === 'success' ? <CheckCircle size={16} /> : <AlertCircle size={16} />}
             </div>
@@ -452,12 +507,88 @@ const BrandDashboard = () => {
       <main className="w-full flex-1 md:pl-64 pt-[68px] md:pt-0 pb-24 md:pb-8 px-4 md:px-8 relative z-10 flex flex-col">
         <div className="w-full max-w-[1200px] mx-auto md:mt-8">
 
+          {/* PERSISTENT KYC STATUS BANNERS FOR BRAND */}
+          {user && user.kycStatus === 'REJECTED' && (
+            <div className="mb-6 p-4 rounded-2xl border border-red-500/25 bg-red-500/10 text-red-700 flex flex-col sm:flex-row justify-between items-center gap-4 shadow-sm backdrop-blur-md animate-reveal-up">
+              <div className="flex items-center gap-3">
+                <div className="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping shrink-0" />
+                <div>
+                  <p className="text-xs font-black font-display uppercase tracking-wide">
+                    🔴 Company KYC Verification Rejected
+                  </p>
+                  <p className="text-[11px] text-red-600 font-medium mt-0.5 leading-snug">
+                    {user?.kycRejectionReason ? `Reason: ${user.kycRejectionReason}` : 'Uploaded company registration documents were unclear or invalid. Please review feedback and resubmit.'}
+                  </p>
+                </div>
+              </div>
+              <button 
+                onClick={() => {
+                  setKycModalMessage(user?.kycRejectionReason ? `Your verification was rejected: ${user.kycRejectionReason}. Please resubmit valid registration documents.` : "Your verification was rejected. Please resubmit verification documents to continue.");
+                  setKycModalOpen(true);
+                }}
+                className="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-transform active:scale-95 shadow-md flex-shrink-0"
+              >
+                Resubmit KYC
+              </button>
+            </div>
+          )}
+
+          {user && (user.kycStatus === 'NOT_STARTED' || !user.kycStatus) && !isProfileIncomplete && (
+            <div className="mb-6 p-4 rounded-2xl border border-amber-500/20 bg-amber-500/10 text-amber-700 flex flex-col sm:flex-row justify-between items-center gap-4 shadow-sm backdrop-blur-md animate-reveal-up">
+              <div className="flex items-center gap-3">
+                <div className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse shrink-0" />
+                <div>
+                  <p className="text-xs font-black font-display uppercase tracking-wide">
+                    🛡️ Company Verification Required
+                  </p>
+                  <p className="text-[11px] text-amber-600/90 font-medium mt-0.5 leading-snug">
+                    Complete KYC verification to unlock campaign publishing and hiring top creators.
+                  </p>
+                </div>
+              </div>
+              <button 
+                onClick={() => {
+                  setKycModalMessage("Identity verification is required before creating campaigns. Complete KYC to continue.");
+                  setKycModalOpen(true);
+                }}
+                className="px-5 py-2.5 bg-amber-600 hover:bg-amber-700 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-transform active:scale-95 shadow-md flex-shrink-0"
+              >
+                Verify Brand
+              </button>
+            </div>
+          )}
+
+          {user && (user.kycStatus === 'PENDING' || user.kycStatus === 'UNDER_REVIEW') && (
+            <div className="mb-6 p-4 rounded-2xl border border-blue-500/20 bg-blue-500/10 text-blue-700 flex flex-col sm:flex-row justify-between items-center gap-4 shadow-sm backdrop-blur-md animate-reveal-up">
+              <div className="flex items-center gap-3">
+                <div className="w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse shrink-0" />
+                <div>
+                  <p className="text-xs font-black font-display uppercase tracking-wide">
+                    ⏳ Company Verification Under Review
+                  </p>
+                  <p className="text-[11px] text-blue-600/90 font-medium mt-0.5 leading-snug">
+                    Your company documents are being reviewed by compliance (usually within 24 hours).
+                  </p>
+                </div>
+              </div>
+              <button 
+                onClick={() => {
+                  setKycModalMessage("Your identity verification details have been submitted and are currently being reviewed by our compliance team.");
+                  setKycModalOpen(true);
+                }}
+                className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-transform active:scale-95 shadow-md flex-shrink-0"
+              >
+                Check Status
+              </button>
+            </div>
+          )}
+
           {isProfileIncomplete && (
             <div className="mb-6 p-4 rounded-2xl border border-amber-500/20 bg-amber-500/10 text-amber-700 flex flex-col sm:flex-row justify-between items-center gap-4 shadow-sm backdrop-blur-md animate-reveal-up">
               <div className="flex items-center gap-3">
                 <div className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse" />
                 <p className="text-xs font-bold font-display uppercase tracking-wide leading-relaxed">
-                  ⚠️ Profile Incomplete: Please upload an avatar/logo and set a custom name to unlock all platform capabilities.
+                  ⚠️ Profile Incomplete: Please set a custom brand name to unlock all platform capabilities.
                 </p>
               </div>
               <button 
@@ -475,6 +606,9 @@ const BrandDashboard = () => {
             isOpen={completeProfileOpen} 
             onClose={() => {
               sessionStorage.setItem('profileSetupSkipped', 'true');
+              if (user) {
+                localStorage.setItem(`profileSetupSkipped_${user.id || user._id}`, 'true');
+              }
               setCompleteProfileOpen(false);
             }} 
             user={user}
@@ -486,13 +620,13 @@ const BrandDashboard = () => {
           />
 
           {/* DYNAMIC VIEWS */}
-          {activeTab === 'overview' && <BrandOverview profile={profile} user={user} deals={deals} campaigns={campaigns} activeTab={activeTab} setActiveTab={handleTabChange} chartTab={chartTab} setChartTab={setChartTab} chartData={chartData} maxEarnings={maxEarnings} hoveredBar={hoveredBar} setHoveredBar={setHoveredBar} currentMonth={currentMonth} now={now} totalBudgetSpent={totalBudgetSpent} milestoneCoins={milestoneCoins} activeDeals={activeDeals} deliverableCounts={deliverableCounts} totalDealsChart={totalDealsChart} transactions={transactions} />}
-          {activeTab === 'browse' && <BrandBrowseCreators allCreators={allCreators} browseFilter={browseFilter} setBrowseFilter={setBrowseFilter} browseSearch={browseSearch} setBrowseSearch={setBrowseSearch} />}
-          {activeTab === 'campaigns' && <BrandCampaigns campaigns={campaigns} campaignFilter={campaignFilter} setCampaignFilter={setCampaignFilter} campaignSearch={campaignSearch} setCampaignSearch={setCampaignSearch} setActiveTab={handleTabChange} deals={deals} />}
+          {activeTab === 'overview' && <BrandOverview profile={profile} user={user} deals={deals} campaigns={campaigns} activeTab={activeTab} setActiveTab={handleTabChange} chartTab={chartTab} setChartTab={setChartTab} chartData={chartData} maxEarnings={maxEarnings} hoveredBar={hoveredBar} setHoveredBar={setHoveredBar} currentMonth={currentMonth} now={now} totalBudgetSpent={totalBudgetSpent} milestoneCoins={milestoneCoins} activeDeals={activeDeals} deliverableCounts={deliverableCounts} totalDealsChart={totalDealsChart} transactions={transactions} showToast={showToast} />}
+          {activeTab === 'browse' && <BrandBrowseCreators allCreators={allCreators} browseFilter={browseFilter} setBrowseFilter={setBrowseFilter} browseSearch={browseSearch} setBrowseSearch={setBrowseSearch} showToast={showToast} />}
+          {activeTab === 'campaigns' && <BrandCampaigns campaigns={campaigns} setCampaigns={setCampaigns} campaignFilter={campaignFilter} setCampaignFilter={setCampaignFilter} campaignSearch={campaignSearch} setCampaignSearch={setCampaignSearch} setActiveTab={handleTabChange} deals={deals} showToast={showToast} onRefreshCampaigns={fetchData} user={user} />}
           {activeTab === 'deals' && <BrandDeals profile={profile} user={user} deals={deals} dealFilter={dealFilter} setDealFilter={setDealFilter} dealPage={dealPage} setDealPage={setDealPage} setActiveChatDeal={setActiveChatDeal} onUpdateDeal={fetchData} showToast={showToast} />}
           {activeTab === 'wallet' && <BrandWallet profile={profile} deals={deals} totalBudgetSpent={totalBudgetSpent} milestoneCoins={milestoneCoins} wallet={wallet} transactions={transactions} onUpdateWallet={fetchData} showToast={showToast} />}
-          {activeTab === 'edit' && <BrandProfileEdit profile={profile} setProfile={setProfile} handleProfileUpdate={handleProfileUpdate} />}
-          {activeTab === 'create' && <BrandCreateCampaign newCampaign={newCampaign} setNewCampaign={setNewCampaign} handlePostCampaign={handlePostCampaign} createStep={createStep} setCreateStep={setCreateStep} setActiveTab={handleTabChange} />}
+          {activeTab === 'edit' && <BrandProfileEdit profile={profile} setProfile={setProfile} handleProfileUpdate={handleProfileUpdate} showToast={showToast} setActiveTab={handleTabChange} user={user} setUser={setUser} />}
+          {activeTab === 'create' && <BrandCreateCampaign newCampaign={newCampaign} setNewCampaign={setNewCampaign} handlePostCampaign={handlePostCampaign} createStep={createStep} setCreateStep={setCreateStep} setActiveTab={handleTabChange} showToast={showToast} />}
         </div>
 
         {/* Chat Overlay for Deal messages */}

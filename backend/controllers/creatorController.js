@@ -1,3 +1,4 @@
+const path = require('path');
 const CreatorProfile = require('../models/CreatorProfile');
 const { imagekit } = require('../middleware/uploadMiddleware');
 
@@ -5,7 +6,7 @@ const updateProfile = async (req, res) => {
   const { 
     name, age, bio, location, niche, expertise, 
     portfolioLink, pricing, followerCount, responseTime, portfolioVideos,
-    payoutDetails, socialLinks
+    payoutDetails, socialLinks, shippingAddress, willNotPromote
   } = req.body;
   try {
     const updateData = {
@@ -21,6 +22,14 @@ const updateProfile = async (req, res) => {
       portfolioVideos,
       socialLinks
     };
+
+    if (shippingAddress) {
+      updateData.shippingAddress = shippingAddress;
+    }
+
+    if (willNotPromote) {
+      updateData.willNotPromote = willNotPromote;
+    }
 
     if (pricing) {
       updateData.pricing = pricing;
@@ -83,10 +92,38 @@ const getAllCreators = async (req, res) => {
   }
 };
 
+const normalizePortfolioVideoUrl = (url) => {
+  if (!url) return url;
+  if (url.includes('ik.imagekit.io') && !/\.(mp4|webm|mov|mkv|m4v)($|\?)/i.test(url) && !url.endsWith('/ik-video.mp4')) {
+    return url.replace(/\/?$/, '/ik-video.mp4');
+  }
+  return url;
+};
+
 const getCreatorById = async (req, res) => {
   try {
     const creator = await CreatorProfile.findById(req.params.id).populate('userId', 'email');
     if (!creator) return res.status(404).json({ message: 'Creator not found' });
+
+    if (creator.portfolioVideos && creator.portfolioVideos.length > 0) {
+      let changed = false;
+      const updatedVideos = creator.portfolioVideos.map(v => {
+        const item = v.toObject ? v.toObject() : { ...v };
+        if (item.url) {
+          const normalized = normalizePortfolioVideoUrl(item.url);
+          if (normalized !== item.url) {
+            item.url = normalized;
+            changed = true;
+          }
+        }
+        return item;
+      });
+      if (changed) {
+        creator.portfolioVideos = updatedVideos;
+        await CreatorProfile.updateOne({ _id: creator._id }, { portfolioVideos: updatedVideos });
+      }
+    }
+
     res.json(creator);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -104,6 +141,26 @@ const getCreatorProfileMe = async (req, res) => {
       await creator.save();
       creator = await CreatorProfile.findOne({ userId: req.user.id }).populate('userId', 'email');
     }
+
+    if (creator && creator.portfolioVideos && creator.portfolioVideos.length > 0) {
+      let changed = false;
+      const updatedVideos = creator.portfolioVideos.map(v => {
+        const item = v.toObject ? v.toObject() : { ...v };
+        if (item.url) {
+          const normalized = normalizePortfolioVideoUrl(item.url);
+          if (normalized !== item.url) {
+            item.url = normalized;
+            changed = true;
+          }
+        }
+        return item;
+      });
+      if (changed) {
+        creator.portfolioVideos = updatedVideos;
+        await CreatorProfile.updateOne({ _id: creator._id }, { portfolioVideos: updatedVideos });
+      }
+    }
+
     res.json(creator);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -174,9 +231,10 @@ const uploadPortfolioVideo = async (req, res) => {
       return res.status(400).json({ message: 'No video file provided' });
     }
 
+    const ext = req.file.originalname ? path.extname(req.file.originalname) : '.mp4';
     const result = await imagekit.upload({
       file: req.file.buffer,
-      fileName: `portfolio_${req.user.id}_${Date.now()}`,
+      fileName: `portfolio_${req.user.id}_${Date.now()}${ext || '.mp4'}`,
       folder: '/portfolio_videos',
       useUniqueFileName: true
     });
@@ -188,7 +246,7 @@ const uploadPortfolioVideo = async (req, res) => {
     }
 
     const newVideo = {
-      url: result.url,
+      url: normalizePortfolioVideoUrl(result.url),
       fileId: result.fileId,
       title: 'Untitled Work'
     };

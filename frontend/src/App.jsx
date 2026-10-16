@@ -26,7 +26,6 @@ const CreatorProfile = lazy(() => import('./pages/CreatorProfile'));
 const BrandListing = lazy(() => import('./pages/BrandListing'));
 const BrandProfile = lazy(() => import('./pages/BrandProfile'));
 const Notifications = lazy(() => import('./pages/Notifications'));
-const Wishlist = lazy(() => import('./pages/Wishlist'));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 const InstagramOauth = lazy(() => import('./pages/InstagramOauth'));
 const AadhaarVerification = lazy(() => import('./pages/AadhaarVerification'));
@@ -160,14 +159,6 @@ const App = () => {
                       element={
                         <ProtectedRoute>
                           <Notifications />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/wishlist"
-                      element={
-                        <ProtectedRoute>
-                          <Wishlist />
                         </ProtectedRoute>
                       }
                     />

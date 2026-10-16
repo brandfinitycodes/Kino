@@ -8,7 +8,6 @@ const CreatorBottomNav = ({ activeTab }) => {
   const { user } = useAuth();
   const location = useLocation();
 
-  const [wishlistCount, setWishlistCount] = useState(0);
   const [unreadCount, setUnreadCount] = useState(0);
   const [hasUnread, setHasUnread] = useState(false);
   const [applicationsCount, setApplicationsCount] = useState(0);
@@ -19,9 +18,8 @@ const CreatorBottomNav = ({ activeTab }) => {
 
     const fetchCounts = async () => {
       try {
-        const [notifRes, wishRes, appsRes, dealsRes] = await Promise.all([
+        const [notifRes, appsRes, dealsRes] = await Promise.all([
           axios.get("/notifications").catch(() => ({ data: [] })),
-          axios.get("/wishlists/count").catch(() => ({ data: { count: 0 } })),
           axios.get("/applications/creator").catch(() => ({ data: [] })),
           axios.get("/deals/user").catch(() => ({ data: [] }))
         ]);
@@ -30,9 +28,6 @@ const CreatorBottomNav = ({ activeTab }) => {
           const unreads = notifRes.data.filter(n => !n.read);
           setHasUnread(unreads.length > 0);
           setUnreadCount(unreads.length);
-        }
-        if (wishRes?.data) {
-          setWishlistCount(wishRes.data.count);
         }
         if (appsRes?.data) {
           setApplicationsCount(appsRes.data.filter(a => a.status === 'accepted' || a.status === 'confirmed_by_creator').length);
@@ -61,7 +56,7 @@ const CreatorBottomNav = ({ activeTab }) => {
     { id: 'deals', icon: Briefcase, label: 'Deals', path: '/creator-dashboard?tab=deals', hasIndicator: hasActiveDeals },
     { id: 'wallet', icon: Wallet, label: 'Wallet', path: '/creator-dashboard?tab=wallet' },
     { id: 'profile', icon: LayoutDashboard, label: 'Dashboard', path: '/creator-dashboard?tab=profile' },
-    { id: 'settings', icon: User, label: 'Profile', path: '/creator-dashboard?tab=settings' }
+    { id: 'settings', icon: User, label: 'Edit Profile', path: '/creator-dashboard?tab=settings' }
   ];
 
   return (

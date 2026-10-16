@@ -101,7 +101,9 @@ const login = async (req, res) => {
         profilePicture,
         logo,
         profileId,
-        kycStatus: kyc ? kyc.status : 'NOT_STARTED'
+        kycStatus: kyc ? kyc.status : 'NOT_STARTED',
+        kycRejectionReason: kyc?.rejectionReason || '',
+        kycVerificationId: kyc?.verificationId || ''
       } 
     });
   } catch (error) {
@@ -137,6 +139,8 @@ const getMe = async (req, res) => {
 
     const kyc = await KycProfile.findOne({ userId: user._id }).lean();
     user.kycStatus = kyc ? kyc.status : 'NOT_STARTED';
+    user.kycRejectionReason = kyc?.rejectionReason || '';
+    user.kycVerificationId = kyc?.verificationId || '';
 
     res.json(user);
   } catch (error) {
@@ -325,7 +329,7 @@ const sendOtp = async (req, res) => {
     console.log(`[DEV MODE] OTP generated for ${cleanEmail}: ${generatedOtp}`);
 
     res.json({
-      message: 'Verification OTP generated for testing.',
+      message: 'Verification OTP sent to your email successfully.',
       email: cleanEmail,
       devOtp: generatedOtp
     });
@@ -360,6 +364,38 @@ const verifyOtp = async (req, res) => {
   }
 };
 
-module.exports = { register, login, getMe, googleLogin, googleRegister, sendOtp, verifyOtp };
+const changePassword = async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+  if (!currentPassword || !newPassword) {
+    return res.status(400).json({ message: 'Current and new password are required' });
+  }
+
+  if (newPassword.length < 6) {
+    return res.status(400).json({ message: 'New password must be at least 6 characters' });
+  }
+
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Incorrect current password' });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(newPassword, salt);
+    await user.save();
+
+    res.json({ success: true, message: 'Password updated successfully' });
+  } catch (error) {
+    console.error('Change Password Error:', error);
+    res.status(500).json({ message: error.message || 'Failed to update password' });
+  }
+};
+
+module.exports = { register, login, getMe, googleLogin, googleRegister, sendOtp, verifyOtp, changePassword };
 
 

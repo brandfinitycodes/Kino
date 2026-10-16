@@ -8,7 +8,6 @@ const BrandBottomNav = ({ activeTab }) => {
   const { user } = useAuth();
   const location = useLocation();
 
-  const [wishlistCount, setWishlistCount] = useState(0);
   const [unreadCount, setUnreadCount] = useState(0);
   const [hasUnread, setHasUnread] = useState(false);
   const [hasActiveDeals, setHasActiveDeals] = useState(false);
@@ -18,9 +17,8 @@ const BrandBottomNav = ({ activeTab }) => {
 
     const fetchCounts = async () => {
       try {
-        const [notifRes, wishRes, dealsRes] = await Promise.all([
+        const [notifRes, dealsRes] = await Promise.all([
           axios.get("/notifications").catch(() => ({ data: [] })),
-          axios.get("/wishlists/count").catch(() => ({ data: { count: 0 } })),
           axios.get("/deals/user").catch(() => ({ data: [] }))
         ]);
 
@@ -28,9 +26,6 @@ const BrandBottomNav = ({ activeTab }) => {
           const unreads = notifRes.data.filter(n => !n.read);
           setHasUnread(unreads.length > 0);
           setUnreadCount(unreads.length);
-        }
-        if (wishRes?.data) {
-          setWishlistCount(wishRes.data.count);
         }
         if (dealsRes?.data) {
           setHasActiveDeals(dealsRes.data.some(d => d.status === 'in_progress'));
@@ -74,11 +69,6 @@ const BrandBottomNav = ({ activeTab }) => {
               <Icon size={20} strokeWidth={isActive ? 2.5 : 2} />
               {tab.hasIndicator && (
                 <span className="absolute top-1 right-1 w-2.5 h-2.5 rounded-full bg-[#eb4898] border-2 border-white" />
-              )}
-              {tab.id === 'browse' && wishlistCount > 0 && (
-                <span className="absolute -top-1 -right-1 min-w-[16px] h-[16px] px-1 bg-[#eb4898] text-white text-[9px] font-black rounded-full flex items-center justify-center border border-white">
-                  {wishlistCount}
-                </span>
               )}
             </div>
             <span className={`text-[10px] font-black tracking-wide transition-colors duration-300 ${isActive ? 'text-[#4f46e5]' : 'text-gray-400'}`}>

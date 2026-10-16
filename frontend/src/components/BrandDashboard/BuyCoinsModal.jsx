@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Check, DollarSign } from 'lucide-react';
 import axios from '../../utils/axios';
@@ -10,6 +11,28 @@ const BuyCoinsModal = ({ isOpen, onClose, onSuccess }) => {
   const [referenceId, setReferenceId] = useState('');
   const [error, setError] = useState(null);
   const [successMsg, setSuccessMsg] = useState(null);
+
+  // Prevent background scrolling while modal is open
+  useEffect(() => {
+    if (isOpen) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [isOpen]);
+
+  // Close on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && isOpen) {
+        handleClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen]);
 
   const packages = [
     { coins: 1000, price: 1000, popular: false },
@@ -54,25 +77,28 @@ const BuyCoinsModal = ({ isOpen, onClose, onSuccess }) => {
     onClose();
   };
 
-  if (!isOpen) return null;
+  if (typeof document === 'undefined') return null;
 
-  return (
+  return createPortal(
     <AnimatePresence>
-      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-          onClick={handleClose}
-        />
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          className="relative w-full max-w-2xl bg-white rounded-[32px] overflow-hidden shadow-2xl z-10 max-h-[95vh] flex flex-col"
-        >
-          <div className="p-5 sm:p-8 pb-4 sm:pb-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 shrink-0">
+      {isOpen && (
+        <div className="fixed inset-0 z-[99999] overflow-y-auto flex items-center justify-center p-4 sm:p-6">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={handleClose}
+          />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className="relative w-full max-w-2xl bg-white rounded-[32px] overflow-hidden shadow-2xl z-10 max-h-[90vh] flex flex-col my-auto"
+          >
+            <div className="p-5 sm:p-8 pb-4 sm:pb-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 shrink-0">
             <div>
               <h2 className="text-xl sm:text-2xl font-black text-gray-900 tracking-tight">Top Up Wallet</h2>
               <p className="text-xs sm:text-sm font-medium text-gray-500 mt-1">Purchase Coins to fund deals and campaigns.</p>
@@ -95,33 +121,34 @@ const BuyCoinsModal = ({ isOpen, onClose, onSuccess }) => {
               </div>
             )}
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-6 sm:mb-8">
+            <div className="grid grid-cols-2 gap-2.5 sm:gap-4 mb-6 sm:mb-8">
               {packages.map((pkg, i) => (
                 <div
                   key={i}
                   onClick={() => setSelectedPackage(pkg.coins)}
-                  className={`relative p-4 sm:p-6 rounded-2xl border-2 cursor-pointer transition-all ${
+                  className={`relative p-3.5 sm:p-6 rounded-2xl border-2 cursor-pointer transition-all ${
                     selectedPackage === pkg.coins 
                       ? 'border-[#EA580C] bg-orange-50/50' 
                       : 'border-gray-200 hover:border-gray-300 bg-white'
                   }`}
                 >
                   {pkg.popular && (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#EA580C] text-white text-[9px] sm:text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-sm">
+                    <div className="absolute -top-2.5 sm:-top-3 left-1/2 -translate-x-1/2 bg-[#EA580C] text-white text-[8px] sm:text-[10px] font-black uppercase tracking-wider sm:tracking-widest px-2 sm:px-3 py-0.5 sm:py-1 rounded-full shadow-sm whitespace-nowrap">
                       Most Popular
                     </div>
                   )}
-                  <div className="flex justify-between items-start mb-2">
-                    <div className="text-xl sm:text-2xl font-black text-gray-900 tracking-tight">
-                      {pkg.coins.toLocaleString()} <span className="text-base sm:text-lg">🪙</span>
+                  <div className="flex justify-between items-start mb-1.5 sm:mb-2">
+                    <div className="text-base sm:text-2xl font-black text-gray-900 tracking-tight">
+                      {pkg.coins.toLocaleString()} <span className="text-xs sm:text-lg">🪙</span>
                     </div>
                     {selectedPackage === pkg.coins && (
-                      <div className="w-5 h-5 sm:w-6 sm:h-6 bg-[#EA580C] rounded-full flex items-center justify-center text-white shrink-0">
-                        <Check size={12} strokeWidth={3} />
+                      <div className="w-4 h-4 sm:w-6 sm:h-6 bg-[#EA580C] rounded-full flex items-center justify-center text-white shrink-0 mt-0.5">
+                        <Check size={10} className="sm:hidden" strokeWidth={3} />
+                        <Check size={12} className="hidden sm:block" strokeWidth={3} />
                       </div>
                     )}
                   </div>
-                  <div className="text-xs sm:text-sm font-bold text-gray-500">
+                  <div className="text-[11px] sm:text-sm font-bold text-gray-500">
                     🪙{pkg.price.toLocaleString()}
                   </div>
                 </div>
@@ -193,7 +220,9 @@ const BuyCoinsModal = ({ isOpen, onClose, onSuccess }) => {
           </div>
         </motion.div>
       </div>
-    </AnimatePresence>
+      )}
+    </AnimatePresence>,
+    document.body
   );
 };
 

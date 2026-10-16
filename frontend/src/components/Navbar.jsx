@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LogOut, LogIn, UserPlus, Bell, Compass, Users, User, Menu, X, ChevronDown, Heart, Search, Command, Plus, ShieldCheck, Sparkles, Briefcase, Building2 } from 'lucide-react';
+import { LogOut, LogIn, UserPlus, Bell, Compass, Users, User, Menu, X, ChevronDown, Search, Command, Plus, ShieldCheck, Sparkles, Briefcase, Building2, LayoutDashboard, Settings } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from '../utils/axios';
 
@@ -12,7 +12,6 @@ const Navbar = () => {
   const [hasUnread, setHasUnread] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [wishlistCount, setWishlistCount] = useState(0);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [activeMenu, setActiveMenu] = useState(null);
@@ -21,6 +20,7 @@ const Navbar = () => {
   const adminRoles = ['superadmin', 'admin', 'moderator', 'support'];
   const isAdminRole = user && adminRoles.includes(user.role);
   const dashboardPath = user ? (isAdminRole ? '/admin-dashboard' : (user.role === 'creator' ? '/creator-dashboard' : '/brand-dashboard')) : '/';
+  const editProfilePath = user ? (user.role === 'creator' ? '/creator-dashboard?tab=settings' : (user.role === 'brand' ? '/brand-dashboard?tab=edit' : null)) : null;
   const logoPath = isAdminRole ? '/admin-dashboard' : '/';
   const isDashboardRoute = location.pathname.includes('-dashboard');
 
@@ -32,17 +32,6 @@ const Navbar = () => {
           const unreads = res.data.filter(n => !n.read);
           setHasUnread(unreads.length > 0);
           setUnreadCount(unreads.length);
-        } catch (err) {
-          console.error(err);
-        }
-      };
-
-      const checkWishlistCount = async () => {
-        try {
-          if (user.role !== 'admin') {
-            const res = await axios.get('/wishlists/count');
-            setWishlistCount(res.data.count);
-          }
         } catch (err) {
           console.error(err);
         }
@@ -60,21 +49,15 @@ const Navbar = () => {
       };
 
       checkNotifications();
-      checkWishlistCount();
       checkAdminStats();
 
       const interval = setInterval(() => {
         checkNotifications();
-        checkWishlistCount();
         checkAdminStats();
       }, 30000); // Poll every 30s for live admin badges
 
-      const handleWishlistUpdated = () => checkWishlistCount();
-      window.addEventListener('wishlist-updated', handleWishlistUpdated);
-
       return () => {
         clearInterval(interval);
-        window.removeEventListener('wishlist-updated', handleWishlistUpdated);
       };
     }
   }, [user]);
@@ -116,6 +99,24 @@ const Navbar = () => {
               </span>
               <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest">Online</span>
             </span>
+          </div>
+        )}
+
+        {/* Dashboard navlink beside kino logo for desktop view */}
+        {user && (
+          <div className="hidden md:flex items-center ml-1 sm:ml-2">
+            <div className="h-4 w-px bg-gray-200 mr-3"></div>
+            <Link
+              to={dashboardPath}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-[13px] font-bold transition-all border ${
+                location.pathname === dashboardPath || isDashboardRoute
+                  ? 'bg-orange-50 text-orange-600 border-orange-200/80 shadow-xs'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100/70 border-gray-200/70 bg-white/60 shadow-xs'
+              }`}
+            >
+              <LayoutDashboard size={14} className={location.pathname === dashboardPath || isDashboardRoute ? 'text-orange-600' : 'text-gray-500'} />
+              <span>Dashboard</span>
+            </Link>
           </div>
         )}
       </div>
@@ -195,16 +196,6 @@ const Navbar = () => {
       <div className="flex-1 flex items-center justify-end gap-2 sm:gap-3 md:gap-4">
         {user ? (
           <div className="flex items-center gap-2 sm:gap-3">
-            {user.role !== 'admin' && (
-              <Link to="/wishlist" className="flex relative w-10 h-10 items-center justify-center bg-white border border-gray-200 text-gray-500 hover:text-pink-500 hover:border-pink-200 hover:bg-pink-50 rounded-xl transition-all shadow-sm group">
-                <Heart size={18} className="group-hover:scale-110 transition-transform group-hover:fill-pink-500/20" />
-                {wishlistCount > 0 && (
-                  <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 bg-pink-500 text-white text-[9px] font-black rounded-full flex items-center justify-center shadow-sm">
-                    {wishlistCount}
-                  </span>
-                )}
-              </Link>
-            )}
             <Link to="/notifications" className="flex relative w-10 h-10 items-center justify-center bg-white border border-gray-200 text-gray-500 hover:text-indigo-600 hover:border-[#EA580C]/20 hover:bg-orange-50 rounded-xl transition-all shadow-sm group">
               <Bell size={18} className={`group-hover:scale-110 transition-transform ${hasUnread ? "animate-pulse text-[#EA580C]" : ""}`} />
               {hasUnread && (
@@ -259,6 +250,11 @@ const Navbar = () => {
                           <Link to={dashboardPath} onClick={() => setIsProfileOpen(false)} className="flex items-center gap-2 px-3 py-2.5 text-[13px] font-bold text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all">
                             <Compass size={14} /> Dashboard
                           </Link>
+                          {editProfilePath && (
+                            <Link to={editProfilePath} onClick={() => setIsProfileOpen(false)} className="flex items-center gap-2 px-3 py-2.5 text-[13px] font-bold text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all">
+                              <Settings size={14} /> Edit Profile
+                            </Link>
+                          )}
                           <div className="h-px bg-gray-100/80 my-1 mx-2"></div>
                           <button onClick={() => { handleLogout(); setIsProfileOpen(false); }} className="w-full text-left flex items-center gap-2 px-3 py-2.5 text-[13px] font-bold text-red-500 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all">
                             <LogOut size={14} /> Logout
@@ -302,11 +298,8 @@ const Navbar = () => {
                 <>
                   <div className="h-px bg-gray-100 my-2 mx-4"></div>
                   <Link to={dashboardPath} onClick={() => setIsMobileMenuOpen(false)} className="text-sm font-bold text-indigo-600 py-3 px-4 rounded-xl hover:bg-indigo-50 flex items-center gap-3"><Compass size={16} /> Dashboard</Link>
-                  {!isAdminRole && (
-                    <Link to="/wishlist" onClick={() => setIsMobileMenuOpen(false)} className="text-sm font-bold text-gray-900 py-3 px-4 rounded-xl hover:bg-gray-50 flex items-center justify-between">
-                      <div className="flex items-center gap-3"><Heart size={16} /> Wishlist</div>
-                      {wishlistCount > 0 && <span className="bg-pink-500 text-white text-[10px] px-2 py-0.5 rounded-full">{wishlistCount}</span>}
-                    </Link>
+                  {editProfilePath && (
+                    <Link to={editProfilePath} onClick={() => setIsMobileMenuOpen(false)} className="text-sm font-bold text-gray-700 py-3 px-4 rounded-xl hover:bg-gray-50 flex items-center gap-3"><Settings size={16} /> Edit Profile</Link>
                   )}
                   <Link to="/notifications" onClick={() => setIsMobileMenuOpen(false)} className="text-sm font-bold text-gray-900 py-3 px-4 rounded-xl hover:bg-gray-50 flex items-center justify-between">
                     <div className="flex items-center gap-3"><Bell size={16} /> Notifications</div>

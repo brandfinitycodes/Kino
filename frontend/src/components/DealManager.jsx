@@ -26,6 +26,11 @@ function DealManager({ deal, onUpdate, user: userProp }) {
   // Handle older database entries that might have used hyphens or no budget field
   const normalizedStatus = (deal.status || '').replace('-', '_');
   const displayBudget = deal.budget || deal.applicationId?.campaignId?.budget || 0;
+  const isDeliverableSubmitted = Boolean(
+    deal.contentUrl || 
+    deal.submittedAt || 
+    ['in_review', 'revision_requested', 'pending_clearance', 'completed'].includes(normalizedStatus)
+  );
 
   const handleAction = async (actionType, payload = {}) => {
     setLoading(true);
@@ -376,10 +381,24 @@ function DealManager({ deal, onUpdate, user: userProp }) {
           )}
 
           {['in_progress', 'in_review', 'revision_requested'].includes(normalizedStatus) && (
-            <div className="flex justify-end pt-2">
+            <div className="flex flex-col sm:flex-row items-end sm:items-center justify-end gap-2 pt-2">
+               {!isDeliverableSubmitted && (
+                 <span className="text-[11px] text-on-surface-variant/60 font-semibold flex items-center gap-1">
+                   <Clock size={12} className="text-on-surface-variant/40" /> Deliverables must be submitted before filing a dispute
+                 </span>
+               )}
                <button 
-                 onClick={() => setShowDisputeModal(true)}
-                 className="text-xs font-bold text-error hover:underline uppercase tracking-widest flex items-center gap-1"
+                 type="button"
+                 disabled={!isDeliverableSubmitted}
+                 onClick={() => {
+                   if (isDeliverableSubmitted) setShowDisputeModal(true);
+                 }}
+                 title={!isDeliverableSubmitted ? "Dispute can only be filed after deliverables are submitted" : "File a dispute with admin mediation"}
+                 className={`text-xs font-bold uppercase tracking-widest flex items-center gap-1.5 transition-all ${
+                   isDeliverableSubmitted 
+                     ? 'text-error hover:underline cursor-pointer' 
+                     : 'text-on-surface-variant/40 opacity-40 cursor-not-allowed select-none'
+                 }`}
                >
                  <AlertCircle size={14} /> File Dispute
                </button>

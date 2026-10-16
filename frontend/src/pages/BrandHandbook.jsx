@@ -38,7 +38,7 @@ const BrandHandbook = () => {
       description: 'Don\'t just wait for applications—actively scout our database of verified creators to find your ideal partners.',
       tips: [
         'Use the Creator Directory to filter by niche and platform.',
-        'Save promising profiles to your Wishlist for future campaigns.',
+        'Bookmark promising creator profiles for future campaigns.',
         'Review a creator\'s past ratings and Media Kit before hiring.',
         'Reach out proactively if their style aligns with your brand identity.'
       ]

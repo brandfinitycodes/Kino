@@ -118,4 +118,142 @@ const getMyCampaigns = async (req, res) => {
   }
 };
 
-module.exports = { createCampaign, getAllCampaigns, getCampaignById, getMyCampaigns };
+const updateCampaign = async (req, res) => {
+  const { id } = req.params;
+  const { title, description, niche, budget, requirements, status } = req.body;
+
+  try {
+    const campaign = await Campaign.findById(id);
+    if (!campaign) {
+      return res.status(404).json({ message: 'Campaign not found' });
+    }
+
+    const adminRoles = ['superadmin', 'admin', 'moderator', 'support'];
+    const isAdmin = req.user && adminRoles.includes(req.user.role);
+
+    if (!isAdmin) {
+      const brandProfile = await BrandProfile.findOne({ userId: req.user.id });
+      if (!brandProfile || !campaign.brandId.equals(brandProfile._id)) {
+        return res.status(403).json({ message: 'You are not authorized to edit this campaign' });
+      }
+    }
+
+    if (title !== undefined) campaign.title = title.trim();
+    if (description !== undefined) campaign.description = description.trim();
+    if (niche !== undefined) campaign.niche = niche;
+    if (budget !== undefined) campaign.budget = Number(budget);
+    if (requirements !== undefined) {
+      campaign.requirements = Array.isArray(requirements)
+        ? requirements.filter(r => typeof r === 'string' && r.trim().length > 0)
+        : requirements.split(',').map(r => r.trim()).filter(Boolean);
+    }
+    if (status !== undefined) {
+      const validStatuses = ['active', 'paused', 'inactive', 'completed'];
+      if (validStatuses.includes(status)) {
+        campaign.status = status;
+      }
+    }
+
+    await campaign.save();
+    res.json({ message: 'Campaign updated successfully', campaign });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const toggleCampaignStatus = async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+
+  try {
+    const campaign = await Campaign.findById(id);
+    if (!campaign) {
+      return res.status(404).json({ message: 'Campaign not found' });
+    }
+
+    const adminRoles = ['superadmin', 'admin', 'moderator', 'support'];
+    const isAdmin = req.user && adminRoles.includes(req.user.role);
+
+    if (!isAdmin) {
+      const brandProfile = await BrandProfile.findOne({ userId: req.user.id });
+      if (!brandProfile || !campaign.brandId.equals(brandProfile._id)) {
+        return res.status(403).json({ message: 'You are not authorized to change the status of this campaign' });
+      }
+    }
+
+    const validStatuses = ['active', 'paused', 'inactive', 'completed'];
+    if (status) {
+      if (!validStatuses.includes(status)) {
+        return res.status(400).json({ message: `Invalid status. Must be one of: ${validStatuses.join(', ')}` });
+      }
+      campaign.status = status;
+    } else {
+      // Toggle between active and paused
+      campaign.status = campaign.status === 'active' ? 'paused' : 'active';
+    }
+
+    await campaign.save();
+    res.json({ message: `Campaign status updated to ${campaign.status}`, campaign });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const deleteCampaign = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const campaign = await Campaign.findById(id);
+    if (!campaign) {
+      return res.status(404).json({ message: 'Campaign not found' });
+    }
+
+    const adminRoles = ['superadmin', 'admin', 'moderator', 'support'];
+    const isAdmin = req.user && adminRoles.includes(req.user.role);
+
+    if (!isAdmin) {
+      const brandProfile = await BrandProfile.findOne({ userId: req.user.id });
+      if (!brandProfile || !campaign.brandId.equals(brandProfile._id)) {
+        return res.status(403).json({ message: 'You are not authorized to delete this campaign' });
+      }
+    }
+
+    // Check if there are active deals associated with this campaign's applications
+    const Application = require('../models/Application');
+    const Deal = require('../models/Deal');
+
+    const applications = await Application.find({ campaignId: campaign._id });
+    const appIds = applications.map(a => a._id);
+
+    if (appIds.length > 0) {
+      const activeDeals = await Deal.find({
+        applicationId: { $in: appIds },
+        status: { $in: ['pending_payment', 'in_progress', 'in_review', 'revision_requested', 'pending_clearance'] }
+      });
+
+      if (activeDeals.length > 0) {
+        return res.status(400).json({
+          message: 'Cannot delete campaign with active deals in progress. Please pause or deactivate the campaign instead.'
+        });
+      }
+
+      // Safe to clean up remaining applications
+      await Application.deleteMany({ campaignId: campaign._id });
+    }
+
+    await Campaign.findByIdAndDelete(campaign._id);
+    res.json({ message: 'Campaign deleted successfully', deletedId: id });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+module.exports = {
+  createCampaign,
+  getAllCampaigns,
+  getCampaignById,
+  getMyCampaigns,
+  updateCampaign,
+  toggleCampaignStatus,
+  deleteCampaign
+};

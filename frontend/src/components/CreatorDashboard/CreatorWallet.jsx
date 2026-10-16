@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import axios from "../../utils/axios";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
@@ -65,6 +66,17 @@ const CreatorWallet = ({ wallet, transactions, onWithdraw }) => {
   const [withdrawalError, setWithdrawalError] = useState('');
   const [withdrawalSuccess, setWithdrawalSuccess] = useState('');
   const [activeFilter, setActiveFilter] = useState('all');
+
+  // Lock background scroll when withdrawal modal is open
+  useEffect(() => {
+    if (showWithdrawModal) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [showWithdrawModal]);
 
   const handleWithdrawSubmit = async (e) => {
     e.preventDefault();
@@ -295,15 +307,20 @@ const CreatorWallet = ({ wallet, transactions, onWithdraw }) => {
       </div>
 
       {/* WITHDRAWAL MODAL */}
-      <AnimatePresence>
-        {showWithdrawModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-reveal-up">
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white rounded-[32px] p-6 sm:p-8 max-w-lg w-full shadow-2xl border border-gray-100 relative text-left"
-            >
+      {typeof document !== 'undefined' && createPortal(
+        <AnimatePresence>
+          {showWithdrawModal && (
+            <div className="fixed inset-0 z-[99999] overflow-y-auto flex items-center justify-center p-4">
+              <div 
+                className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+                onClick={() => setShowWithdrawModal(false)}
+              />
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="bg-white rounded-[32px] p-6 sm:p-8 max-w-lg w-full shadow-2xl border border-gray-100 relative text-left my-auto z-10"
+              >
               <button 
                 onClick={() => setShowWithdrawModal(false)}
                 className="absolute top-6 right-6 p-2 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors cursor-pointer"
@@ -486,7 +503,9 @@ const CreatorWallet = ({ wallet, transactions, onWithdraw }) => {
             </motion.div>
           </div>
         )}
-      </AnimatePresence>
+      </AnimatePresence>,
+      document.body
+    )}
     </motion.div>
   );
 };

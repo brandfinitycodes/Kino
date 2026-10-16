@@ -1,14 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { User, CheckCircle, ExternalLink, MapPin } from 'lucide-react';
-import WishlistButton from './WishlistButton';
 
 const CreatorCard = ({ creator }) => {
   return (
     <div className="p-6 sm:p-8 rounded-[2.5rem] bg-white relative group flex flex-col items-center text-center border border-gray-100 shadow-sm hover:shadow-xl hover:border-indigo-200 transition-all hover:-translate-y-1">
-      <div className="absolute top-4 right-4 z-10">
-        <WishlistButton targetId={creator._id} targetModel="CreatorProfile" />
-      </div>
+
       <div className="relative mb-6">
         <div className="w-24 h-24 sm:w-28 sm:h-28 bg-gray-50 rounded-[2rem] sm:rounded-[2.5rem] flex items-center justify-center overflow-hidden border-4 border-gray-50 shadow-md transition-transform group-hover:scale-105">
           {creator.profilePicture ? (

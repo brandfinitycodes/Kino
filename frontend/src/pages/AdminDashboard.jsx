@@ -48,7 +48,8 @@ const AdminDashboard = () => {
       const res = await axios.get('/admin/stats');
       return res.data;
     },
-    enabled: !!user
+    enabled: !!user,
+    refetchInterval: 10000 // Polls stats every 10s to keep action badges up-to-date
   });
   const stats = statsData || null;
 
@@ -128,7 +129,8 @@ const AdminDashboard = () => {
       return res.data;
     },
     getNextPageParam: (lastPage) => lastPage.currentPage < lastPage.totalPages ? lastPage.currentPage + 1 : undefined,
-    enabled: !!user
+    enabled: !!user,
+    refetchInterval: activeTab === 'kyc' ? 8000 : false // Auto-refreshes every 8s while on KYC tab so new submissions appear live
   });
 
   const { data: auditLogsData, fetchNextPage: fetchNextAuditLogs, hasNextPage: hasNextAuditLogs, isFetchingNextPage: isFetchingAuditLogs } = useInfiniteQuery({
@@ -262,14 +264,14 @@ const AdminDashboard = () => {
 
   const sidebarItems = [
     { id: 'stats', label: 'Overview', icon: <TrendingUp size={20} /> },
-    { id: 'users', label: 'Users', icon: <Users size={20} />, badge: users?.length || 0 },
-    { id: 'campaigns', label: 'Campaigns', icon: <Compass size={20} />, badge: campaigns?.filter(c => c.status === 'pending').length || 0 },
-    { id: 'deals', label: 'Deals', icon: <Briefcase size={20} />, badge: deals?.filter(d => d.status === 'disputed').length || 0 },
-    { id: 'withdrawals', label: 'Withdrawals', icon: <CreditCard size={20} />, badge: withdrawals?.length || 0 },
-    { id: 'deposits', label: 'Deposits', icon: <Wallet size={20} />, badge: deposits?.filter(d => d.status === 'pending').length || 0 },
+    { id: 'users', label: 'Users', icon: <Users size={20} /> },
+    { id: 'campaigns', label: 'Campaigns', icon: <Compass size={20} />, count: stats?.pendingCampaignsCount || campaigns?.filter(c => c.status === 'pending').length || 0 },
+    { id: 'deals', label: 'Deals', icon: <Briefcase size={20} />, count: stats?.disputedDealsCount || deals?.filter(d => d.status === 'disputed').length || 0 },
+    { id: 'withdrawals', label: 'Withdrawals', icon: <CreditCard size={20} />, count: stats?.pendingWithdrawalsCount || withdrawals?.length || 0 },
+    { id: 'deposits', label: 'Deposits', icon: <Wallet size={20} />, count: stats?.pendingDepositsCount || deposits?.filter(d => d.status === 'pending').length || 0 },
     { id: 'clearance', label: 'Clearance Queue', icon: <CheckCircle size={20} /> },
     { id: 'ledger', label: 'Ledger', icon: <Layers size={20} /> },
-    { id: 'kyc', label: 'KYC Reviews', icon: <FileText size={20} />, badge: kycStats?.pending || 0 },
+    { id: 'kyc', label: 'KYC Reviews', icon: <FileText size={20} />, count: stats?.pendingKycCount ?? kycStats?.pendingReviews ?? 0 },
     { id: 'social-monitor', label: 'Social Monitor', icon: <ShieldAlert size={20} /> },
     { id: 'audit-logs', label: 'Audit Logs', icon: <Clock size={20} /> }
   ].filter(item => {
@@ -540,7 +542,7 @@ const AdminDashboard = () => {
       setActiveTab={setActiveTab}
     >
       {toast && (
-        <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[100] bg-gray-900 text-white border border-gray-800 px-6 py-3.5 rounded-2xl text-[13px] font-bold shadow-2xl backdrop-blur-md animate-reveal-up flex items-center gap-3">
+        <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[9999] bg-gray-900 text-white border border-gray-800 px-6 py-3.5 rounded-2xl text-[13px] font-bold shadow-2xl backdrop-blur-md animate-reveal-up flex items-center gap-3">
           <Info size={16} className="text-[#EA580C]" />
           {toast}
         </div>

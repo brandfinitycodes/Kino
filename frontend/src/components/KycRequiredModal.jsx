@@ -1,11 +1,22 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { ShieldAlert, X, ArrowRight, Clock, AlertTriangle } from 'lucide-react';
 
 const KycRequiredModal = ({ isOpen, onClose, message, kycStatus }) => {
   const navigate = useNavigate();
 
-  if (!isOpen) return null;
+  useEffect(() => {
+    if (isOpen) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [isOpen]);
+
+  if (!isOpen || typeof document === 'undefined') return null;
 
   const isPending = kycStatus === 'PENDING' || kycStatus === 'UNDER_REVIEW';
   const isRejected = kycStatus === 'REJECTED';
@@ -33,8 +44,8 @@ const KycRequiredModal = ({ isOpen, onClose, message, kycStatus }) => {
     showSecondary = true;
   }
 
-  return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm animate-reveal-up select-none">
+  return createPortal(
+    <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm animate-fade-in select-none">
       <div className="w-full max-w-md bg-white rounded-3xl p-6 sm:p-8 shadow-2xl border border-white text-center relative max-h-[95vh] overflow-y-auto flex flex-col">
         <button 
           onClick={onClose} 
@@ -84,7 +95,8 @@ const KycRequiredModal = ({ isOpen, onClose, message, kycStatus }) => {
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

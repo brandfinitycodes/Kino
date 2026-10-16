@@ -231,41 +231,37 @@ const CreatorProfile = ({ profile, deals = [], campaigns = [], applications = []
           </button>
         </div>
       </div>
-
-      {/* ROW 1 (TOP): 4 Premium Metric Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      {/* ROW 1 (TOP): 4 Premium Metric Cards (2x2 on Mobile, 4-col on Desktop) */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
         {[
-          { title: 'Total Earned', value: `🪙${totalEarned.toLocaleString()}`, icon: <Wallet size={18} strokeWidth={2.5} />, trend: '+28%', trendUp: true, bottomLabel: 'All-time revenue', progress: 100, grad: 'from-emerald-400 to-teal-500', bgText: 'text-emerald-500', shadow: 'shadow-emerald-500/20', onClick: () => setActiveTab('wallet') },
-          { title: 'Pending Funds', value: `🪙${pendingEarnings.toLocaleString()}`, icon: <Clock size={18} strokeWidth={2.5} />, trend: '+12%', trendUp: true, bottomLabel: 'Milestone Coins', progress: 45, grad: 'from-orange-400 to-amber-500', bgText: 'text-orange-500', shadow: 'shadow-orange-500/20', onClick: () => setActiveTab('wallet') },
-          { title: 'Active Deals', value: activeDeals.length, icon: <Briefcase size={18} strokeWidth={2.5} />, trend: '+5%', trendUp: true, bottomLabel: 'This month', progress: 60, grad: 'from-blue-400 to-indigo-500', bgText: 'text-blue-500', shadow: 'shadow-blue-500/20', onClick: () => setActiveTab('deals') },
-          { title: 'Applications', value: applications.length, icon: <Check size={18} strokeWidth={2.5} />, trend: '-2%', trendUp: false, bottomLabel: 'Conversion rate', progress: 30, grad: 'from-pink-400 to-rose-500', bgText: 'text-pink-500', shadow: 'shadow-pink-500/20', onClick: () => setActiveTab('applications') }
+          { title: 'Total Earned', value: `🪙${totalEarned.toLocaleString()}`, icon: <Wallet size={18} strokeWidth={2.5} />, bottomLabel: 'All-time revenue', progress: 100, grad: 'from-emerald-400 to-teal-500', bgText: 'text-emerald-500', shadow: 'shadow-emerald-500/20', onClick: () => setActiveTab('wallet') },
+          { title: 'Pending Funds', value: `🪙${pendingEarnings.toLocaleString()}`, icon: <Clock size={18} strokeWidth={2.5} />, bottomLabel: 'Milestone Coins', progress: 45, grad: 'from-orange-400 to-amber-500', bgText: 'text-orange-500', shadow: 'shadow-orange-500/20', onClick: () => setActiveTab('wallet') },
+          { title: 'Active Deals', value: activeDeals.length, icon: <Briefcase size={18} strokeWidth={2.5} />, bottomLabel: 'This month', progress: 60, grad: 'from-blue-400 to-indigo-500', bgText: 'text-blue-500', shadow: 'shadow-blue-500/20', onClick: () => setActiveTab('deals') },
+          { title: 'Applications', value: applications.length, icon: <Check size={18} strokeWidth={2.5} />, bottomLabel: 'Conversion rate', progress: 30, grad: 'from-pink-400 to-rose-500', bgText: 'text-pink-500', shadow: 'shadow-pink-500/20', onClick: () => setActiveTab('applications') }
         ].map((card, i) => (
-          <motion.div key={i} onClick={card.onClick} variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="bg-white/80 backdrop-blur-xl rounded-[32px] p-8 shadow-[0_10px_40px_rgba(0,0,0,0.03)] border border-white flex flex-col hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(0,0,0,0.06)] transition-all duration-500 overflow-hidden relative group cursor-pointer">
+          <motion.div key={i} onClick={card.onClick} variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="bg-white/80 backdrop-blur-xl rounded-2xl sm:rounded-[32px] p-4 sm:p-6 lg:p-8 shadow-[0_10px_40px_rgba(0,0,0,0.03)] border border-white flex flex-col hover:-translate-y-1.5 hover:shadow-[0_20px_40px_rgba(0,0,0,0.06)] transition-all duration-500 overflow-hidden relative group cursor-pointer">
             <div className={`absolute -right-6 -bottom-6 opacity-[0.03] ${card.bgText} transform group-hover:scale-125 group-hover:-rotate-12 transition-all duration-700`}>
               {card.icon}
             </div>
 
-            <div className="flex items-center gap-3 mb-6 relative z-10">
-              <div className={`w-10 h-10 rounded-2xl flex items-center justify-center text-white bg-gradient-to-br ${card.grad} shadow-lg ${card.shadow}`}>
+            <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-6 relative z-10">
+              <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl flex items-center justify-center text-white bg-gradient-to-br ${card.grad} shadow-md sm:shadow-lg ${card.shadow} shrink-0`}>
                 {card.icon}
               </div>
-              <span className="text-[13px] font-black uppercase tracking-widest text-gray-400">{card.title}</span>
+              <span className="text-[10px] sm:text-[13px] font-black uppercase tracking-wider sm:tracking-widest text-gray-400 truncate">{card.title}</span>
             </div>
 
-            <div className="flex items-end gap-3 mb-8 relative z-10">
-              <span className="text-4xl font-display font-black text-gray-900 tracking-tighter leading-none">{card.value}</span>
-              <span className={`text-[11px] font-black px-2.5 py-1 rounded-lg mb-1 shadow-sm ${card.trendUp ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-red-50 text-red-600 border border-red-100'}`}>
-                {card.trend}
-              </span>
+            <div className="mb-3 sm:mb-6 relative z-10">
+              <span className="text-2xl sm:text-3xl lg:text-4xl font-display font-black text-gray-900 tracking-tighter leading-none block truncate">{card.value}</span>
             </div>
 
             <div className="mt-auto relative z-10">
-              <div className="flex justify-between items-center mb-3">
-                <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">{card.bottomLabel}</span>
-                <span className="text-[11px] font-black text-gray-900">{card.progress}%</span>
+              <div className="flex justify-between items-center mb-1.5 sm:mb-3">
+                <span className="text-[9px] sm:text-[11px] font-bold text-gray-400 uppercase tracking-wider sm:tracking-widest truncate">{card.bottomLabel}</span>
+                <span className="text-[9px] sm:text-[11px] font-black text-gray-900 ml-1 shrink-0">{card.progress}%</span>
               </div>
 
-              <div className="flex gap-1.5 h-2">
+              <div className="flex gap-1 sm:gap-1.5 h-1.5 sm:h-2">
                 {[1, 2, 3, 4, 5].map(segment => {
                   const segmentThreshold = segment * 20;
                   const isFilled = card.progress >= segmentThreshold || (card.progress > segmentThreshold - 20 && card.progress > 0);

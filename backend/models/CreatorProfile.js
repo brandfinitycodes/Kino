@@ -80,6 +80,17 @@ const creatorProfileSchema = new mongoose.Schema({
     title: String,
     fileId: String // For management/deletion via ImageKit
   }],
+  shippingAddress: {
+    street: { type: String, default: '' },
+    city: { type: String, default: '' },
+    state: { type: String, default: '' },
+    zip: { type: String, default: '' },
+    country: { type: String, default: '' }
+  },
+  willNotPromote: {
+    type: [String],
+    default: []
+  },
   payoutDetails: {
     method: {
       type: String,

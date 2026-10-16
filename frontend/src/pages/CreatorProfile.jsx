@@ -18,6 +18,13 @@ import {
   MessageCircle,
   Briefcase
 } from 'lucide-react';
+const getVideoSrc = (url) => {
+  if (!url) return '';
+  if (url.includes('ik.imagekit.io') && !/\.(mp4|webm|mov|mkv|m4v)($|\?)/i.test(url) && !url.endsWith('/ik-video.mp4')) {
+    return url.replace(/\/?$/, '/ik-video.mp4');
+  }
+  return url;
+};
 
 const CreatorProfile = () => {
   const { id } = useParams();
@@ -358,7 +365,7 @@ const CreatorProfile = () => {
                               e.target.currentTime = 0;
                             }}
                           >
-                            <source src={video.url} type="video/mp4" />
+                            <source src={getVideoSrc(video.url)} type="video/mp4" />
                           </video>
                           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-80 group-hover:opacity-100 transition-all"></div>
                           <div className="absolute bottom-4 left-4 right-4 text-white">
@@ -443,7 +450,7 @@ const CreatorProfile = () => {
                           e.target.currentTime = 0;
                         }}
                       >
-                        <source src={video.url} type="video/mp4" />
+                        <source src={getVideoSrc(video.url)} type="video/mp4" />
                       </video>
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-80 group-hover:opacity-100 transition-all"></div>
                       <div className="absolute bottom-4 left-4 right-4 text-white">
@@ -480,7 +487,7 @@ const CreatorProfile = () => {
               controls 
               autoPlay
             >
-              <source src={selectedVideo.url} type="video/mp4" />
+              <source src={getVideoSrc(selectedVideo.url)} type="video/mp4" />
               Your browser does not support the video tag.
             </video>
             

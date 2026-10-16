@@ -213,9 +213,9 @@ const DashboardLayout = ({ sidebarItems, activeTab, setActiveTab, children, bran
               <span className="truncate flex-1 text-left relative z-10 tracking-[0.15em]">{item.label}</span>
 
               {/* Notification Badge */}
-              {item.count > 0 && (
-                <span className={`relative z-10 px-2.5 py-1 rounded-xl text-[10px] font-black shadow-sm flex items-center justify-center min-w-[28px] ${activeTab === item.id ? 'bg-white/20 text-white backdrop-blur-md border border-white/30' : 'bg-orange-50 text-orange-600 border border-orange-100'}`}>
-                  {item.count}
+              {(item.count > 0 || item.badge > 0) && (
+                <span className={`relative z-10 px-2.5 py-1 rounded-xl text-[10px] font-black shadow-sm flex items-center justify-center min-w-[28px] ${activeTab === item.id ? 'bg-white/20 text-white backdrop-blur-md border border-white/30' : 'bg-rose-50 text-rose-600 border border-rose-200'}`}>
+                  {item.count || item.badge}
                 </span>
               )}
 
@@ -345,6 +345,11 @@ const DashboardLayout = ({ sidebarItems, activeTab, setActiveTab, children, bran
                 <>
                   <div className={`relative p-1 rounded-full transition-all duration-300 ${isActive ? 'text-[#ea580c] scale-110' : 'text-gray-400 group-hover:text-gray-600'}`}>
                     {item.icon}
+                    {(item.count > 0 || item.badge > 0) && (
+                      <span className="absolute -top-1 -right-2 px-1.5 py-0.5 bg-rose-500 text-white text-[8px] font-black rounded-full flex items-center justify-center shadow-sm">
+                        {item.count || item.badge}
+                      </span>
+                    )}
                   </div>
                   <span className={`text-[9px] font-black tracking-widest uppercase transition-colors duration-300 ${isActive ? 'text-[#ea580c]' : 'text-gray-400'}`}>
                     {item.label}

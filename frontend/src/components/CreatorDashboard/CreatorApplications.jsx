@@ -174,7 +174,7 @@ const CreatorApplications = ({ applications, deals, onConfirm, onNudge, onWithdr
     <motion.div {...ANIMATION_VARIANTS} className="pb-24 pt-4 px-4 md:px-0 relative z-10">
       <AnimatePresence>
         {toastMessage && (
-          <motion.div initial={{ opacity: 0, y: -50 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -50 }} className="fixed top-24 left-1/2 -translate-x-1/2 z-[100] bg-gray-900 text-white px-6 py-3 rounded-2xl text-[13px] font-bold shadow-2xl flex items-center gap-3 border border-gray-700">
+          <motion.div initial={{ opacity: 0, y: -50 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -50 }} className="fixed top-24 left-1/2 -translate-x-1/2 z-[9999] bg-gray-900 text-white px-6 py-3 rounded-2xl text-[13px] font-bold shadow-2xl flex items-center gap-3 border border-gray-700">
             <CheckCircle size={18} className="text-emerald-400" /> {toastMessage}
           </motion.div>
         )}

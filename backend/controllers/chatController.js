@@ -53,7 +53,9 @@ const sendMessage = async (req, res) => {
 
     // Emit via socket
     const io = req.app.get('socketio');
-    io.to(dealId).emit('receive_message', newMessage);
+    if (io) {
+      io.to(dealId).emit('receive_message', newMessage);
+    }
 
     res.status(201).json(newMessage);
   } catch (error) {

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from '../utils/axios';
 import { useAuth } from '../context/AuthContext';
-import { Bell, Check, Clock, Sparkles, Heart, Compass, Users, ArrowLeft } from 'lucide-react';
+import { Bell, Check, Clock, Sparkles, Home, Compass, Users, ArrowLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import CreatorBottomNav from '../components/CreatorBottomNav';
@@ -182,7 +182,7 @@ const Notifications = () => {
       ) : (
         <nav className="md:hidden fixed bottom-0 left-0 w-full bg-white border-t border-gray-100 flex justify-around px-2 py-3 pb-[calc(12px+env(safe-area-inset-bottom))] z-50 shadow-[0_-8px_30px_rgba(0,0,0,0.05)]">
           {[
-            { id: 'board', label: 'Board', icon: Heart, path: '/wishlist' },
+            { id: 'home', label: 'Home', icon: Home, path: '/' },
             { id: 'campaigns', label: 'Campaigns', icon: Compass, path: '/campaigns' },
             { id: 'creators', label: 'Creators', icon: Users, path: '/creators' },
             { id: 'alerts', label: 'Alerts', icon: Bell, active: true }

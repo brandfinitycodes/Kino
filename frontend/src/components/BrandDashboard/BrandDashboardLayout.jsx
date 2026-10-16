@@ -13,7 +13,7 @@ import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion'
 import { 
   Building, Lock, ChevronDown, Bell, CheckCircle, Search, Edit3, 
   MapPin, Plus, TrendingUp, Clock, Calendar, Check, ExternalLink, 
-  ArrowRight, Heart, Share2, MessageSquare, Briefcase, FileText, Download, Quote, UserPlus, Star, LayoutDashboard, Wallet, DollarSign, UploadCloud, Flag, X, AlertCircle, Megaphone, Info, CircleDollarSign, Save,
+  ArrowRight, Share2, MessageSquare, Briefcase, FileText, Download, Quote, UserPlus, Star, LayoutDashboard, Wallet, DollarSign, UploadCloud, Flag, X, AlertCircle, Megaphone, Info, CircleDollarSign, Save,
   Users, Target, ArrowUpRight, Camera, MoreHorizontal, Activity, Eye, Play, Home, User, LogOut, SlidersHorizontal, ShieldCheck, Rocket
 } from 'lucide-react';
 import CampaignCard from '../components/CampaignCard';
@@ -123,7 +123,6 @@ const MobileBrandDashboard = () => {
   const [activeChatDeal, setActiveChatDeal] = useState(null);
 
   // Mobile layout badge states
-  const [wishlistCount, setWishlistCount] = useState(0);
   const [unreadCount, setUnreadCount] = useState(0);
   const [hasUnread, setHasUnread] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -157,8 +156,7 @@ const MobileBrandDashboard = () => {
         axios.get('/campaigns/mine'),
         axios.get('/creators'),
         axios.get('/deals/user'),
-        axios.get('/notifications').catch(() => ({ data: [] })),
-        axios.get('/wishlists/count').catch(() => ({ data: { count: 0 } }))
+        axios.get('/notifications').catch(() => ({ data: [] }))
       ]);
 
       if (results[0].status === 'fulfilled') {
@@ -181,9 +179,6 @@ const MobileBrandDashboard = () => {
         setHasUnread(unreads.length > 0);
         setUnreadCount(unreads.length);
       }
-      if (results[5].status === 'fulfilled' && results[5].value?.data) {
-        setWishlistCount(results[5].value.data.count);
-      }
     } catch (err) {
       console.error(err);
     } finally {
@@ -195,22 +190,16 @@ const MobileBrandDashboard = () => {
     fetchData();
   }, []);
 
-  // Poll for notification & wishlist changes every 30s
+  // Poll for notification changes every 30s
   useEffect(() => {
     if (user) {
       const interval = setInterval(async () => {
         try {
-          const [notifRes, wishRes] = await Promise.all([
-            axios.get("/notifications").catch(() => ({ data: [] })),
-            axios.get("/wishlists/count").catch(() => ({ data: { count: 0 } }))
-          ]);
+          const notifRes = await axios.get("/notifications").catch(() => ({ data: [] }));
           if (notifRes && notifRes.data) {
             const unreads = notifRes.data.filter(n => !n.read);
             setHasUnread(unreads.length > 0);
             setUnreadCount(unreads.length);
-          }
-          if (wishRes && wishRes.data) {
-            setWishlistCount(wishRes.data.count);
           }
         } catch (err) {
           console.error(err);
@@ -380,14 +369,6 @@ const MobileBrandDashboard = () => {
           <span className="font-sans font-black text-[18px] text-gray-900 tracking-tight lowercase">kino</span>
         </Link>
         <div className="flex items-center gap-3">
-          <Link to="/wishlist" className="relative p-2 text-gray-500 hover:text-pink-500 hover:bg-gray-50 rounded-xl transition-all">
-            <Heart size={20} />
-            {wishlistCount > 0 && (
-              <span className="absolute top-1 right-1 min-w-[16px] h-[16px] px-1 bg-[#eb4898] text-white text-[8px] font-black rounded-full flex items-center justify-center border border-white">
-                {wishlistCount}
-              </span>
-            )}
-          </Link>
           <Link to="/notifications" className="relative p-2 text-gray-500 hover:text-[#4f46e5] hover:bg-gray-50 rounded-xl transition-all">
             <Bell size={20} className={hasUnread ? "animate-pulse text-[#4f46e5]" : ""} />
             {hasUnread && (
@@ -468,7 +449,7 @@ const MobileBrandDashboard = () => {
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
-                className={`fixed top-8 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-3 px-6 py-4 rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.2)] border ${message.type === 'success' ? 'bg-gray-900 text-white border-gray-800' : 'bg-red-500 text-white border-red-600'}`}
+                className={`fixed top-24 left-1/2 -translate-x-1/2 z-[9999] flex items-center gap-3 px-6 py-4 rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.2)] border ${message.type === 'success' ? 'bg-gray-900 text-white border-gray-800' : 'bg-red-500 text-white border-red-600'}`}
               >
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center ${message.type === 'success' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-white/20 text-white'}`}>
                   {message.type === 'success' ? <CheckCircle size={16} /> : <AlertCircle size={16} />}
