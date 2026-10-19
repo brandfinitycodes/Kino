@@ -106,7 +106,7 @@ const getAllApplications = async (req, res) => {
 
 const updateApplicationStatus = async (req, res) => {
   const { status } = req.body;
-  const allowedStatuses = ['accepted', 'rejected', 'confirmed_by_creator', 'rejected_by_creator'];
+  const allowedStatuses = ['pending', 'shortlisted', 'accepted', 'rejected', 'confirmed_by_creator', 'rejected_by_creator'];
   if (!allowedStatuses.includes(status)) {
     return res.status(400).json({ message: `Invalid status. Must be one of: ${allowedStatuses.join(', ')}` });
   }
@@ -117,13 +117,22 @@ const updateApplicationStatus = async (req, res) => {
       .populate('creatorId');
     if (!application) return res.status(404).json({ message: 'Application not found' });
 
-    // Step 1: Only a brand can accept or reject an application
+    // Step 1: Only a brand can shortlist, un-shortlist (to pending), accept, or reject
+    if (status === 'shortlisted' || status === 'pending') {
+      if (req.user.role !== 'brand') {
+        return res.status(403).json({ message: 'Only brands can change candidate shortlist status.' });
+      }
+      if (!['pending', 'shortlisted'].includes(application.status)) {
+        return res.status(400).json({ message: 'Only pending or shortlisted applications can be modified.' });
+      }
+    }
+
     if (status === 'accepted' || status === 'rejected') {
       if (req.user.role !== 'brand') {
         return res.status(403).json({ message: 'Only brands can accept or reject applications.' });
       }
-      if (application.status !== 'pending') {
-        return res.status(400).json({ message: 'Only pending applications can be accepted or rejected.' });
+      if (!['pending', 'shortlisted'].includes(application.status)) {
+        return res.status(400).json({ message: 'Only pending or shortlisted applications can be accepted or rejected.' });
       }
     }
 
@@ -172,7 +181,20 @@ const updateApplicationStatus = async (req, res) => {
     // Send notifications (non-blocking)
     try {
       const campaignTitle = application.campaignId?.title || 'a campaign';
-      if (status === 'accepted' || status === 'rejected') {
+      if (status === 'shortlisted') {
+        let creatorUserId = application.creatorId?.userId;
+        if (!creatorUserId && application.creatorId) {
+          const CreatorProfile = require('../models/CreatorProfile');
+          const creatorProf = await CreatorProfile.findById(application.creatorId);
+          creatorUserId = creatorProf?.userId;
+        }
+        if (creatorUserId) {
+          await Notification.create({
+            userId: creatorUserId,
+            message: `⭐ Great news! You have been Shortlisted for "${campaignTitle}". The brand is reviewing top candidates!`
+          });
+        }
+      } else if (status === 'accepted' || status === 'rejected') {
         let creatorUserId = application.creatorId?.userId;
         if (!creatorUserId && application.creatorId) {
           const CreatorProfile = require('../models/CreatorProfile');
@@ -219,7 +241,9 @@ const nudgeBrand = async (req, res) => {
       .populate('creatorId');
 
     if (!application) return res.status(404).json({ message: 'Application not found' });
-    if (application.status !== 'pending') return res.status(400).json({ message: 'Only pending applications can be nudged' });
+    if (!['pending', 'shortlisted'].includes(application.status)) {
+      return res.status(400).json({ message: 'Only pending or shortlisted applications can be nudged' });
+    }
 
     // Send a notification to the brand
     try {
@@ -228,7 +252,7 @@ const nudgeBrand = async (req, res) => {
       if (brandUserId) {
         await Notification.create({
           userId: brandUserId,
-          message: `${creatorName} nudged you about their pending application for "${application.campaignId?.title}".`
+          message: `${creatorName} nudged you about their application for "${application.campaignId?.title}".`
         });
       }
     } catch (notifError) {
@@ -245,7 +269,9 @@ const withdrawApplication = async (req, res) => {
   try {
     const application = await Application.findById(req.params.id);
     if (!application) return res.status(404).json({ message: 'Application not found' });
-    if (application.status !== 'pending') return res.status(400).json({ message: 'Only pending applications can be withdrawn' });
+    if (!['pending', 'shortlisted'].includes(application.status)) {
+      return res.status(400).json({ message: 'Only pending or shortlisted applications can be withdrawn' });
+    }
 
     await Application.findByIdAndDelete(req.params.id);
     res.json({ message: 'Application withdrawn successfully' });
@@ -254,4 +280,52 @@ const withdrawApplication = async (req, res) => {
   }
 };
 
-module.exports = { applyToCampaign, getCreatorApplications, getBrandApplications, updateApplicationStatus, getAllApplications, nudgeBrand, withdrawApplication };
+const editApplicationProposal = async (req, res) => {
+  const { id } = req.params;
+  const { message } = req.body;
+
+  if (!message || !message.trim()) {
+    return res.status(400).json({ message: 'Proposal pitch message cannot be empty.' });
+  }
+
+  try {
+    const creatorProfile = await CreatorProfile.findOne({ userId: req.user.id });
+    if (!creatorProfile) {
+      return res.status(404).json({ message: 'Creator profile not found.' });
+    }
+
+    const application = await Application.findById(id);
+    if (!application) {
+      return res.status(404).json({ message: 'Application not found' });
+    }
+
+    const creatorId = application.creatorId?._id || application.creatorId;
+    if (creatorId.toString() !== creatorProfile._id.toString()) {
+      return res.status(403).json({ message: 'You are not authorized to edit this application.' });
+    }
+
+    if (!['pending', 'shortlisted'].includes(application.status)) {
+      return res.status(400).json({ 
+        message: `Cannot edit proposal once application has been ${application.status}.` 
+      });
+    }
+
+    application.message = message.trim();
+    await application.save();
+
+    res.json({ message: 'Proposal updated successfully.', application });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+module.exports = { 
+  applyToCampaign, 
+  getCreatorApplications, 
+  getBrandApplications, 
+  updateApplicationStatus, 
+  getAllApplications, 
+  nudgeBrand, 
+  withdrawApplication,
+  editApplicationProposal
+};

@@ -63,7 +63,7 @@ const BrandDeals = (props) => {
         {/* Filter Navigation */}
         <div className="flex items-center justify-between border-b border-gray-200 mb-6 pb-1">
           <div className="flex gap-4 sm:gap-6 overflow-x-auto hide-scrollbar">
-            {['All Deals', 'Action Required', 'In Progress', 'Completed'].map(f => {
+            {['All Deals', 'Action Required', 'In Progress', 'Paused', 'Completed'].map(f => {
               const isActive = dealFilter === f || (f === 'All Deals' && dealFilter === 'All History');
               return (
                 <button
@@ -91,6 +91,7 @@ const BrandDeals = (props) => {
               if (!dealFilter || dealFilter === 'All Deals' || dealFilter === 'All History' || dealFilter === 'All') return true;
               if (dealFilter === 'Action Required') return ['pending_payment', 'in_review', 'revision_requested'].includes(d.status);
               if (dealFilter === 'In Progress') return d.status === 'in_progress';
+              if (dealFilter === 'Paused') return d.status === 'paused';
               if (dealFilter === 'Completed') return d.status === 'completed';
               if (dealFilter === 'Campaigns') return !!d.campaignId;
               return true;
@@ -252,8 +253,12 @@ const BrandDeals = (props) => {
                   {/* Card Header */}
                   <div className="flex justify-between items-start mb-4">
                     <div className="flex items-center gap-2">
-                      <span className="px-2.5 py-1 rounded bg-amber-50 text-amber-600 border border-amber-100 text-[10px] font-black uppercase tracking-widest">
-                        {d.status === 'in_review' ? 'In Review' : d.status === 'revision_requested' ? 'Revision Needed' : 'In Progress'}
+                      <span className={`px-2.5 py-1 rounded text-[10px] font-black uppercase tracking-widest ${
+                        d.status === 'paused' ? 'bg-amber-100 text-amber-800 border border-amber-300' :
+                        d.status === 'cancelled' ? 'bg-gray-100 text-gray-700 border border-gray-300' :
+                        'bg-amber-50 text-amber-600 border border-amber-100'
+                      }`}>
+                        {d.status === 'paused' ? 'Paused / On Hold' : d.status === 'cancelled' ? 'Cancelled' : d.status === 'in_review' ? 'In Review' : d.status === 'revision_requested' ? 'Revision Needed' : 'In Progress'}
                       </span>
                       <span className={`px-2.5 py-1 rounded text-[9px] font-black uppercase tracking-wider ${isPackageDeal ? 'bg-purple-50 text-purple-700 border border-purple-200' : 'bg-orange-50 text-orange-700 border border-orange-200'}`}>
                         {dealTypeLabel}

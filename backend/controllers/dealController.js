@@ -707,4 +707,272 @@ const fileDispute = async (req, res) => {
   }
 };
 
-module.exports = { createDeal, createPackageCheckout, getUserDeals, fundDeal, submitContent, reviewContent, updateDealStatus, submitDeliverables, fileDispute };
+const pauseDeal = async (req, res) => {
+  const { id } = req.params;
+  const { reason } = req.body;
+  try {
+    const deal = await Deal.findById(id);
+    if (!deal) return res.status(404).json({ message: 'Deal not found' });
+    if (deal.status !== 'in_progress') {
+      return res.status(400).json({ message: 'Only in-progress deals can be paused.' });
+    }
+
+    deal.status = 'paused';
+    deal.pauseDetails = {
+      pausedBy: req.user.role,
+      reason: reason || 'Paused by ' + (req.user.role === 'brand' ? 'Brand' : 'Creator'),
+      pausedAt: new Date()
+    };
+    await deal.save();
+
+    try {
+      const dealTitle = await getDealTitle(deal);
+      const creatorUserId = await getCreatorUserId(deal.creatorId, deal);
+      const brandUserId = await getBrandUserId(deal.brandId, deal);
+      const recipientId = req.user.id.toString() === creatorUserId?.toString() ? brandUserId : creatorUserId;
+      const actorLabel = req.user.role === 'brand' ? 'Brand' : 'Creator';
+      if (recipientId) {
+        await Notification.create({
+          userId: recipientId,
+          message: `${actorLabel} paused deal "${dealTitle}". Reason: ${reason || 'Timeline temporarily on hold'}`
+        });
+      }
+    } catch (notifErr) {
+      console.error("Pause Deal Notification Error:", notifErr.message);
+    }
+
+    res.json({ message: 'Deal paused successfully.', deal });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const resumeDeal = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const deal = await Deal.findById(id);
+    if (!deal) return res.status(404).json({ message: 'Deal not found' });
+    if (deal.status !== 'paused') {
+      return res.status(400).json({ message: 'Only paused deals can be resumed.' });
+    }
+
+    deal.status = 'in_progress';
+    deal.pauseDetails = undefined;
+    await deal.save();
+
+    try {
+      const dealTitle = await getDealTitle(deal);
+      const creatorUserId = await getCreatorUserId(deal.creatorId, deal);
+      const brandUserId = await getBrandUserId(deal.brandId, deal);
+      const recipientId = req.user.id.toString() === creatorUserId?.toString() ? brandUserId : creatorUserId;
+      const actorLabel = req.user.role === 'brand' ? 'Brand' : 'Creator';
+      if (recipientId) {
+        await Notification.create({
+          userId: recipientId,
+          message: `${actorLabel} resumed deal "${dealTitle}". Collaboration is active again!`
+        });
+      }
+    } catch (notifErr) {
+      console.error("Resume Deal Notification Error:", notifErr.message);
+    }
+
+    res.json({ message: 'Deal resumed successfully.', deal });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const cancelDeal = async (req, res) => {
+  const { id } = req.params;
+  const { reason } = req.body;
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    const deal = await Deal.findById(id).session(session);
+    if (!deal) {
+      await session.abortTransaction();
+      session.endSession();
+      return res.status(404).json({ message: 'Deal not found' });
+    }
+
+    const cancellableStatuses = ['pending_payment', 'in_progress', 'paused'];
+    if (!cancellableStatuses.includes(deal.status)) {
+      await session.abortTransaction();
+      session.endSession();
+      return res.status(400).json({ 
+        message: `Cannot cancel deal in '${deal.status}' status. Only pending_payment, in_progress, or paused deals can be cancelled.` 
+      });
+    }
+
+    // Resolve brand & creator IDs
+    let creatorUserId, brandUserId;
+    if (deal.brandId) {
+      const brand = await BrandProfile.findById(deal.brandId).session(session);
+      brandUserId = brand?.userId;
+    }
+    if (deal.creatorId) {
+      const creator = await CreatorProfile.findById(deal.creatorId).session(session);
+      creatorUserId = creator?.userId;
+    }
+    if ((!creatorUserId || !brandUserId) && deal.applicationId) {
+      const app = await Application.findById(deal.applicationId).populate('creatorId campaignId').session(session);
+      if (app) {
+        if (!creatorUserId && app.creatorId) {
+          const creator = await CreatorProfile.findById(app.creatorId._id || app.creatorId).session(session);
+          creatorUserId = creator?.userId;
+        }
+        if (!brandUserId && app.campaignId) {
+          const campaign = await Campaign.findById(app.campaignId._id || app.campaignId).session(session);
+          if (campaign?.brandId) {
+            const brand = await BrandProfile.findById(campaign.brandId).session(session);
+            brandUserId = brand?.userId;
+          }
+        }
+      }
+    }
+
+    let refundedAmount = 0;
+    const wasFunded = ['in_progress', 'paused'].includes(deal.status);
+
+    if (wasFunded && brandUserId) {
+      // Refund the brand budget + the 5% platform charge
+      const platformFee = Math.round(deal.budget * 0.05);
+      refundedAmount = deal.budget + platformFee;
+
+      let brandWallet = await Wallet.findOne({ userId: brandUserId }).session(session);
+      if (brandWallet) {
+        brandWallet.fundsSecured = Math.max(0, (brandWallet.fundsSecured || 0) - deal.budget);
+        brandWallet.balance = (brandWallet.balance || 0) + refundedAmount;
+        await brandWallet.save({ session });
+
+        const refundTx = new Transaction({
+          userId: brandUserId,
+          amount: refundedAmount,
+          type: 'funds_secured_refund',
+          status: 'completed',
+          description: `Escrow refund for cancelled Deal #${deal._id}`,
+          relatedDealId: deal._id
+        });
+        await refundTx.save({ session });
+      }
+
+      if (creatorUserId) {
+        let creatorWallet = await Wallet.findOne({ userId: creatorUserId }).session(session);
+        if (creatorWallet) {
+          creatorWallet.fundsSecured = Math.max(0, (creatorWallet.fundsSecured || 0) - deal.budget);
+          await creatorWallet.save({ session });
+        }
+      }
+    }
+
+    // Reactivate associated campaign if applicable
+    if (deal.applicationId) {
+      const app = await Application.findById(deal.applicationId).session(session);
+      if (app?.campaignId) {
+        await Campaign.findByIdAndUpdate(app.campaignId, { status: 'active' }).session(session);
+      }
+    }
+
+    deal.status = 'cancelled';
+    deal.paymentDetails.status = wasFunded ? 'refunded' : 'pending';
+    deal.cancellationDetails = {
+      cancelledBy: req.user.role,
+      reason: reason || 'Cancelled by ' + req.user.role,
+      refundedAmount,
+      cancelledAt: new Date()
+    };
+    await deal.save({ session });
+
+    await session.commitTransaction();
+    session.endSession();
+
+    // Send notifications
+    try {
+      const dealTitle = await getDealTitle(deal);
+      const actorLabel = req.user.role === 'brand' ? 'Brand' : 'Creator';
+      if (brandUserId) {
+        await Notification.create({
+          userId: brandUserId,
+          message: wasFunded
+            ? `Deal "${dealTitle}" was cancelled. 🪙${refundedAmount.toLocaleString()} has been refunded to your wallet balance.`
+            : `Deal "${dealTitle}" was cancelled before funding.`
+        });
+      }
+      if (creatorUserId) {
+        await Notification.create({
+          userId: creatorUserId,
+          message: `Deal "${dealTitle}" was cancelled by ${actorLabel}. Reason: ${reason || 'Deal terminated'}`
+        });
+      }
+    } catch (notifErr) {
+      console.error("Cancel Deal Notification Error:", notifErr.message);
+    }
+
+    res.json({ message: 'Deal cancelled successfully.', deal, refundedAmount });
+  } catch (error) {
+    if (session.inTransaction()) {
+      await session.abortTransaction();
+    }
+    session.endSession();
+    console.error("Cancel Deal Error:", error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const editDealDetails = async (req, res) => {
+  const { id } = req.params;
+  const { brandAssetsUrl, dealNotes, deadline, contentUrl } = req.body;
+
+  try {
+    const deal = await Deal.findById(id);
+    if (!deal) return res.status(404).json({ message: 'Deal not found' });
+
+    if (deal.status === 'completed' || deal.status === 'cancelled') {
+      return res.status(400).json({ message: `Cannot edit deal in '${deal.status}' status.` });
+    }
+
+    if (brandAssetsUrl !== undefined) deal.brandAssetsUrl = brandAssetsUrl;
+    if (dealNotes !== undefined) deal.dealNotes = dealNotes;
+    if (deadline !== undefined) deal.deadline = deadline ? new Date(deadline) : null;
+    if (contentUrl !== undefined && req.user.role === 'creator') deal.contentUrl = contentUrl;
+
+    await deal.save();
+
+    // Notify other party
+    try {
+      const dealTitle = await getDealTitle(deal);
+      const creatorUserId = await getCreatorUserId(deal.creatorId, deal);
+      const brandUserId = await getBrandUserId(deal.brandId, deal);
+      const recipientId = req.user.id.toString() === creatorUserId?.toString() ? brandUserId : creatorUserId;
+      if (recipientId) {
+        await Notification.create({
+          userId: recipientId,
+          message: `Deal instructions and parameters updated for "${dealTitle}".`
+        });
+      }
+    } catch (notifErr) {
+      console.error("Edit Deal Notification Error:", notifErr.message);
+    }
+
+    res.json({ message: 'Deal details updated successfully.', deal });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+module.exports = {
+  createDeal,
+  createPackageCheckout,
+  getUserDeals,
+  fundDeal,
+  submitContent,
+  reviewContent,
+  updateDealStatus,
+  submitDeliverables,
+  fileDispute,
+  pauseDeal,
+  resumeDeal,
+  cancelDeal,
+  editDealDetails
+};

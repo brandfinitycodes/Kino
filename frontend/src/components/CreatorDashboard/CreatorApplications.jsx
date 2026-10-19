@@ -53,11 +53,15 @@ const ANIMATION_VARIANTS = {
 };
 
 
-const CreatorApplications = ({ applications, deals, onConfirm, onNudge, onWithdraw, setActiveTab }) => {
-  // Kanban view mode removed, grid view is active by default
+const CreatorApplications = ({ applications, deals, onConfirm, onNudge, onWithdraw, onUpdate, setActiveTab }) => {
   const [filterStatus, setFilterStatus] = useState('All');
   const [sortOrder, setSortOrder] = useState('newest');
   const [toastMessage, setToastMessage] = useState(null);
+
+  // Edit Proposal Modal State
+  const [editingApp, setEditingApp] = useState(null);
+  const [editPitch, setEditPitch] = useState("");
+  const [isSavingProposal, setIsSavingProposal] = useState(false);
 
   const handleNudge = (e, appId) => {
     e.preventDefault();
@@ -69,8 +73,25 @@ const CreatorApplications = ({ applications, deals, onConfirm, onNudge, onWithdr
     if (onWithdraw) onWithdraw(appId);
   };
 
+  const handleSaveProposal = async () => {
+    if (!editingApp || !editPitch.trim()) return;
+    setIsSavingProposal(true);
+    try {
+      await axios.put(`/applications/${editingApp._id}`, { message: editPitch.trim() });
+      editingApp.message = editPitch.trim();
+      setToastMessage("Proposal pitch updated successfully!");
+      setEditingApp(null);
+      if (onUpdate) onUpdate();
+    } catch (err) {
+      setToastMessage(err.response?.data?.message || "Failed to update proposal.");
+    } finally {
+      setIsSavingProposal(false);
+    }
+  };
+
   const totalApps = applications.length;
   const acceptedApps = applications.filter(a => ['accepted', 'confirmed_by_creator'].includes(a.status));
+  const shortlistedApps = applications.filter(a => a.status === 'shortlisted');
   const pendingApps = applications.filter(a => a.status === 'pending');
   const rejectedApps = applications.filter(a => a.status === 'rejected');
 
@@ -79,7 +100,12 @@ const CreatorApplications = ({ applications, deals, onConfirm, onNudge, onWithdr
 
   let filtered = [...applications];
   if (filterStatus !== 'All') {
-    const map = { 'Pending': 'pending', 'Accepted': 'accepted', 'Rejected': 'rejected' };
+    const map = { 
+      'Pending': 'pending', 
+      'Shortlisted': 'shortlisted', 
+      'Accepted': 'accepted', 
+      'Rejected': 'rejected' 
+    };
     filtered = filtered.filter(a => a.status === map[filterStatus] || (filterStatus === 'Accepted' && a.status === 'confirmed_by_creator'));
   }
 
@@ -92,6 +118,9 @@ const CreatorApplications = ({ applications, deals, onConfirm, onNudge, onWithdr
 
   const renderAppCard = (app, isBoard = false) => {
     const isPending = app.status === 'pending';
+    const isShortlisted = app.status === 'shortlisted';
+    const canEditOrWithdraw = isPending || isShortlisted;
+
     return (
       <motion.div
         layout
@@ -113,10 +142,11 @@ const CreatorApplications = ({ applications, deals, onConfirm, onNudge, onWithdr
           <div className="absolute bottom-3 left-3 z-10">
             <span className={`px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest backdrop-blur-md flex items-center gap-1.5 shadow-sm ${
               app.status === 'accepted' || app.status === 'confirmed_by_creator' ? 'bg-emerald-500 text-white border border-emerald-400' :
+              app.status === 'shortlisted' ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white border border-indigo-400 shadow-md animate-pulse' :
               app.status === 'rejected' ? 'bg-[#eb4898] text-white border border-[#eb4898]' :
               'bg-[#EA580C] text-white border border-[#EA580C]'
               }`}>
-              {app.status.replace(/_/g, ' ')}
+              {app.status === 'shortlisted' ? '⭐ Shortlisted' : app.status.replace(/_/g, ' ')}
             </span>
           </div>
         </div>
@@ -126,17 +156,30 @@ const CreatorApplications = ({ applications, deals, onConfirm, onNudge, onWithdr
             <h4 className="text-[15px] font-black text-gray-900 tracking-tight line-clamp-1 group-hover:text-[#EA580C] transition-colors">{app.campaignId?.title}</h4>
           </div>
 
-          <div className="flex items-center gap-2 mb-5">
+          <div className="flex items-center gap-2 mb-3">
             <span className="bg-gray-50 px-2 py-1 rounded-md text-[10px] font-bold text-gray-500 border border-gray-100">{new Date(app.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
             <div className="w-1 h-1 rounded-full bg-gray-300"></div>
             <span className="text-[11px] font-bold text-gray-600 truncate flex items-center gap-1"><CheckCircle size={10} className="text-blue-500"/> {app.campaignId?.brandId?.businessName || 'Premium Brand'}</span>
           </div>
 
+          {isShortlisted && (
+            <div className="mb-3 px-2.5 py-1.5 bg-indigo-50 border border-indigo-100 rounded-xl flex items-center gap-1.5 text-[10px] font-black text-indigo-700">
+              <Star size={12} className="text-indigo-600 fill-indigo-600 shrink-0" />
+              <span>Shortlisted Candidate (Under Review)</span>
+            </div>
+          )}
+
+          {app.message && (
+            <p className="text-gray-500 text-xs italic line-clamp-2 mb-4 bg-gray-50/70 p-2 rounded-xl border border-gray-100">
+              "{app.message}"
+            </p>
+          )}
+
           <div className="mt-auto flex flex-col gap-2 pt-2 border-t border-gray-50">
             {(app.status === "accepted" || app.status === "confirmed_by_creator") && !deals.some(d => (d.applicationId?._id || d.applicationId)?.toString() === app._id?.toString()) && (
               <button
                 onClick={() => onConfirm(app._id, app.status)}
-                className="w-full bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-500 hover:to-teal-600 text-white text-[11px] font-black uppercase tracking-widest py-3 rounded-xl transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-1.5"
+                className="w-full bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-500 hover:to-teal-600 text-white text-[11px] font-black uppercase tracking-widest py-3 rounded-xl transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 {app.status === "confirmed_by_creator" ? "Retry Deal" : "Accept & Start Deal"} <ArrowUpRight size={14} />
               </button>
@@ -150,14 +193,26 @@ const CreatorApplications = ({ applications, deals, onConfirm, onNudge, onWithdr
               </button>
             )}
 
-            {isPending && (
-              <div className="flex gap-2">
-                <button onClick={(e) => handleNudge(e, app._id)} className="flex-1 bg-gradient-to-r from-purple-50 to-indigo-50 hover:from-purple-100 hover:to-indigo-100 text-indigo-600 border border-indigo-100 text-[10px] font-black uppercase tracking-widest py-2.5 rounded-xl transition-all shadow-sm flex items-center justify-center gap-1.5">
-                  <Bell size={12} className="animate-pulse" /> Nudge Brand
+            {canEditOrWithdraw && (
+              <div className="flex flex-col gap-2">
+                <button 
+                  onClick={() => {
+                    setEditingApp(app);
+                    setEditPitch(app.message || "");
+                  }}
+                  className="w-full bg-gray-50 hover:bg-orange-50/60 text-gray-700 hover:text-orange-600 border border-gray-200 hover:border-orange-200 text-[10px] font-black uppercase tracking-widest py-2 rounded-xl transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <Edit3 size={12} className="text-orange-500" /> Edit Proposal Pitch
                 </button>
-                <button onClick={(e) => handleWithdraw(e, app._id)} className="w-12 flex items-center justify-center bg-gray-50 hover:bg-red-50 text-gray-400 hover:text-red-500 border border-gray-100 hover:border-red-100 rounded-xl transition-colors">
-                  <X size={14} />
-                </button>
+
+                <div className="flex gap-2">
+                  <button onClick={(e) => handleNudge(e, app._id)} className="flex-1 bg-gradient-to-r from-purple-50 to-indigo-50 hover:from-purple-100 hover:to-indigo-100 text-indigo-600 border border-indigo-100 text-[10px] font-black uppercase tracking-widest py-2.5 rounded-xl transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer">
+                    <Bell size={12} className="animate-pulse" /> Nudge Brand
+                  </button>
+                  <button onClick={(e) => handleWithdraw(e, app._id)} title="Withdraw Application" className="w-12 flex items-center justify-center bg-gray-50 hover:bg-red-50 text-gray-400 hover:text-red-500 border border-gray-100 hover:border-red-100 rounded-xl transition-colors cursor-pointer">
+                    <X size={14} />
+                  </button>
+                </div>
               </div>
             )}
 
@@ -205,22 +260,29 @@ const CreatorApplications = ({ applications, deals, onConfirm, onNudge, onWithdr
       </div>
 
       {/* Colorful Success Metrics Banner */}
-      <div className="flex flex-col md:flex-row gap-6 mb-10">
-        <div className="flex-1 bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-100/50 rounded-[24px] p-6 flex items-center justify-between shadow-[0_10px_30px_rgba(59,130,246,0.05)] hover:-translate-y-1 transition-transform">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
+        <div className="bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-100/50 rounded-[24px] p-6 flex items-center justify-between shadow-[0_10px_30px_rgba(59,130,246,0.05)] hover:-translate-y-1 transition-transform">
           <div>
             <p className="text-[11px] font-black text-blue-800/60 uppercase tracking-widest mb-1">Active Proposals</p>
             <h4 className="text-3xl font-black text-gray-900">{pendingApps.length}</h4>
           </div>
           <div className="w-14 h-14 rounded-[16px] bg-white flex items-center justify-center text-blue-500 shadow-sm border border-blue-50"><Folder size={24} /></div>
         </div>
-        <div className="flex-1 bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-100/50 rounded-[24px] p-6 flex items-center justify-between shadow-[0_10px_30px_rgba(16,185,129,0.05)] hover:-translate-y-1 transition-transform">
+        <div className="bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-100/50 rounded-[24px] p-6 flex items-center justify-between shadow-[0_10px_30px_rgba(99,102,241,0.05)] hover:-translate-y-1 transition-transform">
+          <div>
+            <p className="text-[11px] font-black text-indigo-800/60 uppercase tracking-widest mb-1">Shortlisted</p>
+            <h4 className="text-3xl font-black text-indigo-900">{shortlistedApps.length}</h4>
+          </div>
+          <div className="w-14 h-14 rounded-[16px] bg-white flex items-center justify-center text-indigo-500 shadow-sm border border-indigo-50"><Star size={24} className="fill-indigo-500" /></div>
+        </div>
+        <div className="bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-100/50 rounded-[24px] p-6 flex items-center justify-between shadow-[0_10px_30px_rgba(16,185,129,0.05)] hover:-translate-y-1 transition-transform">
           <div>
             <p className="text-[11px] font-black text-emerald-800/60 uppercase tracking-widest mb-1">Win Rate</p>
             <h4 className="text-3xl font-black text-gray-900">{winRate}%</h4>
           </div>
           <div className="w-14 h-14 rounded-[16px] bg-white flex items-center justify-center text-emerald-500 shadow-sm border border-emerald-50"><CheckCircle size={24} /></div>
         </div>
-        <div className="flex-1 bg-gradient-to-br from-purple-50 to-fuchsia-50 border border-purple-100/50 rounded-[24px] p-6 flex items-center justify-between shadow-[0_10px_30px_rgba(168,85,247,0.05)] hover:-translate-y-1 transition-transform">
+        <div className="bg-gradient-to-br from-purple-50 to-fuchsia-50 border border-purple-100/50 rounded-[24px] p-6 flex items-center justify-between shadow-[0_10px_30px_rgba(168,85,247,0.05)] hover:-translate-y-1 transition-transform">
           <div>
             <p className="text-[11px] font-black text-purple-800/60 uppercase tracking-widest mb-1">Pipeline Value</p>
             <h4 className="text-3xl font-black text-gray-900">🪙{pipelineValue.toLocaleString()}</h4>
@@ -232,8 +294,8 @@ const CreatorApplications = ({ applications, deals, onConfirm, onNudge, onWithdr
       {/* Toolbar */}
       <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-8 bg-white/60 backdrop-blur-md p-3 rounded-[24px] shadow-sm border border-gray-100">
         <div className="flex gap-2 w-full sm:w-auto overflow-x-auto hide-scrollbar pb-1.5 pt-0.5 px-3 -mx-3 sm:mx-0 sm:px-0 scroll-smooth">
-          {['All', 'Pending', 'Accepted', 'Rejected'].map(f => (
-            <button key={f} onClick={() => setFilterStatus(f)} className={`px-5 py-2.5 rounded-xl text-[11px] font-black tracking-widest uppercase transition-all whitespace-nowrap shadow-sm ${filterStatus === f ? 'bg-gray-900 text-white' : 'bg-white text-gray-500 hover:text-gray-900 border border-gray-100'}`}>
+          {['All', 'Pending', 'Shortlisted', 'Accepted', 'Rejected'].map(f => (
+            <button key={f} onClick={() => setFilterStatus(f)} className={`px-5 py-2.5 rounded-xl text-[11px] font-black tracking-widest uppercase transition-all whitespace-nowrap shadow-sm cursor-pointer ${filterStatus === f ? 'bg-gray-900 text-white' : 'bg-white text-gray-500 hover:text-gray-900 border border-gray-100'}`}>
               {f}
             </button>
           ))}
@@ -254,7 +316,7 @@ const CreatorApplications = ({ applications, deals, onConfirm, onNudge, onWithdr
           </div>
           <h3 className="text-3xl font-black text-gray-900 tracking-tight mb-3">Empty Pipeline</h3>
           <p className="text-gray-500 font-medium max-w-sm mb-8 leading-relaxed">You haven't applied to any campaigns yet. Explore the marketplace to find exciting brand deals.</p>
-          <button onClick={() => setActiveTab('discover')} className="bg-gradient-to-r from-[#EA580C] to-[#F59E0B] text-white text-[13px] font-black uppercase tracking-widest px-10 py-5 rounded-xl transition-all shadow-lg hover:shadow-xl hover:-translate-y-1">
+          <button onClick={() => setActiveTab('discover')} className="bg-gradient-to-r from-[#EA580C] to-[#F59E0B] text-white text-[13px] font-black uppercase tracking-widest px-10 py-5 rounded-xl transition-all shadow-lg hover:shadow-xl hover:-translate-y-1 cursor-pointer">
             Explore Marketplace
           </button>
         </div>
@@ -264,6 +326,63 @@ const CreatorApplications = ({ applications, deals, onConfirm, onNudge, onWithdr
             {filtered.map(app => renderAppCard(app, false))}
           </motion.div>
         </>
+      )}
+
+      {/* EDIT PROPOSAL MODAL */}
+      {editingApp && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white rounded-[28px] border border-gray-200 p-6 sm:p-8 max-w-lg w-full relative shadow-2xl text-left"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center">
+                  <Edit3 size={20} />
+                </div>
+                <div>
+                  <h3 className="text-xl font-black text-gray-900 tracking-tight">Edit Proposal Pitch</h3>
+                  <p className="text-xs text-gray-500 font-medium">Refine your message for "{editingApp.campaignId?.title}"</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setEditingApp(null)}
+                className="p-2 text-gray-400 hover:text-gray-600 rounded-xl hover:bg-gray-100 transition-colors cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="mb-6">
+              <label className="text-xs font-bold text-gray-700 mb-2 block">
+                Your Cover Pitch & Proposed Creative Angle
+              </label>
+              <textarea
+                value={editPitch}
+                onChange={(e) => setEditPitch(e.target.value)}
+                placeholder="Describe your creative concept, audience demographic, past examples..."
+                className="w-full bg-gray-50 border border-gray-200 rounded-2xl p-4 text-sm text-gray-900 outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 h-40 resize-none font-medium transition-all"
+              ></textarea>
+            </div>
+
+            <div className="flex gap-3">
+              <button 
+                onClick={() => setEditingApp(null)}
+                className="flex-1 py-3 rounded-xl font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors text-xs uppercase tracking-widest cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button 
+                disabled={isSavingProposal || !editPitch.trim()}
+                onClick={handleSaveProposal}
+                className="flex-1 py-3 rounded-xl font-black text-white bg-gradient-to-r from-[#EA580C] to-orange-500 hover:from-orange-600 hover:to-orange-500 transition-all text-xs uppercase tracking-widest disabled:opacity-50 flex items-center justify-center gap-1.5 cursor-pointer shadow-lg shadow-orange-500/20"
+              >
+                {isSavingProposal ? "Saving..." : <><Check size={16} /> Save Updated Proposal</>}
+              </button>
+            </div>
+          </motion.div>
+        </div>
       )}
     </motion.div>
   );

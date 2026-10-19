@@ -257,7 +257,7 @@ const CreatorDashboard = () => {
   const sidebarItems = [
     { id: 'discover', label: 'Discover', icon: <Compass size={20} /> },
     { id: 'profile', label: 'Profile View', icon: <LayoutDashboard size={20} /> },
-    { id: 'applications', label: 'Applications', icon: <Folder size={20} />, count: applications.filter(a => a.status === 'accepted' || a.status === 'confirmed_by_creator').length },
+    { id: 'applications', label: 'Applications', icon: <Folder size={20} />, count: applications.filter(a => ['accepted', 'confirmed_by_creator', 'shortlisted'].includes(a.status)).length },
     { id: 'deals', label: 'Deals', icon: <Briefcase size={20} />, count: deals.filter(d => d.status === 'in_progress' || d.status === 'revision_requested').length },
     { id: 'wallet', label: 'Wallet', icon: <Wallet size={20} /> },
     { id: 'settings', label: 'Edit Profile', icon: <User size={20} /> }
@@ -432,7 +432,7 @@ const CreatorDashboard = () => {
           {/* DYNAMIC VIEWS */}
           <AnimatePresence mode="wait">
             {activeTab === 'profile' && <CreatorProfile key="profile" profile={profile} deals={deals} campaigns={campaigns} applications={applications} transactions={transactions} setActiveTab={handleTabChange} />}
-            {activeTab === 'applications' && <CreatorApplications key="applications" applications={applications} deals={deals} onConfirm={confirmApplication} onNudge={handleNudgeApplication} onWithdraw={handleWithdrawApplication} setActiveTab={handleTabChange} />}
+            {activeTab === 'applications' && <CreatorApplications key="applications" applications={applications} deals={deals} onConfirm={confirmApplication} onNudge={handleNudgeApplication} onWithdraw={handleWithdrawApplication} onUpdate={fetchData} setActiveTab={handleTabChange} />}
             {activeTab === 'deals' && <CreatorDeals key="deals" deals={deals} user={user} onUpdateDeal={fetchData} />}
             {activeTab === 'wallet' && <CreatorWallet key="wallet" wallet={wallet} transactions={transactions} onWithdraw={handleWithdrawRequest} />}
             {activeTab === 'discover' && <CreatorDiscover key="discover" campaigns={campaigns} applications={applications} profile={profile} onApply={handleApply} setActiveTab={handleTabChange} />}

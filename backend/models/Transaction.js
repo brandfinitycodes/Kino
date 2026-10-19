@@ -12,7 +12,7 @@ const transactionSchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ['credit', 'debit', 'funds_secured_hold', 'funds_secured_release', 'pending_clearance_hold', 'payout_completed', 'platform_fee_deducted', 'coin_purchase', 'coin_withdrawal'],
+    enum: ['credit', 'debit', 'funds_secured_hold', 'funds_secured_release', 'funds_secured_refund', 'pending_clearance_hold', 'payout_completed', 'platform_fee_deducted', 'coin_purchase', 'coin_withdrawal'],
     required: true
   },
   status: {

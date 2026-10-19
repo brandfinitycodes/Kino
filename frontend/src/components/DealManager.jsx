@@ -3,7 +3,8 @@ import axios from '../utils/axios';
 import { useAuth } from '../context/AuthContext';
 import { 
   Building2, Clock, ArrowUpRight, ExternalLink, 
-  CheckCircle, AlertCircle, Calendar, ListTodo, UserSquare, Activity
+  CheckCircle, AlertCircle, Calendar, ListTodo, UserSquare, Activity,
+  Pause, Play, XCircle, Edit3, AlertTriangle, FileText, Sparkles, X, Check
 } from 'lucide-react';
 import ChatWidget from './ChatWidget';
 
@@ -15,13 +16,35 @@ function DealManager({ deal, onUpdate, user: userProp }) {
   const [contentUrl, setContentUrl] = useState(deal.contentUrl || '');
   const [brandAssetsUrl, setBrandAssetsUrl] = useState(deal.brandAssetsUrl || '');
   const [error, setError] = useState('');
+  
+  // Modals
   const [showDisputeModal, setShowDisputeModal] = useState(false);
   const [disputeReason, setDisputeReason] = useState('');
+  
+  const [showPauseModal, setShowPauseModal] = useState(false);
+  const [pauseReason, setPauseReason] = useState('');
 
-  // Scroll to top when deal is opened
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [cancelReason, setCancelReason] = useState('');
+
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editForm, setEditForm] = useState({
+    brandAssetsUrl: deal.brandAssetsUrl || '',
+    dealNotes: deal.dealNotes || '',
+    deadline: deal.deadline ? new Date(deal.deadline).toISOString().split('T')[0] : ''
+  });
+
+  // Scroll to top when deal is opened & sync edit form
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [deal._id]);
+    setBrandAssetsUrl(deal.brandAssetsUrl || '');
+    setContentUrl(deal.contentUrl || '');
+    setEditForm({
+      brandAssetsUrl: deal.brandAssetsUrl || '',
+      dealNotes: deal.dealNotes || '',
+      deadline: deal.deadline ? new Date(deal.deadline).toISOString().split('T')[0] : ''
+    });
+  }, [deal._id, deal.updatedAt]);
 
   // Handle older database entries that might have used hyphens or no budget field
   const normalizedStatus = (deal.status || '').replace('-', '_');
@@ -42,6 +65,17 @@ function DealManager({ deal, onUpdate, user: userProp }) {
       else if (actionType === 'submit-content') url += '/submit-content';
       else if (actionType === 'review') url += '/review';
       else if (actionType === 'dispute') url += '/dispute';
+      else if (actionType === 'pause') url += '/pause';
+      else if (actionType === 'resume') url += '/resume';
+      else if (actionType === 'cancel') url += '/cancel';
+      else if (actionType === 'edit-details') {
+        url += '/details';
+        await axios.put(url, payload);
+        if (onUpdate) onUpdate();
+        setShowEditModal(false);
+        setLoading(false);
+        return;
+      }
 
       await axios.post(url, payload);
       
@@ -52,19 +86,25 @@ function DealManager({ deal, onUpdate, user: userProp }) {
       setLoading(false);
       setShowDisputeModal(false);
       setDisputeReason('');
+      setShowPauseModal(false);
+      setPauseReason('');
+      setShowCancelModal(false);
+      setCancelReason('');
     }
   };
 
   const getStatusBadgeColor = (status) => {
     switch (status) {
-      case 'pending_payment': return 'bg-yellow-100 text-yellow-800';
-      case 'in_progress': return 'bg-blue-100 text-blue-800';
-      case 'in_review': return 'bg-purple-100 text-purple-800';
-      case 'revision_requested': return 'bg-orange-100 text-orange-800';
-      case 'pending_clearance': return 'bg-teal-100 text-teal-800';
-      case 'completed': return 'bg-green-100 text-green-800';
-      case 'disputed': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'pending_payment': return 'bg-yellow-100 text-yellow-900 border-yellow-300';
+      case 'in_progress': return 'bg-blue-100 text-blue-900 border-blue-300';
+      case 'paused': return 'bg-amber-100 text-amber-900 border-amber-400 animate-pulse';
+      case 'in_review': return 'bg-purple-100 text-purple-900 border-purple-300';
+      case 'revision_requested': return 'bg-orange-100 text-orange-900 border-orange-300';
+      case 'pending_clearance': return 'bg-teal-100 text-teal-900 border-teal-300';
+      case 'completed': return 'bg-emerald-100 text-emerald-900 border-emerald-300';
+      case 'disputed': return 'bg-rose-100 text-rose-900 border-rose-300';
+      case 'cancelled': return 'bg-gray-200 text-gray-700 border-gray-300';
+      default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
 
@@ -96,13 +136,60 @@ function DealManager({ deal, onUpdate, user: userProp }) {
           </div>
         </div>
         <div className="flex flex-col items-start sm:items-end gap-3 w-full lg:w-auto border-t lg:border-t-0 border-outline-variant/5 pt-4 lg:pt-0 shrink-0">
-          <div className="flex flex-wrap items-center gap-3">
-             <ChatWidget dealId={deal._id} isCompleted={normalizedStatus === 'completed'} />
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+             <ChatWidget dealId={deal._id} isCompleted={normalizedStatus === 'completed' || normalizedStatus === 'cancelled'} />
+             
+             {/* Edit Deal Button */}
+             {normalizedStatus !== 'completed' && normalizedStatus !== 'cancelled' && (
+               <button
+                 onClick={() => setShowEditModal(true)}
+                 className="px-3.5 py-2 rounded-2xl text-[10px] font-black uppercase tracking-wider bg-surface-container/30 hover:bg-surface-container text-on-surface border border-outline-variant/20 hover:border-secondary transition-all flex items-center gap-1.5 shadow-sm active:scale-95 cursor-pointer"
+                 title="Edit brand requirements, notes or deadline"
+               >
+                 <Edit3 size={13} className="text-secondary" /> Edit Deal
+               </button>
+             )}
+
+             {/* Pause Deal (when In Progress) */}
+             {normalizedStatus === 'in_progress' && (
+               <button
+                 onClick={() => setShowPauseModal(true)}
+                 className="px-3.5 py-2 rounded-2xl text-[10px] font-black uppercase tracking-wider bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 transition-all flex items-center gap-1.5 shadow-sm active:scale-95 cursor-pointer"
+                 title="Put deal on temporary hold (e.g. waiting for physical product shipment)"
+               >
+                 <Pause size={13} className="text-amber-400" /> Pause Deal
+               </button>
+             )}
+
+             {/* Resume Deal (when Paused) */}
+             {normalizedStatus === 'paused' && (
+               <button
+                 disabled={loading}
+                 onClick={() => handleAction('resume')}
+                 className="px-3.5 py-2 rounded-2xl text-[10px] font-black uppercase tracking-wider bg-emerald-500 hover:bg-emerald-400 text-black font-black border border-emerald-400 transition-all flex items-center gap-1.5 shadow-md active:scale-95 cursor-pointer"
+                 title="Resume deal collaboration"
+               >
+                 <Play size={13} className="fill-black" /> Resume Deal
+               </button>
+             )}
+
+             {/* Cancel Deal (Available in pending_payment, in_progress, paused) */}
+             {['pending_payment', 'in_progress', 'paused'].includes(normalizedStatus) && (
+               <button
+                 onClick={() => setShowCancelModal(true)}
+                 className="px-3.5 py-2 rounded-2xl text-[10px] font-black uppercase tracking-wider bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 transition-all flex items-center gap-1.5 shadow-sm active:scale-95 cursor-pointer"
+                 title="Cancel deal and refund escrow coins to brand"
+               >
+                 <XCircle size={13} className="text-red-400" /> Cancel Deal
+               </button>
+             )}
+
              <span className={`px-4 py-2 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] border shadow-2xl ${getStatusBadgeColor(normalizedStatus)}`}>
                {formatStatus(normalizedStatus)}
              </span>
           </div>
           {normalizedStatus === 'completed' && <span className="text-[8px] font-bold text-accent-teal uppercase tracking-widest animate-pulse mt-1">Archived</span>}
+          {normalizedStatus === 'cancelled' && <span className="text-[8px] font-bold text-red-400 uppercase tracking-widest mt-1">Cancelled & Refunded</span>}
         </div>
       </div>
 
@@ -156,15 +243,121 @@ function DealManager({ deal, onUpdate, user: userProp }) {
             </div>
           )}
 
+          {/* PAUSED BANNER ALERT */}
+          {normalizedStatus === 'paused' && (
+            <div className="bg-gradient-to-r from-amber-500/15 via-orange-500/10 to-transparent border border-amber-500/30 p-6 rounded-[1.5rem_0.5rem_1.5rem_0.5rem] mb-2 relative overflow-hidden">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0 shadow-inner">
+                    <Pause size={24} className="animate-pulse" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 text-[10px] font-black uppercase tracking-widest border border-amber-500/30">
+                        Deal Paused
+                      </span>
+                      {deal.pauseDetails?.pausedBy && (
+                        <span className="text-[10px] font-bold text-on-surface-variant/70 uppercase tracking-wider">
+                          by {deal.pauseDetails.pausedBy === 'brand' ? 'Brand' : 'Creator'}
+                        </span>
+                      )}
+                    </div>
+                    <h4 className="text-base font-black text-amber-300 tracking-tight">Collaboration is Temporarily on Hold</h4>
+                    <p className="text-xs text-on-surface-variant font-medium mt-1 leading-relaxed">
+                      {deal.pauseDetails?.reason 
+                        ? `Reason: "${deal.pauseDetails.reason}"`
+                        : "Timelines and deliverables are paused. Either party can resume when ready."}
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  disabled={loading}
+                  onClick={() => handleAction('resume')}
+                  className="px-6 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-black text-xs font-black uppercase tracking-widest transition-all shadow-lg active:scale-95 flex items-center gap-2 cursor-pointer shrink-0 self-stretch sm:self-auto justify-center"
+                >
+                  <Play size={14} className="fill-black" /> Resume Deal Now
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* CANCELLED BANNER ALERT */}
+          {normalizedStatus === 'cancelled' && (
+            <div className="bg-gradient-to-r from-red-500/15 via-rose-500/10 to-transparent border border-red-500/30 p-6 rounded-[1.5rem_0.5rem_1.5rem_0.5rem] mb-2">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-red-500/20 border border-red-500/30 flex items-center justify-center text-red-400 shrink-0">
+                  <XCircle size={24} />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="px-2 py-0.5 rounded-md bg-red-500/20 text-red-300 text-[10px] font-black uppercase tracking-widest border border-red-500/30">
+                      Cancelled
+                    </span>
+                    {deal.cancellationDetails?.cancelledBy && (
+                      <span className="text-[10px] font-bold text-on-surface-variant/70 uppercase tracking-wider">
+                        by {deal.cancellationDetails.cancelledBy === 'brand' ? 'Brand' : 'Creator'}
+                      </span>
+                    )}
+                  </div>
+                  <h4 className="text-base font-black text-red-300 tracking-tight">This Collaboration has Been Cancelled</h4>
+                  <p className="text-xs text-on-surface-variant font-medium mt-1 leading-relaxed">
+                    {deal.cancellationDetails?.reason 
+                      ? `Reason: "${deal.cancellationDetails.reason}"`
+                      : "The collaboration was terminated."}
+                  </p>
+                  {deal.cancellationDetails?.refundedAmount > 0 && (
+                    <div className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs font-bold">
+                      <CheckCircle size={14} className="text-emerald-400" />
+                      <span>Escrow Refunded: 🪙{deal.cancellationDetails.refundedAmount.toLocaleString()} returned to Brand balance.</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* DEAL NOTES & BRIEF GUIDELINES (IF ANY) */}
+          {deal.dealNotes && (
+            <div className="bg-surface-container/10 backdrop-blur-md border border-outline-variant/15 p-6 rounded-[1.5rem_0.5rem_1.5rem_0.5rem] mb-4">
+              <div className="flex items-center justify-between gap-2 mb-2">
+                <h4 className="font-black text-secondary uppercase text-xs tracking-widest flex items-center gap-2">
+                  <FileText size={16} /> Collaboration Brief & Instructions
+                </h4>
+                {normalizedStatus !== 'completed' && normalizedStatus !== 'cancelled' && (
+                  <button 
+                    onClick={() => setShowEditModal(true)}
+                    className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant hover:text-secondary flex items-center gap-1 transition-colors"
+                  >
+                    <Edit3 size={12} /> Edit Notes
+                  </button>
+                )}
+              </div>
+              <p className="text-xs text-on-surface leading-relaxed whitespace-pre-line font-medium bg-surface-container/20 p-4 rounded-xl border border-outline-variant/10">
+                {deal.dealNotes}
+              </p>
+            </div>
+          )}
+
           {/* BRAND ASSETS & REQUIREMENTS LINK DISPLAY (FOR BOTH BRAND & CREATOR) */}
           {(() => {
             const reqUrl = deal.brandAssetsUrl || deal.requirementsUrl || deal.applicationId?.campaignId?.requirementsLink;
             if (!reqUrl) return null;
             return (
               <div className="bg-amber-500/10 backdrop-blur-md border border-amber-500/20 p-6 rounded-[1.5rem_0.5rem_1.5rem_0.5rem] mb-6">
-                <h4 className="font-black text-amber-400 uppercase text-xs tracking-widest mb-2 flex items-center gap-2">
-                  <ExternalLink size={16} /> Brand Requirements & Raw Video Assets (Google Drive)
-                </h4>
+                <div className="flex items-center justify-between gap-2 mb-2">
+                  <h4 className="font-black text-amber-400 uppercase text-xs tracking-widest flex items-center gap-2">
+                    <ExternalLink size={16} /> Brand Requirements & Raw Video Assets (Google Drive)
+                  </h4>
+                  {currentRole === 'brand' && normalizedStatus !== 'completed' && normalizedStatus !== 'cancelled' && (
+                    <button 
+                      onClick={() => setShowEditModal(true)}
+                      className="text-[10px] font-bold uppercase tracking-wider text-amber-300 hover:text-amber-200 flex items-center gap-1 transition-colors cursor-pointer"
+                    >
+                      <Edit3 size={12} /> Edit Link
+                    </button>
+                  )}
+                </div>
                 <p className="text-xs text-on-surface-variant mb-4 font-medium leading-relaxed">
                   The brand has attached requirement files and raw video assets for this collaboration:
                 </p>
@@ -172,7 +365,7 @@ function DealManager({ deal, onUpdate, user: userProp }) {
                   href={reqUrl} 
                   target="_blank" 
                   rel="noopener noreferrer" 
-                  className="inline-flex items-center gap-2 px-5 py-3 bg-amber-500 hover:bg-amber-400 text-black font-black text-xs uppercase tracking-widest rounded-xl transition-all shadow-md active:scale-95"
+                  className="inline-flex items-center gap-2 px-5 py-3 bg-amber-500 hover:bg-amber-400 text-black font-black text-xs uppercase tracking-widest rounded-xl transition-all shadow-md active:scale-95 cursor-pointer"
                 >
                   Open Requirements & Video Data Drive Link <ArrowUpRight size={14} />
                 </a>
@@ -536,7 +729,7 @@ function DealManager({ deal, onUpdate, user: userProp }) {
       {/* DISPUTE MODAL */}
       {showDisputeModal && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="bg-surface border border-outline-variant/20 rounded-[2rem] p-8 max-w-md w-full relative">
+          <div className="bg-surface border border-outline-variant/20 rounded-[2rem] p-8 max-w-md w-full relative shadow-2xl">
             <h3 className="text-xl font-black text-error mb-2">File a Dispute</h3>
             <p className="text-sm text-on-surface-variant mb-6">If you are unable to resolve the issue with the other party, explain the problem below. Our admin team will arbitrate the resolution.</p>
             <textarea
@@ -548,16 +741,228 @@ function DealManager({ deal, onUpdate, user: userProp }) {
             <div className="flex gap-4">
               <button 
                 onClick={() => setShowDisputeModal(false)}
-                className="flex-1 py-3 rounded-xl font-bold text-on-surface bg-surface-container/20 hover:bg-surface-container transition-colors text-sm"
+                className="flex-1 py-3 rounded-xl font-bold text-on-surface bg-surface-container/20 hover:bg-surface-container transition-colors text-sm cursor-pointer"
               >
                 Cancel
               </button>
               <button 
                 disabled={loading || !disputeReason}
                 onClick={() => handleAction('dispute', { reason: disputeReason })}
-                className="flex-1 py-3 rounded-xl font-bold text-white bg-error hover:bg-red-600 transition-colors text-sm disabled:opacity-50"
+                className="flex-1 py-3 rounded-xl font-bold text-white bg-error hover:bg-red-600 transition-colors text-sm disabled:opacity-50 cursor-pointer"
               >
                 {loading ? 'Submitting...' : 'Submit Dispute'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* PAUSE DEAL MODAL */}
+      {showPauseModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="bg-surface border border-amber-500/30 rounded-[2rem] p-8 max-w-md w-full relative shadow-2xl">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center">
+                <Pause size={20} />
+              </div>
+              <h3 className="text-xl font-black text-on-surface">Pause Deal Collaboration</h3>
+            </div>
+            <p className="text-xs text-on-surface-variant mb-4 leading-relaxed">
+              Putting the deal on hold freezes milestone expectations and deadlines. Ideal when waiting for physical product shipment or brief updates.
+            </p>
+
+            <div className="mb-4">
+              <span className="text-[10px] font-black uppercase tracking-wider text-on-surface-variant block mb-2">Quick Presets:</span>
+              <div className="flex flex-wrap gap-1.5">
+                {[
+                  "Waiting for product delivery",
+                  "Creative guidelines revision",
+                  "Creator schedule / travel delay",
+                  "Brief clarification needed"
+                ].map(tag => (
+                  <button
+                    key={tag}
+                    type="button"
+                    onClick={() => setPauseReason(tag)}
+                    className="text-[10px] font-bold px-2.5 py-1 rounded-lg bg-surface-container/30 hover:bg-amber-500/20 text-on-surface-variant hover:text-amber-300 border border-outline-variant/15 transition-colors cursor-pointer"
+                  >
+                    + {tag}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <textarea
+              className="w-full bg-surface-container/20 border border-outline-variant/20 rounded-xl p-4 text-sm text-on-surface mb-6 outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/30 h-28 resize-none"
+              placeholder="State reason for pause (e.g. tracking number, expected shipping date)..."
+              value={pauseReason}
+              onChange={(e) => setPauseReason(e.target.value)}
+            ></textarea>
+
+            <div className="flex gap-4">
+              <button 
+                onClick={() => setShowPauseModal(false)}
+                className="flex-1 py-3 rounded-xl font-bold text-on-surface bg-surface-container/20 hover:bg-surface-container transition-colors text-sm cursor-pointer"
+              >
+                Close
+              </button>
+              <button 
+                disabled={loading}
+                onClick={() => handleAction('pause', { reason: pauseReason })}
+                className="flex-1 py-3 rounded-xl font-bold text-black bg-amber-400 hover:bg-amber-300 transition-colors text-sm disabled:opacity-50 flex items-center justify-center gap-1.5 cursor-pointer shadow-lg shadow-amber-500/20"
+              >
+                {loading ? 'Pausing...' : <><Pause size={14} /> Pause Deal</>}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* CANCEL DEAL MODAL */}
+      {showCancelModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="bg-surface border border-red-500/30 rounded-[2rem] p-8 max-w-md w-full relative shadow-2xl">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 rounded-xl bg-red-500/20 text-red-400 flex items-center justify-center">
+                <XCircle size={20} />
+              </div>
+              <h3 className="text-xl font-black text-red-400">Cancel Collaboration</h3>
+            </div>
+
+            {['in_progress', 'paused'].includes(normalizedStatus) ? (
+              <div className="bg-emerald-500/10 border border-emerald-500/30 p-3.5 rounded-xl mb-4 text-xs font-bold text-emerald-300 flex items-start gap-2.5">
+                <CheckCircle size={16} className="text-emerald-400 shrink-0 mt-0.5" />
+                <span>
+                  <strong>Escrow Protection Active:</strong> Cancelling will automatically refund 🪙{(displayBudget + Math.round(displayBudget * 0.05)).toLocaleString()} Coins (Deal Budget + 5% platform charge) back to the Brand's wallet balance.
+                </span>
+              </div>
+            ) : (
+              <p className="text-xs text-on-surface-variant mb-4 leading-relaxed">
+                This deal has not been funded yet and will be closed without financial impact.
+              </p>
+            )}
+
+            <div className="mb-4">
+              <span className="text-[10px] font-black uppercase tracking-wider text-on-surface-variant block mb-2">Select Reason:</span>
+              <div className="flex flex-wrap gap-1.5">
+                {[
+                  "Mutual agreement",
+                  "Product unavailable",
+                  "Missed initial timeline",
+                  "Scope mismatch"
+                ].map(tag => (
+                  <button
+                    key={tag}
+                    type="button"
+                    onClick={() => setCancelReason(tag)}
+                    className="text-[10px] font-bold px-2.5 py-1 rounded-lg bg-surface-container/30 hover:bg-red-500/20 text-on-surface-variant hover:text-red-300 border border-outline-variant/15 transition-colors cursor-pointer"
+                  >
+                    + {tag}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <textarea
+              className="w-full bg-surface-container/20 border border-outline-variant/20 rounded-xl p-4 text-sm text-on-surface mb-6 outline-none focus:border-red-400 focus:ring-1 focus:ring-red-400/30 h-28 resize-none"
+              placeholder="Why is this collaboration being cancelled?..."
+              value={cancelReason}
+              onChange={(e) => setCancelReason(e.target.value)}
+            ></textarea>
+
+            <div className="flex gap-4">
+              <button 
+                onClick={() => setShowCancelModal(false)}
+                className="flex-1 py-3 rounded-xl font-bold text-on-surface bg-surface-container/20 hover:bg-surface-container transition-colors text-sm cursor-pointer"
+              >
+                Keep Deal Active
+              </button>
+              <button 
+                disabled={loading}
+                onClick={() => handleAction('cancel', { reason: cancelReason })}
+                className="flex-1 py-3 rounded-xl font-bold text-white bg-red-600 hover:bg-red-500 transition-colors text-sm disabled:opacity-50 flex items-center justify-center gap-1.5 cursor-pointer shadow-lg shadow-red-500/20"
+              >
+                {loading ? 'Cancelling...' : <><XCircle size={14} /> Confirm Cancel</>}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* EDIT DEAL PARAMETERS MODAL */}
+      {showEditModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="bg-surface border border-outline-variant/20 rounded-[2rem] p-8 max-w-lg w-full relative shadow-2xl">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-secondary/20 text-secondary flex items-center justify-center">
+                  <Edit3 size={20} />
+                </div>
+                <div>
+                  <h3 className="text-xl font-black text-on-surface">Edit Deal Parameters</h3>
+                  <p className="text-xs text-on-surface-variant">Update creative requirements, notes, and deadline</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setShowEditModal(false)} 
+                className="p-2 rounded-xl text-on-surface-variant hover:text-on-surface bg-surface-container/20 hover:bg-surface-container cursor-pointer transition-colors"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="flex flex-col gap-4 mb-6">
+              <div>
+                <label className="text-xs font-bold text-on-surface mb-1.5 block">
+                  Brand Requirements & Raw Video Assets (Google Drive Link)
+                </label>
+                <input
+                  type="url"
+                  value={editForm.brandAssetsUrl}
+                  onChange={(e) => setEditForm(prev => ({ ...prev, brandAssetsUrl: e.target.value }))}
+                  placeholder="https://drive.google.com/..."
+                  className="w-full px-4 py-3 bg-surface-container/20 border border-outline-variant/20 rounded-xl text-on-surface text-xs font-medium outline-none focus:border-secondary transition-all"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-on-surface mb-1.5 block">
+                  Collaboration Notes & Deliverable Instructions
+                </label>
+                <textarea
+                  value={editForm.dealNotes}
+                  onChange={(e) => setEditForm(prev => ({ ...prev, dealNotes: e.target.value }))}
+                  placeholder="Specific talking points, hashtags to mention, lighting or audio guidelines..."
+                  className="w-full bg-surface-container/20 border border-outline-variant/20 rounded-xl p-3 text-xs text-on-surface outline-none focus:border-secondary h-28 resize-none"
+                ></textarea>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-on-surface mb-1.5 block">
+                  Target Delivery Deadline
+                </label>
+                <input
+                  type="date"
+                  value={editForm.deadline}
+                  onChange={(e) => setEditForm(prev => ({ ...prev, deadline: e.target.value }))}
+                  className="w-full px-4 py-3 bg-surface-container/20 border border-outline-variant/20 rounded-xl text-on-surface text-xs font-medium outline-none focus:border-secondary transition-all cursor-pointer"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-4">
+              <button 
+                onClick={() => setShowEditModal(false)}
+                className="flex-1 py-3 rounded-xl font-bold text-on-surface bg-surface-container/20 hover:bg-surface-container transition-colors text-sm cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button 
+                disabled={loading}
+                onClick={() => handleAction('edit-details', editForm)}
+                className="flex-1 py-3 rounded-xl font-black text-black bg-secondary hover:bg-secondary/90 transition-colors text-sm disabled:opacity-50 flex items-center justify-center gap-1.5 cursor-pointer shadow-lg shadow-secondary/20"
+              >
+                {loading ? 'Saving...' : <><Check size={16} /> Save Changes</>}
               </button>
             </div>
           </div>

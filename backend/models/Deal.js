@@ -30,7 +30,7 @@ const dealSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['pending_payment', 'in_progress', 'in_review', 'revision_requested', 'pending_clearance', 'completed', 'disputed'],
+    enum: ['pending_payment', 'in_progress', 'paused', 'in_review', 'revision_requested', 'pending_clearance', 'completed', 'disputed', 'cancelled'],
     default: 'pending_payment'
   },
   budget: {
@@ -44,6 +44,24 @@ const dealSchema = new mongoose.Schema({
   brandAssetsUrl: {
     type: String, // Google Drive link or similar for brand requirements & raw video data
     default: ''
+  },
+  dealNotes: {
+    type: String,
+    default: ''
+  },
+  deadline: {
+    type: Date
+  },
+  pauseDetails: {
+    pausedBy: { type: String, enum: ['brand', 'creator'] },
+    reason: { type: String, default: '' },
+    pausedAt: { type: Date }
+  },
+  cancellationDetails: {
+    cancelledBy: { type: String, enum: ['brand', 'creator'] },
+    reason: { type: String, default: '' },
+    refundedAmount: { type: Number, default: 0 },
+    cancelledAt: { type: Date }
   },
   submittedAt: {
     type: Date

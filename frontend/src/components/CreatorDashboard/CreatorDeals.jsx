@@ -53,6 +53,7 @@ const CreatorDeals = ({ deals, user, onUpdateDeal }) => {
     { id: 'all', label: 'All Deals' },
     { id: 'action', label: 'Action Required' },
     { id: 'prog', label: 'In Progress' },
+    { id: 'paused', label: 'On Hold' },
     { id: 'awaiting', label: 'Awaiting Payment' },
     { id: 'done', label: 'Completed' }
   ];
@@ -62,6 +63,7 @@ const CreatorDeals = ({ deals, user, onUpdateDeal }) => {
     const isCreatorAction = d.status === 'in_progress' || d.status === 'revision_requested';
     if (activeFilter === 'action') return isCreatorAction;
     if (activeFilter === 'prog') return ['in_progress', 'in_review', 'revision_requested'].includes(d.status);
+    if (activeFilter === 'paused') return d.status === 'paused';
     if (activeFilter === 'awaiting') return d.status === 'pending_payment';
     if (activeFilter === 'done') return d.status === 'completed';
     return true;
@@ -94,20 +96,24 @@ const CreatorDeals = ({ deals, user, onUpdateDeal }) => {
   const badgeText = {
     'pending_payment': 'AWAITING PAYMENT',
     'in_progress': 'IN PROGRESS',
+    'paused': 'PAUSED / ON HOLD',
     'in_review': 'PENDING REVIEW',
     'revision_requested': 'REVISION NEEDED',
     'pending_clearance': 'APPROVED / CLEARING',
     'completed': 'COMPLETED',
-    'disputed': 'DISPUTED'
+    'disputed': 'DISPUTED',
+    'cancelled': 'CANCELLED'
   };
   const badgeBg = {
     'pending_payment': 'bg-amber-500 text-white',
     'in_progress': 'bg-orange-500 text-white',
+    'paused': 'bg-amber-600 text-white',
     'in_review': 'bg-blue-500 text-white',
     'revision_requested': 'bg-red-600 text-white',
     'pending_clearance': 'bg-teal-600 text-white',
     'completed': 'bg-emerald-500 text-white',
-    'disputed': 'bg-rose-700 text-white'
+    'disputed': 'bg-rose-700 text-white',
+    'cancelled': 'bg-gray-500 text-white'
   };
 
   return (

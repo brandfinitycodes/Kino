@@ -28,7 +28,8 @@ import {
   Loader2,
   ShieldAlert,
   AlertTriangle,
-  Flag
+  Flag,
+  Star
 } from "lucide-react";
 
 const NICHES = ['Tech', 'Lifestyle', 'Fashion', 'Food', 'Travel', 'Gaming', 'Beauty', 'Finance', 'Health', 'Other'];
@@ -86,6 +87,16 @@ const CampaignDetail = () => {
       });
     } finally {
       setSubmitLoading(false);
+    }
+  };
+
+  const updateAppStatus = async (appId, newStatus) => {
+    try {
+      await axios.put(`/applications/${appId}/status`, { status: newStatus });
+      setApplications(prev => prev.map(a => a._id === appId ? { ...a, status: newStatus } : a));
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.message || "Failed to update application status.");
     }
   };
 
@@ -390,8 +401,13 @@ const CampaignDetail = () => {
                               <h4 className="font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
                                 {app.creatorId?.name || "Premium Talent"}
                               </h4>
-                              <span className="text-[9px] font-bold uppercase tracking-widest text-gray-400">
-                                Status: {app.status}
+                              <span className={`text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-md ${
+                                app.status === 'shortlisted' ? 'bg-indigo-100 text-indigo-700 font-black' :
+                                app.status === 'accepted' || app.status === 'confirmed_by_creator' ? 'bg-emerald-100 text-emerald-700 font-black' :
+                                app.status === 'rejected' ? 'bg-red-100 text-red-600 font-black' :
+                                'text-gray-400 bg-gray-100'
+                              }`}>
+                                Status: {app.status === 'shortlisted' ? '⭐ Shortlisted' : app.status.replace(/_/g, ' ')}
                               </span>
                             </div>
                           </Link>
@@ -405,12 +421,38 @@ const CampaignDetail = () => {
                         </p>
 
                         {app.status === "pending" && (
-                          <div className="grid grid-cols-2 gap-4">
-                            <button onClick={() => updateAppStatus(app._id, "accepted")} className="bg-[#111827] text-white py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-black transition-colors shadow-sm">
-                              Accept Application
-                            </button>
-                            <button onClick={() => updateAppStatus(app._id, "rejected")} className="bg-white border border-gray-200 text-gray-600 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-gray-50 hover:text-red-600 transition-colors">
+                          <div className="flex flex-col gap-2">
+                            <div className="grid grid-cols-2 gap-3">
+                              <button onClick={() => updateAppStatus(app._id, "accepted")} className="bg-[#111827] text-white py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-black transition-colors shadow-sm cursor-pointer">
+                                Accept Application
+                              </button>
+                              <button onClick={() => updateAppStatus(app._id, "shortlisted")} className="bg-indigo-50 border border-indigo-200 text-indigo-700 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-indigo-100 transition-colors shadow-sm flex items-center justify-center gap-1.5 cursor-pointer">
+                                <Star size={13} className="text-indigo-600 fill-indigo-600" /> Shortlist
+                              </button>
+                            </div>
+                            <button onClick={() => updateAppStatus(app._id, "rejected")} className="w-full bg-white border border-gray-200 text-gray-500 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-gray-50 hover:text-red-600 transition-colors cursor-pointer">
                               Reject
+                            </button>
+                          </div>
+                        )}
+
+                        {app.status === "shortlisted" && (
+                          <div className="flex flex-col gap-3 bg-indigo-50/50 p-4 rounded-2xl border border-indigo-100">
+                            <div className="flex items-center justify-between">
+                              <span className="inline-flex items-center gap-1.5 text-xs font-black text-indigo-800 uppercase tracking-wider">
+                                <Star size={14} className="text-indigo-600 fill-indigo-600" /> Shortlisted (Under Review)
+                              </span>
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
+                              <button onClick={() => updateAppStatus(app._id, "accepted")} className="bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-colors shadow-sm cursor-pointer">
+                                Accept & Hire
+                              </button>
+                              <button onClick={() => updateAppStatus(app._id, "pending")} className="bg-white border border-indigo-200 text-indigo-700 hover:bg-indigo-50 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-colors cursor-pointer">
+                                Move to Pending
+                              </button>
+                            </div>
+                            <button onClick={() => updateAppStatus(app._id, "rejected")} className="text-center text-[10px] font-bold uppercase tracking-widest text-gray-400 hover:text-red-600 transition-colors cursor-pointer py-1">
+                              Reject Candidate
                             </button>
                           </div>
                         )}
