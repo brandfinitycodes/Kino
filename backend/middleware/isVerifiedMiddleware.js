@@ -9,20 +9,28 @@ const isVerifiedMiddleware = async (req, res, next) => {
       return next();
     }
 
-    if (!req.user || !req.user.id) {
+    const userId = req.user?.id || req.user?._id;
+    if (!userId) {
       return res.status(401).json({ message: 'Authentication required' });
     }
 
-    const user = await User.findById(req.user.id);
-    if (user && user.isVerified) {
+    const user = await User.findById(userId);
+    if (user && (user.isVerified || user.kycStatus === 'APPROVED')) {
+      // Auto-update user isVerified flag and kycStatus if either was set
+      if (!user.isVerified || user.kycStatus !== 'APPROVED') {
+        user.isVerified = true;
+        user.kycStatus = 'APPROVED';
+        await user.save();
+      }
       return next();
     }
 
-    const kycProfile = await KycProfile.findOne({ userId: req.user.id });
+    const kycProfile = await KycProfile.findOne({ userId });
     if (kycProfile && kycProfile.status === 'APPROVED') {
-      // Auto-update user isVerified flag if not already set
-      if (user && !user.isVerified) {
+      // Auto-update user isVerified flag and kycStatus
+      if (user) {
         user.isVerified = true;
+        user.kycStatus = 'APPROVED';
         await user.save();
       }
       return next();

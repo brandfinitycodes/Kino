@@ -20,7 +20,7 @@ const getMessagesByDeal = async (req, res) => {
 const sendMessage = async (req, res) => {
   const { dealId } = req.params;
   const { content } = req.body;
-  const senderId = req.user.id;
+  const senderId = req.user?.id || req.user?._id;
 
   try {
     const deal = await Deal.findById(dealId);
