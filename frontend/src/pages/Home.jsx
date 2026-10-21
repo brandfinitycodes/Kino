@@ -743,7 +743,7 @@ const Home = () => {
     },
     {
       title: 'Automated Payment Security',
-      desc: 'Never work without payment security. Brands fund deals in advance via Razorpay; funds are locked securely until deliverable approval.',
+      desc: 'Never work without payment security. Brands fund deals in advance ; funds are locked securely until deliverable approval.',
       screen: 'funds-secured',
     },
     {
@@ -765,638 +765,638 @@ const Home = () => {
       <div className="bg-white text-gray-900 transition-colors duration-300 font-sans overflow-x-hidden">
         <main ref={mainRef} className="relative">
 
-        {/* ================= HERO AREA (DARK THEME) ================= */}
-        <section
-          onMouseMove={handleMouseMove}
-          className="relative px-6 pt-16 pb-24 lg:pt-20 lg:pb-28 min-h-[calc(100vh-5rem)] flex items-center justify-center overflow-hidden bg-[#111111] border-b border-white/5"
-        >
-          {/* Custom Ambient Grid Background */}
-          <div className="absolute inset-0 bg-grid-glow opacity-80 pointer-events-none"></div>
+          {/* ================= HERO AREA (DARK THEME) ================= */}
+          <section
+            onMouseMove={handleMouseMove}
+            className="relative px-6 pt-16 pb-24 lg:pt-20 lg:pb-28 min-h-[calc(100vh-5rem)] flex items-center justify-center overflow-hidden bg-[#111111] border-b border-white/5"
+          >
+            {/* Custom Ambient Grid Background */}
+            <div className="absolute inset-0 bg-grid-glow opacity-80 pointer-events-none"></div>
 
-          {/* Grid lines traveling dots canvas */}
-          <canvas
-            ref={canvasRef}
-            className="absolute inset-0 w-full h-full pointer-events-none z-0"
-          />
+            {/* Grid lines traveling dots canvas */}
+            <canvas
+              ref={canvasRef}
+              className="absolute inset-0 w-full h-full pointer-events-none z-0"
+            />
 
-          {/* Spotlight overlay */}
-          <div className="cursor-glow" />
+            {/* Spotlight overlay */}
+            <div className="cursor-glow" />
 
-          {/* Floating Parallax Cards */}
-          <div className="absolute inset-0 z-0 pointer-events-none scale-75 sm:scale-100 origin-center">
-            {/* Stylist / Makeup Creator Card (Top Right) */}
-            <motion.div style={{ y: parallaxSlow, rotate: parallaxRotate }} className="absolute top-[48%] sm:top-[18%] right-[-10%] sm:right-[12%] z-10">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1, y: [0, -10, 0] }}
-                transition={{
-                  opacity: { duration: 1, delay: 0.3 },
-                  scale: { duration: 0.8, delay: 0.3, ease: [0.16, 1, 0.3, 1] },
-                  y: { duration: 4.8, repeat: Infinity, ease: "easeInOut", delay: 0.3 }
-                }}
-                className="p-3 bg-[#1C1C21]/80 backdrop-blur-2xl border border-orange-500/50 rounded-full shadow-[0_0_20px_rgba(249,115,22,0.4)] flex items-center gap-3 pr-4 sm:pr-6"
-              >
-                <img src="https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&w=100&q=80" alt="Stylist" className="w-10 h-10 rounded-full object-cover border-2 border-pink-500/50" />
-                <div className="flex flex-col">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-pink-400">Stylist</span>
-                  <span className="text-xs font-bold text-white hidden sm:block">@glambyriya</span>
-                </div>
-              </motion.div>
-            </motion.div>
-
-            {/* Fashion Creator Card */}
-            <motion.div style={{ y: parallaxFast, rotate: parallaxRotate }} className="absolute top-[58%] sm:top-[12%] left-[-12%] sm:left-[8%] z-10">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1, y: [0, -12, 0] }}
-                transition={{
-                  opacity: { duration: 1, delay: 0.2 },
-                  scale: { duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] },
-                  y: { duration: 4.5, repeat: Infinity, ease: "easeInOut", delay: 0.2 }
-                }}
-                className="p-3 bg-[#1C1C21]/80 backdrop-blur-2xl border border-orange-500/50 rounded-full shadow-[0_0_20px_rgba(249,115,22,0.4)] flex items-center gap-3 pr-4 sm:pr-6"
-              >
-                <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=100&q=80" alt="Fashion" className="w-10 h-10 rounded-full object-cover border-2 border-indigo-500/50" />
-                <div className="flex flex-col">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-indigo-400">Fashion</span>
-                  <span className="text-xs font-bold text-white hidden sm:block">@styleicon</span>
-                </div>
-              </motion.div>
-            </motion.div>
-
-            {/* Food Creator Card */}
-            <motion.div style={{ y: parallaxSlow }} className="absolute bottom-[2%] sm:bottom-[35%] right-[-15%] sm:right-[10%] z-10">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1, y: [0, 15, 0] }}
-                transition={{
-                  opacity: { duration: 1, delay: 0.4 },
-                  scale: { duration: 0.8, delay: 0.4, ease: [0.16, 1, 0.3, 1] },
-                  y: { duration: 5.5, repeat: Infinity, ease: "easeInOut", delay: 0.4 }
-                }}
-                className="p-3 bg-[#1C1C21]/80 backdrop-blur-2xl border border-orange-500/50 rounded-full shadow-[0_0_20px_rgba(249,115,22,0.4)] flex items-center gap-3 pr-4 sm:pr-5"
-              >
-                <img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=100&q=80" alt="Food" className="w-10 h-10 rounded-full object-cover border-2 border-orange-500/50" />
-                <div className="flex flex-col">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-orange-400">Food</span>
-                  <span className="text-xs font-bold text-white hidden sm:flex items-center gap-1">Top Rated <BadgeCheck size={10} className="text-orange-500" /></span>
-                </div>
-              </motion.div>
-            </motion.div>
-
-            {/* Fitness Creator Card */}
-            <motion.div style={{ y: parallaxFast }} className="absolute bottom-[6%] sm:bottom-[40%] left-[-10%] sm:left-[12%] z-10">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1, y: [0, -14, 0] }}
-                transition={{
-                  opacity: { duration: 1, delay: 0.6 },
-                  scale: { duration: 0.8, delay: 0.6, ease: [0.16, 1, 0.3, 1] },
-                  y: { duration: 5, repeat: Infinity, ease: "easeInOut", delay: 0.6 }
-                }}
-                className="p-3 bg-[#1C1C21]/80 backdrop-blur-2xl border border-orange-500/50 rounded-full shadow-[0_0_20px_rgba(249,115,22,0.4)] flex items-center gap-3 pr-4 sm:pr-6"
-              >
-                <img src="https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&w=100&q=80" alt="Fitness" className="w-10 h-10 rounded-full object-cover border-2 border-emerald-500/50" />
-                <div className="flex flex-col">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400">Fitness & Gym</span>
-                  <span className="text-xs font-bold text-white hidden sm:block">4.8% Engagement</span>
-                </div>
-              </motion.div>
-            </motion.div>
-          </div>
-
-          <div className="max-w-4xl mx-auto text-center relative z-10">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 30 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            >
-
-              <h1 className="text-4xl sm:text-6xl lg:text-[4.5rem] font-black font-display tracking-tight leading-[1.05] text-white drop-shadow-sm">
-                The Platform Where <br />
-                <span className="relative inline-block text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-amber-400">
-                  Content Meets
-                </span> <br />
-                Performance
-              </h1>
-
-              <div className="flex flex-row items-center justify-center gap-2 sm:gap-4 mt-8 mb-6">
-                <Link
-                  to="/register"
-                  className="px-5 py-2.5 sm:px-10 sm:py-4 rounded-xl bg-orange-500 text-white font-bold text-[10px] sm:text-sm tracking-widest uppercase hover:bg-orange-600 shadow-[0_10px_30px_rgba(249,115,22,0.3)] transition-all duration-300"
+            {/* Floating Parallax Cards */}
+            <div className="absolute inset-0 z-0 pointer-events-none scale-75 sm:scale-100 origin-center">
+              {/* Stylist / Makeup Creator Card (Top Right) */}
+              <motion.div style={{ y: parallaxSlow, rotate: parallaxRotate }} className="absolute top-[48%] sm:top-[18%] right-[-10%] sm:right-[12%] z-10">
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1, y: [0, -10, 0] }}
+                  transition={{
+                    opacity: { duration: 1, delay: 0.3 },
+                    scale: { duration: 0.8, delay: 0.3, ease: [0.16, 1, 0.3, 1] },
+                    y: { duration: 4.8, repeat: Infinity, ease: "easeInOut", delay: 0.3 }
+                  }}
+                  className="p-3 bg-[#1C1C21]/80 backdrop-blur-2xl border border-orange-500/50 rounded-full shadow-[0_0_20px_rgba(249,115,22,0.4)] flex items-center gap-3 pr-4 sm:pr-6"
                 >
-                  Get Started
-                </Link>
-                <Link
-                  to="/creators"
-                  className="px-5 py-2.5 sm:px-10 sm:py-4 rounded-xl bg-white/10 backdrop-blur-sm text-white font-bold text-[10px] sm:text-sm tracking-widest uppercase hover:bg-white/20 shadow-[0_10px_30px_rgba(0,0,0,0.2)] transition-all duration-300 border border-white/20"
+                  <img src="https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&w=100&q=80" alt="Stylist" className="w-10 h-10 rounded-full object-cover border-2 border-pink-500/50" />
+                  <div className="flex flex-col">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-pink-400">Stylist</span>
+                    <span className="text-xs font-bold text-white hidden sm:block">@glambyriya</span>
+                  </div>
+                </motion.div>
+              </motion.div>
+
+              {/* Fashion Creator Card */}
+              <motion.div style={{ y: parallaxFast, rotate: parallaxRotate }} className="absolute top-[58%] sm:top-[12%] left-[-12%] sm:left-[8%] z-10">
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1, y: [0, -12, 0] }}
+                  transition={{
+                    opacity: { duration: 1, delay: 0.2 },
+                    scale: { duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] },
+                    y: { duration: 4.5, repeat: Infinity, ease: "easeInOut", delay: 0.2 }
+                  }}
+                  className="p-3 bg-[#1C1C21]/80 backdrop-blur-2xl border border-orange-500/50 rounded-full shadow-[0_0_20px_rgba(249,115,22,0.4)] flex items-center gap-3 pr-4 sm:pr-6"
                 >
-                  View Creators
-                </Link>
-              </div>
+                  <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=100&q=80" alt="Fashion" className="w-10 h-10 rounded-full object-cover border-2 border-indigo-500/50" />
+                  <div className="flex flex-col">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-indigo-400">Fashion</span>
+                    <span className="text-xs font-bold text-white hidden sm:block">@styleicon</span>
+                  </div>
+                </motion.div>
+              </motion.div>
 
-              {/* Hero Phone Placeholder for alignment and spacing */}
-              <div
-                ref={heroPlaceholderRef}
-                className="w-[140px] h-[280px] sm:w-[280px] sm:h-[550px] mx-auto shrink-0 mt-6 sm:mt-8"
-              />
+              {/* Food Creator Card */}
+              <motion.div style={{ y: parallaxSlow }} className="absolute bottom-[2%] sm:bottom-[35%] right-[-15%] sm:right-[10%] z-10">
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1, y: [0, 15, 0] }}
+                  transition={{
+                    opacity: { duration: 1, delay: 0.4 },
+                    scale: { duration: 0.8, delay: 0.4, ease: [0.16, 1, 0.3, 1] },
+                    y: { duration: 5.5, repeat: Infinity, ease: "easeInOut", delay: 0.4 }
+                  }}
+                  className="p-3 bg-[#1C1C21]/80 backdrop-blur-2xl border border-orange-500/50 rounded-full shadow-[0_0_20px_rgba(249,115,22,0.4)] flex items-center gap-3 pr-4 sm:pr-5"
+                >
+                  <img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=100&q=80" alt="Food" className="w-10 h-10 rounded-full object-cover border-2 border-orange-500/50" />
+                  <div className="flex flex-col">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-orange-400">Food</span>
+                    <span className="text-xs font-bold text-white hidden sm:flex items-center gap-1">Top Rated <BadgeCheck size={10} className="text-orange-500" /></span>
+                  </div>
+                </motion.div>
+              </motion.div>
 
-            </motion.div>
-          </div>
-        </section>
+              {/* Fitness Creator Card */}
+              <motion.div style={{ y: parallaxFast }} className="absolute bottom-[6%] sm:bottom-[40%] left-[-10%] sm:left-[12%] z-10">
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1, y: [0, -14, 0] }}
+                  transition={{
+                    opacity: { duration: 1, delay: 0.6 },
+                    scale: { duration: 0.8, delay: 0.6, ease: [0.16, 1, 0.3, 1] },
+                    y: { duration: 5, repeat: Infinity, ease: "easeInOut", delay: 0.6 }
+                  }}
+                  className="p-3 bg-[#1C1C21]/80 backdrop-blur-2xl border border-orange-500/50 rounded-full shadow-[0_0_20px_rgba(249,115,22,0.4)] flex items-center gap-3 pr-4 sm:pr-6"
+                >
+                  <img src="https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&w=100&q=80" alt="Fitness" className="w-10 h-10 rounded-full object-cover border-2 border-emerald-500/50" />
+                  <div className="flex flex-col">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400">Fitness & Gym</span>
+                    <span className="text-xs font-bold text-white hidden sm:block">4.8% Engagement</span>
+                  </div>
+                </motion.div>
+              </motion.div>
+            </div>
 
+            <div className="max-w-4xl mx-auto text-center relative z-10">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 30 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+              >
 
+                <h1 className="text-4xl sm:text-6xl lg:text-[4.5rem] font-black font-display tracking-tight leading-[1.05] text-white drop-shadow-sm">
+                  The Platform Where <br />
+                  <span className="relative inline-block text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-amber-400">
+                    Content Meets
+                  </span> <br />
+                  Performance
+                </h1>
 
-        {/* ================= INTERACTIVE 3-STEP PHONE CAROUSEL ================= */}
-        <section className="pt-12 pb-16 sm:pt-24 sm:pb-32 md:pt-40 md:pb-56 lg:pb-72 px-6 sm:px-12 lg:px-20 bg-gray-50">
-          <div className="max-w-7xl mx-auto">
-
-            {/* Main Shifting Container */}
-            <div className={`p-6 sm:p-8 lg:p-12 rounded-[2rem] sm:rounded-[3rem] border transition-colors duration-500 shadow-xl ${stepsInfo[activeCarouselStep].bgColor} flex flex-col lg:flex-row items-center gap-6 lg:gap-12`}>
-
-              {/* Left Column: Selector (Column view, smaller on mobile) */}
-              <div className="w-full lg:w-1/3 flex flex-col gap-2 lg:gap-3">
-                {stepsInfo.map((step, index) => {
-                  const IconComponent = step.icon;
-                  return (
-                    <button
-                      key={index}
-                      onClick={() => setActiveCarouselStep(index)}
-                      className={`p-3 lg:p-5 rounded-2xl border text-left transition-all duration-300 ${activeCarouselStep === index
-                        ? `bg-white ${step.activeBorder} shadow-md translate-x-1 lg:translate-x-2`
-                        : 'bg-white/40 hover:bg-white/70 border-transparent text-gray-500'
-                        }`}
-                    >
-                      <div className="flex items-center gap-3 lg:gap-4">
-                        <span className={`w-8 h-8 lg:w-10 lg:h-10 shrink-0 rounded-xl flex items-center justify-center shadow-inner ${activeCarouselStep === index ? step.activeIconBg : 'bg-gray-100 text-gray-400'
-                          }`}>
-                          <IconComponent className="w-4 h-4 lg:w-5 lg:h-5" />
-                        </span>
-                        <h4 className="font-black text-xs lg:text-sm tracking-tight text-gray-900">{step.title}</h4>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* Mobile Side-by-Side Wrapper for Phone & Text details */}
-              <div className="w-full lg:flex-1 flex flex-row items-center justify-between gap-4 lg:gap-12 mt-2 lg:mt-0">
-
-                {/* Carousel Phone Placeholder */}
-                <div className="shrink-0 flex justify-center">
-                  <div
-                    ref={carouselPlaceholderRef}
-                    className="w-[140px] h-[280px] sm:w-[280px] sm:h-[550px]"
-                  />
-                </div>
-
-                {/* Explanatory Card details */}
-                <div className="flex-1 text-left">
-                  <span className={`inline-block px-2 py-1 lg:px-3 lg:py-1 rounded-md text-[8px] lg:text-[9px] font-black uppercase tracking-wider shadow-sm border mb-2 lg:mb-4 ${stepsInfo[activeCarouselStep].tagColor}`}>
-                    Action Panel
-                  </span>
-                  <h3 className="text-sm sm:text-2xl lg:text-3xl font-black text-gray-900 tracking-tight mb-2 lg:mb-4 leading-tight">
-                    {stepsInfo[activeCarouselStep].title}
-                  </h3>
-                  <p className="text-gray-500 font-medium text-[10px] sm:text-sm leading-snug lg:leading-relaxed mb-3 lg:mb-6">
-                    {stepsInfo[activeCarouselStep].description}
-                  </p>
+                <div className="flex flex-row items-center justify-center gap-2 sm:gap-4 mt-8 mb-6">
                   <Link
                     to="/register"
-                    className="inline-flex items-center gap-1 lg:gap-2 text-[9px] sm:text-xs font-black uppercase tracking-widest text-[#EA580C] hover:text-[#BE123C] hover:underline"
+                    className="px-5 py-2.5 sm:px-10 sm:py-4 rounded-xl bg-orange-500 text-white font-bold text-[10px] sm:text-sm tracking-widest uppercase hover:bg-orange-600 shadow-[0_10px_30px_rgba(249,115,22,0.3)] transition-all duration-300"
                   >
-                    Join <ArrowRight size={12} className="hidden lg:inline-block" />
+                    Get Started
+                  </Link>
+                  <Link
+                    to="/creators"
+                    className="px-5 py-2.5 sm:px-10 sm:py-4 rounded-xl bg-white/10 backdrop-blur-sm text-white font-bold text-[10px] sm:text-sm tracking-widest uppercase hover:bg-white/20 shadow-[0_10px_30px_rgba(0,0,0,0.2)] transition-all duration-300 border border-white/20"
+                  >
+                    View Creators
+                  </Link>
+                </div>
+
+                {/* Hero Phone Placeholder for alignment and spacing */}
+                <div
+                  ref={heroPlaceholderRef}
+                  className="w-[140px] h-[280px] sm:w-[280px] sm:h-[550px] mx-auto shrink-0 mt-6 sm:mt-8"
+                />
+
+              </motion.div>
+            </div>
+          </section>
+
+
+
+          {/* ================= INTERACTIVE 3-STEP PHONE CAROUSEL ================= */}
+          <section className="pt-12 pb-16 sm:pt-24 sm:pb-32 md:pt-40 md:pb-56 lg:pb-72 px-6 sm:px-12 lg:px-20 bg-gray-50">
+            <div className="max-w-7xl mx-auto">
+
+              {/* Main Shifting Container */}
+              <div className={`p-6 sm:p-8 lg:p-12 rounded-[2rem] sm:rounded-[3rem] border transition-colors duration-500 shadow-xl ${stepsInfo[activeCarouselStep].bgColor} flex flex-col lg:flex-row items-center gap-6 lg:gap-12`}>
+
+                {/* Left Column: Selector (Column view, smaller on mobile) */}
+                <div className="w-full lg:w-1/3 flex flex-col gap-2 lg:gap-3">
+                  {stepsInfo.map((step, index) => {
+                    const IconComponent = step.icon;
+                    return (
+                      <button
+                        key={index}
+                        onClick={() => setActiveCarouselStep(index)}
+                        className={`p-3 lg:p-5 rounded-2xl border text-left transition-all duration-300 ${activeCarouselStep === index
+                          ? `bg-white ${step.activeBorder} shadow-md translate-x-1 lg:translate-x-2`
+                          : 'bg-white/40 hover:bg-white/70 border-transparent text-gray-500'
+                          }`}
+                      >
+                        <div className="flex items-center gap-3 lg:gap-4">
+                          <span className={`w-8 h-8 lg:w-10 lg:h-10 shrink-0 rounded-xl flex items-center justify-center shadow-inner ${activeCarouselStep === index ? step.activeIconBg : 'bg-gray-100 text-gray-400'
+                            }`}>
+                            <IconComponent className="w-4 h-4 lg:w-5 lg:h-5" />
+                          </span>
+                          <h4 className="font-black text-xs lg:text-sm tracking-tight text-gray-900">{step.title}</h4>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Mobile Side-by-Side Wrapper for Phone & Text details */}
+                <div className="w-full lg:flex-1 flex flex-row items-center justify-between gap-4 lg:gap-12 mt-2 lg:mt-0">
+
+                  {/* Carousel Phone Placeholder */}
+                  <div className="shrink-0 flex justify-center">
+                    <div
+                      ref={carouselPlaceholderRef}
+                      className="w-[140px] h-[280px] sm:w-[280px] sm:h-[550px]"
+                    />
+                  </div>
+
+                  {/* Explanatory Card details */}
+                  <div className="flex-1 text-left">
+                    <span className={`inline-block px-2 py-1 lg:px-3 lg:py-1 rounded-md text-[8px] lg:text-[9px] font-black uppercase tracking-wider shadow-sm border mb-2 lg:mb-4 ${stepsInfo[activeCarouselStep].tagColor}`}>
+                      Action Panel
+                    </span>
+                    <h3 className="text-sm sm:text-2xl lg:text-3xl font-black text-gray-900 tracking-tight mb-2 lg:mb-4 leading-tight">
+                      {stepsInfo[activeCarouselStep].title}
+                    </h3>
+                    <p className="text-gray-500 font-medium text-[10px] sm:text-sm leading-snug lg:leading-relaxed mb-3 lg:mb-6">
+                      {stepsInfo[activeCarouselStep].description}
+                    </p>
+                    <Link
+                      to="/register"
+                      className="inline-flex items-center gap-1 lg:gap-2 text-[9px] sm:text-xs font-black uppercase tracking-widest text-[#EA580C] hover:text-[#BE123C] hover:underline"
+                    >
+                      Join <ArrowRight size={12} className="hidden lg:inline-block" />
+                    </Link>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </section>
+
+          {/* ================= WHY CREATORS CHOOSE (TABLET ACCORDION SYNC) ================= */}
+          <section className="pt-12 pb-16 sm:pt-24 sm:pb-32 md:pt-40 md:pb-48 lg:pt-56 lg:pb-64 px-6 sm:px-12 lg:px-20 bg-white">
+            <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-8 sm:gap-16">
+
+              {/* Left Column: Sync Phone Mockup Placeholder */}
+              <div className="w-full lg:w-[500px] shrink-0 flex justify-center">
+                <div
+                  ref={accordionPlaceholderRef}
+                  className="w-[320px] h-[170px] sm:w-[450px] sm:h-[240px] md:w-[550px] md:h-[280px] shrink-0"
+                />
+              </div>
+
+              {/* Right Column: Accordion list */}
+              <div className="w-full lg:w-1/2 flex flex-col gap-4">
+                <div className="mb-4 sm:mb-6">
+                  <span className="text-[#EA580C] text-[9px] sm:text-[10px] font-black tracking-[0.3em] uppercase mb-2 sm:mb-3 block">Platform Overview</span>
+                  <h3 className="text-2xl sm:text-3xl lg:text-4xl font-display font-black text-gray-900 tracking-tight leading-none">
+                    Engineered To Build Trust
+                  </h3>
+                </div>
+
+                <div className="space-y-2 sm:space-y-4">
+                  {accordionItems.map((item, index) => (
+                    <div
+                      key={index}
+                      className={`border rounded-2xl overflow-hidden transition-all duration-300 ${activeAccordion === index ? 'bg-orange-50/20 border-orange-200/60 shadow-sm' : 'border-gray-100 bg-white'
+                        }`}
+                    >
+                      <button
+                        onClick={() => setActiveAccordion(index)}
+                        className="w-full px-4 py-3 sm:px-6 sm:py-5 text-left flex justify-between items-center focus:outline-none"
+                      >
+                        <span className="font-black font-display text-sm sm:text-base tracking-tight text-gray-900">{item.title}</span>
+                        <ChevronDown size={18} className={`shrink-0 text-gray-400 transition-transform duration-300 ${activeAccordion === index ? 'rotate-180 text-orange-500' : ''}`} />
+                      </button>
+
+                      <AnimatePresence initial={false}>
+                        {activeAccordion === index && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.25 }}
+                          >
+                            <div className="px-4 pb-4 sm:px-6 sm:pb-6 text-[10px] sm:text-xs text-gray-500 font-medium leading-relaxed border-t border-gray-100/50 pt-2 sm:pt-3">
+                              {item.desc}
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+            </div>
+          </section>
+
+          {/* ================= TWO-SIDED PLATFORM PROTOCOL ================= */}
+          <section className="py-8 sm:py-20 md:py-32 lg:py-48 px-6 sm:px-12 bg-gray-50 border-t border-gray-200/60 min-h-[100vh] sm:min-h-0 flex items-center">
+            <div className="w-full max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-6 sm:gap-16">
+
+              {/* Left side: content */}
+              <div className="w-full lg:w-1/2 min-h-[auto] sm:min-h-[480px] flex flex-col justify-center">
+                <span className={`inline-block w-max px-3 py-1 sm:px-4 sm:py-1.5 rounded-full text-[8px] sm:text-[10px] font-black tracking-[0.2em] uppercase mb-2 sm:mb-4 shadow-sm border transition-colors duration-500 ${activePlatformSide === 'creator' ? 'bg-indigo-100 text-indigo-600 border-indigo-200' : 'bg-pink-100 text-pink-600 border-pink-200'
+                  }`}>
+                  Workflow Protocol
+                </span>
+                <h2 className="text-2xl sm:text-5xl lg:text-6xl font-black font-display text-gray-900 leading-tight sm:leading-none tracking-tight mb-4 sm:mb-8">
+                  Two sides. <br />
+                  <span className={`text-transparent bg-clip-text bg-gradient-to-r transition-all duration-500 ${activePlatformSide === 'creator' ? 'from-indigo-500 to-purple-500' : 'from-pink-500 to-rose-500'
+                    }`}>
+                    One platform.
+                  </span>
+                </h2>
+
+                {/* Dynamic Steps based on activePlatformSide */}
+                <div className="relative">
+                  <AnimatePresence mode="wait">
+                    {activePlatformSide === 'creator' ? (
+                      <motion.div
+                        key="creator-steps"
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 20 }}
+                        transition={{ duration: 0.4 }}
+                        className="grid gap-3 sm:gap-8"
+                      >
+                        <div className="flex gap-3 sm:gap-5">
+                          <div className="shrink-0 w-6 h-6 sm:w-12 sm:h-12 rounded-lg sm:rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-500 shadow-inner">
+                            <User className="w-3 h-3 sm:w-5 sm:h-5" />
+                          </div>
+                          <div>
+                            <h4 className="text-sm sm:text-xl font-black font-display text-gray-900 mb-0 sm:mb-1">Build your profile</h4>
+                            <p className="text-gray-500 text-[9px] sm:text-sm leading-tight sm:leading-relaxed font-medium">Showcase your niche, follower stats, past work, and rate card. Connect networks seamlessly.</p>
+                          </div>
+                        </div>
+                        <div className="flex gap-3 sm:gap-5">
+                          <div className="shrink-0 w-6 h-6 sm:w-12 sm:h-12 rounded-lg sm:rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-500 shadow-inner">
+                            <Target className="w-3 h-3 sm:w-5 sm:h-5" />
+                          </div>
+                          <div>
+                            <h4 className="text-sm sm:text-xl font-black font-display text-gray-900 mb-0 sm:mb-1">Browse campaigns</h4>
+                            <p className="text-gray-500 text-[9px] sm:text-sm leading-tight sm:leading-relaxed font-medium">Filter by category, budget, and region. Apply to missions that match your storytelling style.</p>
+                          </div>
+                        </div>
+                        <div className="flex gap-3 sm:gap-5">
+                          <div className="shrink-0 w-6 h-6 sm:w-12 sm:h-12 rounded-lg sm:rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-500 shadow-inner">
+                            <Zap className="w-3 h-3 sm:w-5 sm:h-5" />
+                          </div>
+                          <div>
+                            <h4 className="text-sm sm:text-xl font-black font-display text-gray-900 mb-0 sm:mb-1">Execute & Get Paid</h4>
+                            <p className="text-gray-500 text-[9px] sm:text-sm leading-tight sm:leading-relaxed font-medium">Collaborate through our secure dashboard, complete milestones, and receive automated payouts.</p>
+                          </div>
+                        </div>
+
+                        <div className="pt-2 sm:pt-4 text-left">
+                          <Link to="/creator-guidelines" className="inline-flex items-center gap-2 px-6 py-3.5 bg-indigo-600 text-white rounded-xl font-black uppercase tracking-widest text-[10px] sm:text-xs hover:bg-indigo-700 transition-colors shadow-md shadow-indigo-600/20 active:scale-95 transition-transform duration-200">
+                            View Creator Guidelines <ChevronRight size={14} />
+                          </Link>
+                        </div>
+                      </motion.div>
+                    ) : (
+                      <motion.div
+                        key="brand-steps"
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 20 }}
+                        transition={{ duration: 0.4 }}
+                        className="grid gap-3 sm:gap-8"
+                      >
+                        <div className="flex gap-3 sm:gap-5">
+                          <div className="shrink-0 w-6 h-6 sm:w-12 sm:h-12 rounded-lg sm:rounded-2xl bg-pink-50 flex items-center justify-center text-pink-500 shadow-inner">
+                            <Search className="w-3 h-3 sm:w-5 sm:h-5" />
+                          </div>
+                          <div>
+                            <h4 className="text-sm sm:text-xl font-black font-display text-gray-900 mb-0 sm:mb-1">Find the right talent</h4>
+                            <p className="text-gray-500 text-[9px] sm:text-sm leading-tight sm:leading-relaxed font-medium">Use advanced filters to discover creators that align with your brand values and mission.</p>
+                          </div>
+                        </div>
+                        <div className="flex gap-3 sm:gap-5">
+                          <div className="shrink-0 w-6 h-6 sm:w-12 sm:h-12 rounded-lg sm:rounded-2xl bg-pink-50 flex items-center justify-center text-pink-500 shadow-inner">
+                            <ShieldCheck className="w-3 h-3 sm:w-5 sm:h-5" />
+                          </div>
+                          <div>
+                            <h4 className="text-sm sm:text-xl font-black font-display text-gray-900 mb-0 sm:mb-1">Set clear milestones</h4>
+                            <p className="text-gray-500 text-[9px] sm:text-sm leading-tight sm:leading-relaxed font-medium">Define deliverables and protect your budget with our secure payment pipeline.</p>
+                          </div>
+                        </div>
+                        <div className="flex gap-3 sm:gap-5">
+                          <div className="shrink-0 w-6 h-6 sm:w-12 sm:h-12 rounded-lg sm:rounded-2xl bg-pink-50 flex items-center justify-center text-pink-500 shadow-inner">
+                            <TrendingUp className="w-3 h-3 sm:w-5 sm:h-5" />
+                          </div>
+                          <div>
+                            <h4 className="text-sm sm:text-xl font-black font-display text-gray-900 mb-0 sm:mb-1">Scale with confidence</h4>
+                            <p className="text-gray-500 text-[9px] sm:text-sm leading-tight sm:leading-relaxed font-medium">Manage all collaborations in one command center with real-time analytics and tracking.</p>
+                          </div>
+                        </div>
+
+                        <div className="pt-2 sm:pt-4 text-left">
+                          <Link to="/brand-handbook" className="inline-flex items-center gap-2 px-6 py-3.5 bg-pink-600 text-white rounded-xl font-black uppercase tracking-widest text-[10px] sm:text-xs hover:bg-pink-700 transition-colors shadow-md shadow-pink-600/20 active:scale-95 transition-transform duration-200">
+                            View Brand Handbook <ChevronRight size={14} />
+                          </Link>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </div>
+
+              {/* Right side: Two-Sided Platform placeholder */}
+              <div className="w-full lg:w-[360px] shrink-0 flex justify-center">
+                <div
+                  ref={chatPlaceholderRef}
+                  className="w-[120px] h-[240px] sm:w-[280px] sm:h-[550px] shrink-0"
+                />
+              </div>
+
+            </div>
+          </section>
+
+
+
+          {/* ================= DRAGGABLE VIDEO CAROUSEL ================= */}
+          <section className="py-24 px-6 sm:px-12 bg-gray-50 border-t border-gray-200/60 overflow-hidden">
+            <div className="max-w-7xl mx-auto">
+              <div className="mb-16 text-center max-w-2xl mx-auto">
+                <span className="inline-block px-4 py-1.5 rounded-full bg-orange-100 text-orange-600 text-[10px] font-black tracking-widest uppercase mb-4 border border-orange-200">
+                  Creator Showcase
+                </span>
+                <h2 className="text-3xl sm:text-5xl font-black font-display text-gray-900 mb-4 tracking-tight leading-tight">
+                  Vetted Creators
+                </h2>
+                <p className="text-gray-500 text-sm sm:text-base font-medium">
+                  Hover over the creator cards below to view their showcase details.
+                </p>
+              </div>
+
+              {/* Static columns flex list */}
+              <div className="flex flex-wrap justify-center gap-8 px-4">
+                {(featuredCreators && featuredCreators.length > 0
+                  ? (user ? featuredCreators.filter(c => {
+                    const creatorUserId = c.userId?._id || c.userId;
+                    return creatorUserId !== user._id;
+                  }) : featuredCreators)
+                  : [
+                    { name: 'Alice Smith', niche: 'Tech & Gadgets', stat: '4.8% Engagement', url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80' },
+                    { name: 'Marcus Jones', niche: 'Gaming & Setup', stat: '🪙4.5L Earned', url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80' },
+                    { name: 'Saria Roy', niche: 'Travel & Lifestyle', stat: '98% Completion', url: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=400&q=80' },
+                    { name: 'Kenji Suzuki', niche: 'Food & Culinary', stat: '96% Reach Rate', url: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80' }
+                  ]).slice(0, 3).map((creator, i) => {
+                    const isFromDb = !!creator._id;
+                    const followerText = isFromDb
+                      ? (creator.followerCount >= 1000000
+                        ? `${(creator.followerCount / 1000000).toFixed(1)}M Followers`
+                        : creator.followerCount >= 1000
+                          ? `${Math.round(creator.followerCount / 1000)}K Followers`
+                          : `${creator.followerCount || 0} Followers`)
+                      : creator.stat;
+
+                    const imageUrl = isFromDb
+                      ? (creator.profilePicture || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80')
+                      : creator.url;
+
+                    return (
+                      <motion.div
+                        key={creator._id || i}
+                        whileHover={{ scale: 1.05, y: -10 }}
+                        className="w-64 sm:w-72 shrink-0 bg-white border border-gray-200/80 rounded-[2.5rem] overflow-hidden shadow-sm flex flex-col group relative text-left"
+                      >
+                        {/* Aspect video/image thumb */}
+                        <div className="h-80 relative bg-gray-100 overflow-hidden">
+                          <img src={imageUrl} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt={creator.name} />
+                          <div className="absolute inset-0 bg-gradient-to-t from-gray-950 via-transparent to-transparent opacity-80 z-10"></div>
+
+
+
+                          <div className="absolute bottom-4 left-4 z-20 text-white flex flex-col gap-1">
+                            <h4 className="text-sm font-black tracking-tight leading-tight">{creator.name}</h4>
+                            <p className="text-[10px] text-gray-300 font-bold uppercase tracking-widest">{creator.niche}</p>
+                          </div>
+                        </div>
+
+                        <div className="p-5 flex justify-between items-center border-t border-gray-100">
+                          <span className="text-[9px] font-black text-orange-500 uppercase tracking-widest bg-orange-50 border border-orange-100 px-3 py-1 rounded-md">
+                            {followerText}
+                          </span>
+                          {isFromDb ? (
+                            <Link
+                              to={user ? `/creators/${creator._id}` : '/login'}
+                              className="px-3.5 py-1.5 bg-gray-900 text-white hover:bg-[#EA580C] font-black text-[9px] uppercase tracking-widest rounded-xl transition-all shadow-md active:scale-95 flex items-center gap-1.5"
+                            >
+                              View Profile
+                            </Link>
+                          ) : (
+                            <span className="text-[9px] text-gray-400 font-black uppercase tracking-widest">
+                              Verified 🌟
+                            </span>
+                          )}
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+              </div>
+            </div>
+          </section>
+
+          {/* ================= TRENDING CAMPAIGNS (GRID) ================= */}
+          <section className="py-24 px-6 sm:px-12 bg-white">
+            <div className="max-w-7xl mx-auto">
+              <div className="flex flex-col md:flex-row md:items-end justify-between mb-20 gap-8">
+                <div className="max-w-2xl">
+                  <span className="text-orange-500 text-[10px] font-black tracking-[0.3em] uppercase mb-4 block">Marketplace Hub</span>
+                  <h2 className="text-4xl lg:text-5xl font-black font-display text-gray-900 leading-none tracking-tight">
+                    Active Brand <br /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-amber-500">Campaigns</span>
+                  </h2>
+                </div>
+                <Link
+                  to="/campaigns"
+                  className="group flex items-center gap-3 bg-gray-50 px-8 py-4 rounded-xl border border-gray-200 hover:border-orange-500 hover:bg-white transition-all shadow-sm"
+                >
+                  <span className="font-black uppercase tracking-widest text-[11px] text-gray-700 group-hover:text-orange-500">View All Missions</span>
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform text-orange-500" />
+                </Link>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+                {featuredCampaigns.length > 0 ? (
+                  featuredCampaigns.map((campaign, i) => (
+                    <motion.div
+                      key={campaign._id}
+                      whileHover={{ y: -8 }}
+                      className="group flex flex-col bg-white rounded-[2.5rem] overflow-hidden border border-gray-200/80 shadow-sm hover:shadow-[0_20px_45px_rgba(0,0,0,0.06)] transition-all duration-500 h-full relative text-left"
+                    >
+                      {/* Cover Image Section */}
+                      <div className="h-64 relative bg-gray-100 overflow-hidden shrink-0">
+                        <img
+                          src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                          alt="Campaign Cover"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-gray-950 via-gray-900/40 to-transparent opacity-90 z-10"></div>
+
+                        {/* Top Badges */}
+                        <div className="absolute top-5 left-5 z-20 flex gap-2">
+                          <span className="text-[9px] font-black text-white uppercase tracking-widest bg-white/20 backdrop-blur-md border border-white/10 px-3 py-1 rounded-md">
+                            {campaign.niche || 'General'}
+                          </span>
+                        </div>
+                        <div className="absolute top-5 right-5 z-20">
+                          <span className="text-[9px] font-black text-emerald-400 uppercase tracking-widest bg-emerald-500/10 backdrop-blur-md border border-emerald-500/20 px-3 py-1 rounded-md flex items-center gap-1.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                            Active
+                          </span>
+                        </div>
+
+                        {/* Title & Brand Bottom Left */}
+                        <div className="absolute bottom-5 left-5 right-5 z-20 text-white flex flex-col gap-2">
+                          <div className="flex items-center gap-2 mb-1">
+                            {campaign.brandId?.logo ? (
+                              <img src={campaign.brandId.logo} className="w-5 h-5 rounded-full bg-white object-cover border border-white/20" alt="" />
+                            ) : (
+                              <div className="w-5 h-5 rounded-full bg-white text-gray-900 flex items-center justify-center text-[10px] font-black">
+                                {campaign.brandId?.businessName?.[0] || 'B'}
+                              </div>
+                            )}
+                            <span className="text-[10px] text-gray-300 font-bold uppercase tracking-widest line-clamp-1">
+                              {campaign.brandId?.businessName || 'Brand Partner'}
+                            </span>
+                          </div>
+                          <h3 className="text-lg font-black font-display tracking-tight leading-tight line-clamp-2">
+                            {campaign.title}
+                          </h3>
+                        </div>
+                      </div>
+
+                      {/* Content Section */}
+                      <div className="p-6 flex-grow flex flex-col justify-between">
+                        <div>
+                          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">
+                            Key Requirements
+                          </p>
+                          {campaign.requirements && campaign.requirements.length > 0 ? (
+                            <div className="flex flex-wrap gap-2">
+                              {campaign.requirements.slice(0, 3).map((req, idx) => (
+                                <span key={idx} className="px-2.5 py-1.5 bg-gray-50 border border-gray-100 text-gray-600 text-[10px] font-bold rounded-lg truncate max-w-full">
+                                  {req}
+                                </span>
+                              ))}
+                              {campaign.requirements.length > 3 && (
+                                <span className="px-2.5 py-1.5 bg-gray-50 border border-gray-100 text-gray-400 text-[10px] font-bold rounded-lg">
+                                  +{campaign.requirements.length - 3} more
+                                </span>
+                              )}
+                            </div>
+                          ) : (
+                            <div className="flex flex-wrap gap-2">
+                              <span className="px-2.5 py-1.5 bg-orange-50 border border-orange-100 text-orange-600 text-[10px] font-bold rounded-lg">High-Quality Content</span>
+                              <span className="px-2.5 py-1.5 bg-orange-50 border border-orange-100 text-orange-600 text-[10px] font-bold rounded-lg">Brand Integration</span>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="flex justify-between items-center pt-6 border-t border-gray-100 mt-6">
+                          <div>
+                            <p className="text-[9px] text-gray-400 uppercase font-black tracking-widest mb-1">Budget</p>
+                            <p className="text-lg font-black font-display text-gray-900">🪙{campaign.budget?.toLocaleString()}</p>
+                          </div>
+                          <Link
+                            to={`/campaigns/${campaign._id}`}
+                            className="px-4 py-2 rounded-xl bg-gray-900 text-white hover:bg-orange-500 font-black text-[10px] uppercase tracking-widest transition-all shadow-md active:scale-95 flex items-center gap-1.5"
+                          >
+                            View Brief <ArrowRight size={12} />
+                          </Link>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))
+                ) : (
+                  <div className="col-span-3 bg-gray-50 rounded-[2rem] text-center py-20 border border-dashed border-gray-200">
+                    <p className="text-gray-500 font-bold text-base mb-4">No active brand campaigns available</p>
+                    <Link to="/register" className="text-orange-500 font-black hover:underline tracking-widest uppercase text-xs">Register and post brief →</Link>
+                  </div>
+                )}
+              </div>
+            </div>
+          </section>
+
+          {/* ================= FINAL CALL TO ACTION (CTA) ================= */}
+          <section className="py-24 px-6 sm:px-12 bg-white">
+            <div className="max-w-5xl mx-auto bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-[3rem] p-10 sm:p-16 text-center relative overflow-hidden shadow-2xl">
+              <div className="absolute inset-0 bg-grid-glow opacity-20 pointer-events-none"></div>
+
+              <div className="relative z-10 flex flex-col items-center gap-6 max-w-2xl mx-auto">
+                <span className="inline-block px-4 py-1.5 bg-white/15 border border-white/20 text-white text-[10px] font-black tracking-widest uppercase rounded-full">
+                  Get Started
+                </span>
+                <h2 className="text-4xl sm:text-5xl font-black font-display tracking-tight leading-none">
+                  Ready to Scale Your Brand?
+                </h2>
+                <p className="text-orange-50 text-sm sm:text-base font-medium leading-relaxed">
+                  Connect with thousands of top-performing content creators. Protect campaigns with secure Razorpay payments and automate payouts.
+                </p>
+                <div className="flex flex-col sm:flex-row items-center gap-4 w-full justify-center mt-4">
+                  <Link
+                    to="/register"
+                    className="w-full sm:w-auto px-10 py-4 bg-white text-orange-600 font-black text-xs uppercase tracking-widest hover:bg-gray-50 rounded-xl transition-all shadow-lg active:scale-95"
+                  >
+                    Join as Brand
+                  </Link>
+                  <Link
+                    to="/register"
+                    className="w-full sm:w-auto px-10 py-4 bg-transparent border-2 border-white text-white font-black text-xs uppercase tracking-widest hover:bg-white/10 rounded-xl transition-all active:scale-95"
+                  >
+                    Join as Creator
                   </Link>
                 </div>
               </div>
-
             </div>
-          </div>
-        </section>
+          </section>
 
-        {/* ================= WHY CREATORS CHOOSE (TABLET ACCORDION SYNC) ================= */}
-        <section className="pt-12 pb-16 sm:pt-24 sm:pb-32 md:pt-40 md:pb-48 lg:pt-56 lg:pb-64 px-6 sm:px-12 lg:px-20 bg-white">
-          <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-8 sm:gap-16">
-
-            {/* Left Column: Sync Phone Mockup Placeholder */}
-            <div className="w-full lg:w-[500px] shrink-0 flex justify-center">
-              <div
-                ref={accordionPlaceholderRef}
-                className="w-[320px] h-[170px] sm:w-[450px] sm:h-[240px] md:w-[550px] md:h-[280px] shrink-0"
-              />
-            </div>
-
-            {/* Right Column: Accordion list */}
-            <div className="w-full lg:w-1/2 flex flex-col gap-4">
-              <div className="mb-4 sm:mb-6">
-                <span className="text-[#EA580C] text-[9px] sm:text-[10px] font-black tracking-[0.3em] uppercase mb-2 sm:mb-3 block">Platform Infrastructure</span>
-                <h3 className="text-2xl sm:text-3xl lg:text-4xl font-display font-black text-gray-900 tracking-tight leading-none">
-                  Engineered For Creative Trust
-                </h3>
-              </div>
-
-              <div className="space-y-2 sm:space-y-4">
-                {accordionItems.map((item, index) => (
-                  <div
-                    key={index}
-                    className={`border rounded-2xl overflow-hidden transition-all duration-300 ${activeAccordion === index ? 'bg-orange-50/20 border-orange-200/60 shadow-sm' : 'border-gray-100 bg-white'
-                      }`}
-                  >
-                    <button
-                      onClick={() => setActiveAccordion(index)}
-                      className="w-full px-4 py-3 sm:px-6 sm:py-5 text-left flex justify-between items-center focus:outline-none"
-                    >
-                      <span className="font-black font-display text-sm sm:text-base tracking-tight text-gray-900">{item.title}</span>
-                      <ChevronDown size={18} className={`shrink-0 text-gray-400 transition-transform duration-300 ${activeAccordion === index ? 'rotate-180 text-orange-500' : ''}`} />
-                    </button>
-
-                    <AnimatePresence initial={false}>
-                      {activeAccordion === index && (
-                        <motion.div
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: 'auto', opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          transition={{ duration: 0.25 }}
-                        >
-                          <div className="px-4 pb-4 sm:px-6 sm:pb-6 text-[10px] sm:text-xs text-gray-500 font-medium leading-relaxed border-t border-gray-100/50 pt-2 sm:pt-3">
-                            {item.desc}
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-          </div>
-        </section>
-
-        {/* ================= TWO-SIDED PLATFORM PROTOCOL ================= */}
-        <section className="py-8 sm:py-20 md:py-32 lg:py-48 px-6 sm:px-12 bg-gray-50 border-t border-gray-200/60 min-h-[100vh] sm:min-h-0 flex items-center">
-          <div className="w-full max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-6 sm:gap-16">
-
-            {/* Left side: content */}
-            <div className="w-full lg:w-1/2 min-h-[auto] sm:min-h-[480px] flex flex-col justify-center">
-              <span className={`inline-block w-max px-3 py-1 sm:px-4 sm:py-1.5 rounded-full text-[8px] sm:text-[10px] font-black tracking-[0.2em] uppercase mb-2 sm:mb-4 shadow-sm border transition-colors duration-500 ${activePlatformSide === 'creator' ? 'bg-indigo-100 text-indigo-600 border-indigo-200' : 'bg-pink-100 text-pink-600 border-pink-200'
-                }`}>
-                Workflow Protocol
-              </span>
-              <h2 className="text-2xl sm:text-5xl lg:text-6xl font-black font-display text-gray-900 leading-tight sm:leading-none tracking-tight mb-4 sm:mb-8">
-                Two sides. <br />
-                <span className={`text-transparent bg-clip-text bg-gradient-to-r transition-all duration-500 ${activePlatformSide === 'creator' ? 'from-indigo-500 to-purple-500' : 'from-pink-500 to-rose-500'
-                  }`}>
-                  One platform.
-                </span>
-              </h2>
-
-              {/* Dynamic Steps based on activePlatformSide */}
-              <div className="relative">
-                <AnimatePresence mode="wait">
-                  {activePlatformSide === 'creator' ? (
-                    <motion.div
-                      key="creator-steps"
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: 20 }}
-                      transition={{ duration: 0.4 }}
-                      className="grid gap-3 sm:gap-8"
-                    >
-                      <div className="flex gap-3 sm:gap-5">
-                        <div className="shrink-0 w-6 h-6 sm:w-12 sm:h-12 rounded-lg sm:rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-500 shadow-inner">
-                          <User className="w-3 h-3 sm:w-5 sm:h-5" />
-                        </div>
-                        <div>
-                          <h4 className="text-sm sm:text-xl font-black font-display text-gray-900 mb-0 sm:mb-1">Build your profile</h4>
-                          <p className="text-gray-500 text-[9px] sm:text-sm leading-tight sm:leading-relaxed font-medium">Showcase your niche, follower stats, past work, and rate card. Connect networks seamlessly.</p>
-                        </div>
-                      </div>
-                      <div className="flex gap-3 sm:gap-5">
-                        <div className="shrink-0 w-6 h-6 sm:w-12 sm:h-12 rounded-lg sm:rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-500 shadow-inner">
-                          <Target className="w-3 h-3 sm:w-5 sm:h-5" />
-                        </div>
-                        <div>
-                          <h4 className="text-sm sm:text-xl font-black font-display text-gray-900 mb-0 sm:mb-1">Browse campaigns</h4>
-                          <p className="text-gray-500 text-[9px] sm:text-sm leading-tight sm:leading-relaxed font-medium">Filter by category, budget, and region. Apply to missions that match your storytelling style.</p>
-                        </div>
-                      </div>
-                      <div className="flex gap-3 sm:gap-5">
-                        <div className="shrink-0 w-6 h-6 sm:w-12 sm:h-12 rounded-lg sm:rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-500 shadow-inner">
-                          <Zap className="w-3 h-3 sm:w-5 sm:h-5" />
-                        </div>
-                        <div>
-                          <h4 className="text-sm sm:text-xl font-black font-display text-gray-900 mb-0 sm:mb-1">Execute & Get Paid</h4>
-                          <p className="text-gray-500 text-[9px] sm:text-sm leading-tight sm:leading-relaxed font-medium">Collaborate through our secure dashboard, complete milestones, and receive automated payouts.</p>
-                        </div>
-                      </div>
-                      
-                      <div className="pt-2 sm:pt-4 text-left">
-                        <Link to="/creator-guidelines" className="inline-flex items-center gap-2 px-6 py-3.5 bg-indigo-600 text-white rounded-xl font-black uppercase tracking-widest text-[10px] sm:text-xs hover:bg-indigo-700 transition-colors shadow-md shadow-indigo-600/20 active:scale-95 transition-transform duration-200">
-                          View Creator Guidelines <ChevronRight size={14} />
-                        </Link>
-                      </div>
-                    </motion.div>
-                  ) : (
-                    <motion.div
-                      key="brand-steps"
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: 20 }}
-                      transition={{ duration: 0.4 }}
-                      className="grid gap-3 sm:gap-8"
-                    >
-                      <div className="flex gap-3 sm:gap-5">
-                        <div className="shrink-0 w-6 h-6 sm:w-12 sm:h-12 rounded-lg sm:rounded-2xl bg-pink-50 flex items-center justify-center text-pink-500 shadow-inner">
-                          <Search className="w-3 h-3 sm:w-5 sm:h-5" />
-                        </div>
-                        <div>
-                          <h4 className="text-sm sm:text-xl font-black font-display text-gray-900 mb-0 sm:mb-1">Find the right talent</h4>
-                          <p className="text-gray-500 text-[9px] sm:text-sm leading-tight sm:leading-relaxed font-medium">Use advanced filters to discover creators that align with your brand values and mission.</p>
-                        </div>
-                      </div>
-                      <div className="flex gap-3 sm:gap-5">
-                        <div className="shrink-0 w-6 h-6 sm:w-12 sm:h-12 rounded-lg sm:rounded-2xl bg-pink-50 flex items-center justify-center text-pink-500 shadow-inner">
-                          <ShieldCheck className="w-3 h-3 sm:w-5 sm:h-5" />
-                        </div>
-                        <div>
-                          <h4 className="text-sm sm:text-xl font-black font-display text-gray-900 mb-0 sm:mb-1">Set clear milestones</h4>
-                          <p className="text-gray-500 text-[9px] sm:text-sm leading-tight sm:leading-relaxed font-medium">Define deliverables and protect your budget with our secure payment pipeline.</p>
-                        </div>
-                      </div>
-                      <div className="flex gap-3 sm:gap-5">
-                        <div className="shrink-0 w-6 h-6 sm:w-12 sm:h-12 rounded-lg sm:rounded-2xl bg-pink-50 flex items-center justify-center text-pink-500 shadow-inner">
-                          <TrendingUp className="w-3 h-3 sm:w-5 sm:h-5" />
-                        </div>
-                        <div>
-                          <h4 className="text-sm sm:text-xl font-black font-display text-gray-900 mb-0 sm:mb-1">Scale with confidence</h4>
-                          <p className="text-gray-500 text-[9px] sm:text-sm leading-tight sm:leading-relaxed font-medium">Manage all collaborations in one command center with real-time analytics and tracking.</p>
-                        </div>
-                      </div>
-
-                      <div className="pt-2 sm:pt-4 text-left">
-                        <Link to="/brand-handbook" className="inline-flex items-center gap-2 px-6 py-3.5 bg-pink-600 text-white rounded-xl font-black uppercase tracking-widest text-[10px] sm:text-xs hover:bg-pink-700 transition-colors shadow-md shadow-pink-600/20 active:scale-95 transition-transform duration-200">
-                          View Brand Handbook <ChevronRight size={14} />
-                        </Link>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            </div>
-
-            {/* Right side: Two-Sided Platform placeholder */}
-            <div className="w-full lg:w-[360px] shrink-0 flex justify-center">
-              <div
-                ref={chatPlaceholderRef}
-                className="w-[120px] h-[240px] sm:w-[280px] sm:h-[550px] shrink-0"
-              />
-            </div>
-
-          </div>
-        </section>
-
-
-
-        {/* ================= DRAGGABLE VIDEO CAROUSEL ================= */}
-        <section className="py-24 px-6 sm:px-12 bg-gray-50 border-t border-gray-200/60 overflow-hidden">
-          <div className="max-w-7xl mx-auto">
-            <div className="mb-16 text-center max-w-2xl mx-auto">
-              <span className="inline-block px-4 py-1.5 rounded-full bg-orange-100 text-orange-600 text-[10px] font-black tracking-widest uppercase mb-4 border border-orange-200">
-                Creator Showcase
-              </span>
-              <h2 className="text-3xl sm:text-5xl font-black font-display text-gray-900 mb-4 tracking-tight leading-tight">
-                Vetted Creators
-              </h2>
-              <p className="text-gray-500 text-sm sm:text-base font-medium">
-                Hover over the creator cards below to view their showcase details.
-              </p>
-            </div>
-
-            {/* Static columns flex list */}
-            <div className="flex flex-wrap justify-center gap-8 px-4">
-              {(featuredCreators && featuredCreators.length > 0
-                ? (user ? featuredCreators.filter(c => {
-                  const creatorUserId = c.userId?._id || c.userId;
-                  return creatorUserId !== user._id;
-                }) : featuredCreators)
-                : [
-                  { name: 'Alice Smith', niche: 'Tech & Gadgets', stat: '4.8% Engagement', url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80' },
-                  { name: 'Marcus Jones', niche: 'Gaming & Setup', stat: '🪙4.5L Earned', url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80' },
-                  { name: 'Saria Roy', niche: 'Travel & Lifestyle', stat: '98% Completion', url: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=400&q=80' },
-                  { name: 'Kenji Suzuki', niche: 'Food & Culinary', stat: '96% Reach Rate', url: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80' }
-                ]).slice(0, 3).map((creator, i) => {
-                  const isFromDb = !!creator._id;
-                  const followerText = isFromDb
-                    ? (creator.followerCount >= 1000000
-                      ? `${(creator.followerCount / 1000000).toFixed(1)}M Followers`
-                      : creator.followerCount >= 1000
-                        ? `${Math.round(creator.followerCount / 1000)}K Followers`
-                        : `${creator.followerCount || 0} Followers`)
-                    : creator.stat;
-
-                  const imageUrl = isFromDb
-                    ? (creator.profilePicture || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80')
-                    : creator.url;
-
-                  return (
-                    <motion.div
-                      key={creator._id || i}
-                      whileHover={{ scale: 1.05, y: -10 }}
-                      className="w-64 sm:w-72 shrink-0 bg-white border border-gray-200/80 rounded-[2.5rem] overflow-hidden shadow-sm flex flex-col group relative text-left"
-                    >
-                      {/* Aspect video/image thumb */}
-                      <div className="h-80 relative bg-gray-100 overflow-hidden">
-                        <img src={imageUrl} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt={creator.name} />
-                        <div className="absolute inset-0 bg-gradient-to-t from-gray-950 via-transparent to-transparent opacity-80 z-10"></div>
-
-
-
-                        <div className="absolute bottom-4 left-4 z-20 text-white flex flex-col gap-1">
-                          <h4 className="text-sm font-black tracking-tight leading-tight">{creator.name}</h4>
-                          <p className="text-[10px] text-gray-300 font-bold uppercase tracking-widest">{creator.niche}</p>
-                        </div>
-                      </div>
-
-                      <div className="p-5 flex justify-between items-center border-t border-gray-100">
-                        <span className="text-[9px] font-black text-orange-500 uppercase tracking-widest bg-orange-50 border border-orange-100 px-3 py-1 rounded-md">
-                          {followerText}
-                        </span>
-                        {isFromDb ? (
-                          <Link
-                            to={user ? `/creators/${creator._id}` : '/login'}
-                            className="px-3.5 py-1.5 bg-gray-900 text-white hover:bg-[#EA580C] font-black text-[9px] uppercase tracking-widest rounded-xl transition-all shadow-md active:scale-95 flex items-center gap-1.5"
-                          >
-                            View Profile
-                          </Link>
-                        ) : (
-                          <span className="text-[9px] text-gray-400 font-black uppercase tracking-widest">
-                            Verified 🌟
-                          </span>
-                        )}
-                      </div>
-                    </motion.div>
-                  );
-                })}
-            </div>
-          </div>
-        </section>
-
-        {/* ================= TRENDING CAMPAIGNS (GRID) ================= */}
-        <section className="py-24 px-6 sm:px-12 bg-white">
-          <div className="max-w-7xl mx-auto">
-            <div className="flex flex-col md:flex-row md:items-end justify-between mb-20 gap-8">
-              <div className="max-w-2xl">
-                <span className="text-orange-500 text-[10px] font-black tracking-[0.3em] uppercase mb-4 block">Marketplace Hub</span>
-                <h2 className="text-4xl lg:text-5xl font-black font-display text-gray-900 leading-none tracking-tight">
-                  Active Brand <br /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-amber-500">Campaigns</span>
-                </h2>
-              </div>
-              <Link
-                to="/campaigns"
-                className="group flex items-center gap-3 bg-gray-50 px-8 py-4 rounded-xl border border-gray-200 hover:border-orange-500 hover:bg-white transition-all shadow-sm"
-              >
-                <span className="font-black uppercase tracking-widest text-[11px] text-gray-700 group-hover:text-orange-500">View All Missions</span>
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform text-orange-500" />
-              </Link>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-              {featuredCampaigns.length > 0 ? (
-                featuredCampaigns.map((campaign, i) => (
-                  <motion.div
-                    key={campaign._id}
-                    whileHover={{ y: -8 }}
-                    className="group flex flex-col bg-white rounded-[2.5rem] overflow-hidden border border-gray-200/80 shadow-sm hover:shadow-[0_20px_45px_rgba(0,0,0,0.06)] transition-all duration-500 h-full relative text-left"
-                  >
-                    {/* Cover Image Section */}
-                    <div className="h-64 relative bg-gray-100 overflow-hidden shrink-0">
-                      <img
-                        src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80"
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                        alt="Campaign Cover"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-gray-950 via-gray-900/40 to-transparent opacity-90 z-10"></div>
-
-                      {/* Top Badges */}
-                      <div className="absolute top-5 left-5 z-20 flex gap-2">
-                        <span className="text-[9px] font-black text-white uppercase tracking-widest bg-white/20 backdrop-blur-md border border-white/10 px-3 py-1 rounded-md">
-                          {campaign.niche || 'General'}
-                        </span>
-                      </div>
-                      <div className="absolute top-5 right-5 z-20">
-                        <span className="text-[9px] font-black text-emerald-400 uppercase tracking-widest bg-emerald-500/10 backdrop-blur-md border border-emerald-500/20 px-3 py-1 rounded-md flex items-center gap-1.5">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                          Active
-                        </span>
-                      </div>
-
-                      {/* Title & Brand Bottom Left */}
-                      <div className="absolute bottom-5 left-5 right-5 z-20 text-white flex flex-col gap-2">
-                        <div className="flex items-center gap-2 mb-1">
-                          {campaign.brandId?.logo ? (
-                            <img src={campaign.brandId.logo} className="w-5 h-5 rounded-full bg-white object-cover border border-white/20" alt="" />
-                          ) : (
-                            <div className="w-5 h-5 rounded-full bg-white text-gray-900 flex items-center justify-center text-[10px] font-black">
-                              {campaign.brandId?.businessName?.[0] || 'B'}
-                            </div>
-                          )}
-                          <span className="text-[10px] text-gray-300 font-bold uppercase tracking-widest line-clamp-1">
-                            {campaign.brandId?.businessName || 'Brand Partner'}
-                          </span>
-                        </div>
-                        <h3 className="text-lg font-black font-display tracking-tight leading-tight line-clamp-2">
-                          {campaign.title}
-                        </h3>
-                      </div>
-                    </div>
-
-                    {/* Content Section */}
-                    <div className="p-6 flex-grow flex flex-col justify-between">
-                      <div>
-                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">
-                          Key Requirements
-                        </p>
-                        {campaign.requirements && campaign.requirements.length > 0 ? (
-                          <div className="flex flex-wrap gap-2">
-                            {campaign.requirements.slice(0, 3).map((req, idx) => (
-                              <span key={idx} className="px-2.5 py-1.5 bg-gray-50 border border-gray-100 text-gray-600 text-[10px] font-bold rounded-lg truncate max-w-full">
-                                {req}
-                              </span>
-                            ))}
-                            {campaign.requirements.length > 3 && (
-                              <span className="px-2.5 py-1.5 bg-gray-50 border border-gray-100 text-gray-400 text-[10px] font-bold rounded-lg">
-                                +{campaign.requirements.length - 3} more
-                              </span>
-                            )}
-                          </div>
-                        ) : (
-                          <div className="flex flex-wrap gap-2">
-                            <span className="px-2.5 py-1.5 bg-orange-50 border border-orange-100 text-orange-600 text-[10px] font-bold rounded-lg">High-Quality Content</span>
-                            <span className="px-2.5 py-1.5 bg-orange-50 border border-orange-100 text-orange-600 text-[10px] font-bold rounded-lg">Brand Integration</span>
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="flex justify-between items-center pt-6 border-t border-gray-100 mt-6">
-                        <div>
-                          <p className="text-[9px] text-gray-400 uppercase font-black tracking-widest mb-1">Budget</p>
-                          <p className="text-lg font-black font-display text-gray-900">🪙{campaign.budget?.toLocaleString()}</p>
-                        </div>
-                        <Link
-                          to={`/campaigns/${campaign._id}`}
-                          className="px-4 py-2 rounded-xl bg-gray-900 text-white hover:bg-orange-500 font-black text-[10px] uppercase tracking-widest transition-all shadow-md active:scale-95 flex items-center gap-1.5"
-                        >
-                          View Brief <ArrowRight size={12} />
-                        </Link>
-                      </div>
-                    </div>
-                  </motion.div>
-                ))
-              ) : (
-                <div className="col-span-3 bg-gray-50 rounded-[2rem] text-center py-20 border border-dashed border-gray-200">
-                  <p className="text-gray-500 font-bold text-base mb-4">No active brand campaigns available</p>
-                  <Link to="/register" className="text-orange-500 font-black hover:underline tracking-widest uppercase text-xs">Register and post brief →</Link>
-                </div>
-              )}
-            </div>
-          </div>
-        </section>
-
-        {/* ================= FINAL CALL TO ACTION (CTA) ================= */}
-        <section className="py-24 px-6 sm:px-12 bg-white">
-          <div className="max-w-5xl mx-auto bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-[3rem] p-10 sm:p-16 text-center relative overflow-hidden shadow-2xl">
-            <div className="absolute inset-0 bg-grid-glow opacity-20 pointer-events-none"></div>
-
-            <div className="relative z-10 flex flex-col items-center gap-6 max-w-2xl mx-auto">
-              <span className="inline-block px-4 py-1.5 bg-white/15 border border-white/20 text-white text-[10px] font-black tracking-widest uppercase rounded-full">
-                Get Started
-              </span>
-              <h2 className="text-4xl sm:text-5xl font-black font-display tracking-tight leading-none">
-                Ready to Scale Your Brand?
-              </h2>
-              <p className="text-orange-50 text-sm sm:text-base font-medium leading-relaxed">
-                Connect with thousands of top-performing content creators. Protect campaigns with secure Razorpay payments and automate payouts.
-              </p>
-              <div className="flex flex-col sm:flex-row items-center gap-4 w-full justify-center mt-4">
-                <Link
-                  to="/register"
-                  className="w-full sm:w-auto px-10 py-4 bg-white text-orange-600 font-black text-xs uppercase tracking-widest hover:bg-gray-50 rounded-xl transition-all shadow-lg active:scale-95"
-                >
-                  Join as Brand
-                </Link>
-                <Link
-                  to="/register"
-                  className="w-full sm:w-auto px-10 py-4 bg-transparent border-2 border-white text-white font-black text-xs uppercase tracking-widest hover:bg-white/10 rounded-xl transition-all active:scale-95"
-                >
-                  Join as Creator
-                </Link>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ================= SHARED ANIMATING PHONE ================= */}
-        {coordsLoaded && (
+          {/* ================= SHARED ANIMATING PHONE ================= */}
+          {coordsLoaded && (
             <PhoneMockup
               transforms={{
                 transformStr: phoneTransformStr,
@@ -1451,9 +1451,9 @@ const Home = () => {
                 analyticsData
               }}
             />
-        )}
-      </main>
-    </div>
+          )}
+        </main>
+      </div>
     </ReactLenis>
   );
 };
