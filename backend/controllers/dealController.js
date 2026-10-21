@@ -7,6 +7,8 @@ const Campaign = require('../models/Campaign');
 const Wallet = require('../models/Wallet');
 const Transaction = require('../models/Transaction');
 const Notification = require('../models/Notification');
+const Conversation = require('../models/Conversation');
+const Message = require('../models/Message');
 
 // Helper to resolve brand User ObjectId for notifications
 const getBrandUserId = async (brandIdOrUser, deal) => {
@@ -697,8 +699,32 @@ const fileDispute = async (req, res) => {
           message: `A dispute has been filed for deal "${dealTitle}". Reason: ${reason}`
         });
       }
+
+      // Record dispute notice directly into the deal chat
+      let conversation = await Conversation.findOne({ dealId: deal._id });
+      if (!conversation) {
+        conversation = new Conversation({
+          dealId: deal._id,
+          participants: [deal.brandId, deal.creatorId].filter(Boolean),
+          participantModel: 'User'
+        });
+        await conversation.save();
+      }
+
+      const disputeNotice = new Message({
+        conversationId: conversation._id,
+        senderId: req.user.id,
+        content: `🚨 DISPUTE OFFICIALLY FILED by ${req.user.role === 'brand' ? 'Brand' : 'Creator'}:\n"${reason}"\n\nPlatform Administration has been granted arbitrator access to this chat to review deliverables and resolve this dispute.`
+      });
+      await disputeNotice.save();
+      await disputeNotice.populate('senderId', 'name role email profilePicture');
+
+      const io = req.app.get('socketio');
+      if (io) {
+        io.to(String(deal._id)).emit('receive_message', disputeNotice);
+      }
     } catch (notifErr) {
-      console.error("Notification Error (non-critical):", notifErr.message);
+      console.error("Dispute Notification/Chat Error (non-critical):", notifErr.message);
     }
 
     res.json({ message: 'Dispute filed successfully.', deal });

@@ -10,13 +10,16 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 const SOCKET_URL = API_URL.replace(/\/api\/?$/, '');
 
 const ChatOverlay = ({ deal, onClose, currentUser }) => {
+  const adminRoles = ['superadmin', 'admin', 'moderator', 'support'];
+  const isAdmin = adminRoles.includes(currentUser?.role);
+
   const isKycApproved = 
-    currentUser?.role === 'admin' || 
-    currentUser?.role === 'superadmin' || 
+    isAdmin || 
     currentUser?.kycStatus === 'APPROVED' || 
     Boolean(currentUser?.isVerified);
 
   const isDealCompleted = deal?.status === 'completed';
+  const isDisputed = deal?.status === 'disputed' || Boolean(deal?.disputeReason);
 
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState('');
@@ -38,17 +41,27 @@ const ChatOverlay = ({ deal, onClose, currentUser }) => {
     };
   }, []);
 
-  // Resolve the other party's identity dynamically based on current user role
-  const otherPartyName = isBrandUser
-    ? (deal?.creatorId?.name || deal?.creatorId?.userId?.name || deal?.applicationId?.creatorId?.name || 'Creator')
-    : (deal?.brandId?.businessName || deal?.applicationId?.campaignId?.brandId?.businessName || deal?.brandId?.userId?.name || 'Brand Partner');
+  const creatorName = deal?.creatorId?.name || deal?.creatorId?.userId?.name || deal?.applicationId?.creatorId?.name || 'Creator';
+  const creatorAvatar = deal?.creatorId?.profilePicture || deal?.creatorId?.userId?.profilePicture || deal?.applicationId?.creatorId?.profilePicture;
 
-  const otherPartyAvatar = isBrandUser
-    ? (deal?.creatorId?.profilePicture || deal?.creatorId?.userId?.profilePicture || deal?.applicationId?.creatorId?.profilePicture)
-    : (deal?.brandId?.logo || deal?.applicationId?.campaignId?.brandId?.logo);
+  const brandName = deal?.brandId?.businessName || deal?.applicationId?.campaignId?.brandId?.businessName || deal?.brandId?.userId?.name || 'Brand Partner';
+  const brandAvatar = deal?.brandId?.logo || deal?.applicationId?.campaignId?.brandId?.logo;
+
+  // Resolve the other party's identity dynamically based on current user role
+  const otherPartyName = isAdmin
+    ? `${creatorName} & ${brandName}`
+    : isBrandUser
+      ? creatorName
+      : brandName;
+
+  const otherPartyAvatar = isAdmin
+    ? null
+    : isBrandUser
+      ? creatorAvatar
+      : brandAvatar;
 
   const dealTitle = deal?.title || deal?.applicationId?.campaignId?.title || (deal?.packageTier ? `${deal.packageTier.toUpperCase()} Package Deal` : 'Collaboration Deal');
-  const dealAmount = deal?.paymentAmount || deal?.applicationId?.campaignId?.budget || deal?.packagePrice || 0;
+  const dealAmount = deal?.paymentAmount || deal?.budget || deal?.applicationId?.campaignId?.budget || deal?.packagePrice || 0;
 
   useEffect(() => {
     if (!dealId || !isKycApproved) return;
@@ -154,7 +167,11 @@ const ChatOverlay = ({ deal, onClose, currentUser }) => {
           <div className="p-4 sm:p-5 border-b border-gray-100 bg-gray-50/80 backdrop-blur-md flex items-center justify-between shrink-0">
             <div className="flex items-center gap-3.5 min-w-0">
               <div className="w-11 h-11 rounded-full bg-white flex items-center justify-center border border-gray-200 overflow-hidden shadow-xs shrink-0">
-                {otherPartyAvatar ? (
+                {isAdmin ? (
+                  <div className="w-full h-full bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center text-white font-bold text-xs">
+                    🛡️
+                  </div>
+                ) : otherPartyAvatar ? (
                   <img src={otherPartyAvatar} alt={otherPartyName} className="w-full h-full object-cover rounded-full" />
                 ) : isBrandUser ? (
                   <User size={20} className="text-indigo-600" />
@@ -165,14 +182,25 @@ const ChatOverlay = ({ deal, onClose, currentUser }) => {
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
                   <h3 className="font-black text-gray-900 text-[16px] tracking-tight truncate max-w-[200px]">
-                    {otherPartyName}
+                    {isAdmin ? 'Dispute Arbitration' : otherPartyName}
                   </h3>
-                  <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-md bg-gray-100 text-gray-600 tracking-wider shrink-0">
-                    {isBrandUser ? 'Creator' : 'Brand'}
+                  <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-md tracking-wider shrink-0 ${
+                    isAdmin ? 'bg-indigo-100 text-indigo-700 border border-indigo-200 font-bold' : 'bg-gray-100 text-gray-600'
+                  }`}>
+                    {isAdmin ? 'Arbitrator Mode' : (isBrandUser ? 'Creator' : 'Brand')}
                   </span>
                 </div>
-                <p className="text-[11px] font-bold text-emerald-500 uppercase tracking-widest flex items-center gap-1.5 mt-0.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Direct Negotiation
+                <p className="text-[11px] font-bold uppercase tracking-widest flex items-center gap-1.5 mt-0.5">
+                  {isAdmin ? (
+                    <span className="text-indigo-600 flex items-center gap-1 font-black">
+                      <span className="w-1.5 h-1.5 rounded-full bg-indigo-600 animate-pulse"></span>
+                      {creatorName} ↔ {brandName}
+                    </span>
+                  ) : (
+                    <span className="text-emerald-500 flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Direct Negotiation
+                    </span>
+                  )}
                 </p>
               </div>
             </div>
@@ -197,6 +225,21 @@ const ChatOverlay = ({ deal, onClose, currentUser }) => {
             </span>
           </div>
 
+          {/* Dispute Notice Banner */}
+          {isDisputed && (
+            <div className="px-5 py-2.5 bg-red-50/90 border-b border-red-200 flex items-start gap-2.5 text-red-900 shrink-0">
+              <AlertCircle size={15} className="text-red-500 shrink-0 mt-0.5" />
+              <div className="min-w-0">
+                <span className="text-[10px] font-black uppercase tracking-wider text-red-600 block">
+                  Dispute Active {deal?.disputedAt ? `· Filed ${new Date(deal.disputedAt).toLocaleDateString()}` : ''}
+                </span>
+                <p className="text-[11px] font-bold text-red-800 line-clamp-2 mt-0.5">
+                  "{deal?.disputeReason || 'Dispute raised. Admin arbitration in progress.'}"
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Chat Messages */}
           <div className={`flex-1 overflow-y-auto p-4 sm:p-5 bg-gray-50/60 flex flex-col gap-3.5 ${!isKycApproved ? 'blur-sm select-none pointer-events-none' : ''}`}>
             {messages.length === 0 ? (
@@ -204,9 +247,14 @@ const ChatOverlay = ({ deal, onClose, currentUser }) => {
                 <div className="w-14 h-14 bg-orange-50 rounded-2xl flex items-center justify-center mb-3 border border-orange-100">
                   <Send size={22} className="text-orange-600 ml-0.5" />
                 </div>
-                <h4 className="font-black text-gray-900 text-[15px] mb-1">Live Deal Negotiation</h4>
+                <h4 className="font-black text-gray-900 text-[15px] mb-1">
+                  {isAdmin ? 'Arbitration Thread' : 'Live Deal Negotiation'}
+                </h4>
                 <p className="text-[12px] text-gray-500 font-medium max-w-xs leading-relaxed">
-                  Connect directly with {otherPartyName} to coordinate deliverables, timelines, and revisions.
+                  {isAdmin 
+                    ? `Review deal history or post mediator instructions to ${creatorName} and ${brandName}.`
+                    : `Connect directly with ${otherPartyName} to coordinate deliverables, timelines, and revisions.`
+                  }
                 </p>
               </div>
             ) : (
@@ -214,29 +262,73 @@ const ChatOverlay = ({ deal, onClose, currentUser }) => {
                 // Robust check for sender vs receiver across id formats
                 const senderIdStr = String(msg.senderId?._id || msg.senderId || '');
                 const isMine = Boolean(currentUserId && senderIdStr && currentUserId === senderIdStr);
+                const senderRole = msg.senderId?.role;
+                const isSenderAdmin = adminRoles.includes(senderRole);
+
+                // Determine display label for sender
+                let senderLabel = '';
+                if (isSenderAdmin) {
+                  senderLabel = `🛡️ Arbitrator (${msg.senderId?.name || 'Admin'})`;
+                } else if (senderRole === 'creator' || String(deal?.creatorId?.userId?._id || deal?.creatorId?.userId || '') === senderIdStr) {
+                  senderLabel = `🎨 Creator: ${creatorName}`;
+                } else if (senderRole === 'brand' || String(deal?.brandId?.userId?._id || deal?.brandId?.userId || '') === senderIdStr) {
+                  senderLabel = `💼 Brand: ${brandName}`;
+                } else if (msg.senderId?.name) {
+                  senderLabel = msg.senderId.name;
+                }
+
+                // Avatar for non-mine messages
+                let bubbleAvatar = null;
+                if (!isMine) {
+                  if (isSenderAdmin) {
+                    bubbleAvatar = (
+                      <div className="w-6 h-6 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px] font-black shrink-0 mb-0.5 shadow-xs">
+                        🛡️
+                      </div>
+                    );
+                  } else if (senderRole === 'brand' || String(deal?.brandId?.userId?._id || deal?.brandId?.userId || '') === senderIdStr) {
+                    bubbleAvatar = brandAvatar ? (
+                      <img src={brandAvatar} alt="Brand" className="w-6 h-6 rounded-full object-cover shrink-0 mb-0.5" />
+                    ) : (
+                      <div className="w-6 h-6 rounded-full bg-orange-100 text-orange-700 flex items-center justify-center text-[10px] font-black shrink-0 mb-0.5">
+                        {brandName.charAt(0).toUpperCase()}
+                      </div>
+                    );
+                  } else {
+                    bubbleAvatar = creatorAvatar ? (
+                      <img src={creatorAvatar} alt="Creator" className="w-6 h-6 rounded-full object-cover shrink-0 mb-0.5" />
+                    ) : (
+                      <div className="w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-[10px] font-black shrink-0 mb-0.5">
+                        {creatorName.charAt(0).toUpperCase()}
+                      </div>
+                    );
+                  }
+                }
 
                 return (
                   <div 
                     key={msg._id || i} 
                     className={`flex items-end gap-2 ${isMine ? 'justify-end' : 'justify-start'}`}
                   >
-                    {/* Receiver Avatar on left */}
-                    {!isMine && (
-                      <div className="w-6 h-6 rounded-full bg-gray-200 border border-gray-300/80 flex items-center justify-center text-[10px] font-black text-gray-600 overflow-hidden shrink-0 mb-0.5">
-                        {otherPartyAvatar ? (
-                          <img src={otherPartyAvatar} alt="Partner" className="w-full h-full object-cover" />
-                        ) : (
-                          otherPartyName.charAt(0).toUpperCase()
-                        )}
-                      </div>
-                    )}
+                    {!isMine && bubbleAvatar}
 
                     {/* Message Bubble */}
                     <div className={`max-w-[78%] px-4 py-2.5 rounded-2xl text-[13px] font-medium leading-relaxed shadow-xs ${
                       isMine 
-                        ? 'bg-gradient-to-tr from-orange-600 to-amber-500 text-white rounded-tr-xs shadow-orange-500/10' 
-                        : 'bg-white border border-gray-200/80 text-gray-800 rounded-tl-xs'
+                        ? isAdmin
+                          ? 'bg-gradient-to-tr from-indigo-700 to-purple-600 text-white rounded-tr-xs shadow-indigo-500/10'
+                          : 'bg-gradient-to-tr from-orange-600 to-amber-500 text-white rounded-tr-xs shadow-orange-500/10'
+                        : isSenderAdmin
+                          ? 'bg-indigo-50 border border-indigo-200 text-indigo-950 rounded-tl-xs shadow-indigo-500/5'
+                          : 'bg-white border border-gray-200/80 text-gray-800 rounded-tl-xs'
                     }`}>
+                      {(!isMine || isAdmin) && senderLabel && (
+                        <span className={`text-[10px] font-black uppercase tracking-wider block mb-1 ${
+                          isMine ? 'text-white/80' : isSenderAdmin ? 'text-indigo-700 font-bold' : 'text-gray-400'
+                        }`}>
+                          {isMine ? `You (${isAdmin ? 'Arbitrator' : isBrandUser ? 'Brand' : 'Creator'})` : senderLabel}
+                        </span>
+                      )}
                       <p className="break-words whitespace-pre-wrap">{msg.content}</p>
                       <div className={`text-[9px] mt-1 flex items-center gap-1 font-bold ${
                         isMine ? 'text-white/80 justify-end' : 'text-gray-400 justify-start'
@@ -298,19 +390,23 @@ const ChatOverlay = ({ deal, onClose, currentUser }) => {
               <form onSubmit={handleSend} className="relative flex items-center">
                 <input 
                   type="text" 
-                  placeholder={`Message ${otherPartyName}...`}
+                  placeholder={isAdmin ? "Type mediator instructions to Creator & Brand..." : `Message ${otherPartyName}...`}
                   value={inputValue}
                   onChange={(e) => {
                     setInputValue(e.target.value);
                     if (errorMessage) setErrorMessage('');
                   }}
                   disabled={isSending}
-                  className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-4 py-3 pr-14 text-[13px] text-gray-900 outline-none focus:border-orange-500 focus:bg-white transition-all shadow-inner placeholder:text-gray-400 font-medium"
+                  className={`w-full bg-gray-50 border border-gray-200 rounded-2xl px-4 py-3 pr-14 text-[13px] text-gray-900 outline-none ${
+                    isAdmin ? 'focus:border-indigo-500' : 'focus:border-orange-500'
+                  } focus:bg-white transition-all shadow-inner placeholder:text-gray-400 font-medium`}
                 />
                 <button 
                   type="submit"
                   disabled={!inputValue.trim() || isSending}
-                  className="absolute right-2 w-9 h-9 bg-gradient-to-tr from-orange-600 to-amber-500 text-white rounded-xl flex items-center justify-center hover:opacity-90 transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-sm active:scale-95 cursor-pointer"
+                  className={`absolute right-2 w-9 h-9 ${
+                    isAdmin ? 'bg-gradient-to-tr from-indigo-600 to-purple-600' : 'bg-gradient-to-tr from-orange-600 to-amber-500'
+                  } text-white rounded-xl flex items-center justify-center hover:opacity-90 transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-sm active:scale-95 cursor-pointer`}
                 >
                   <Send size={15} className="ml-0.5" />
                 </button>

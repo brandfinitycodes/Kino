@@ -14,12 +14,6 @@ const canAccessDealChat = async (req, res, next) => {
       return res.status(401).json({ message: 'Authentication required' });
     }
 
-    // Admins always allowed
-    const adminRoles = ['superadmin', 'admin', 'moderator', 'support'];
-    if (req.user && adminRoles.includes(req.user.role)) {
-      return next();
-    }
-
     const { dealId } = req.params;
     if (dealId) {
       const deal = await Deal.findById(dealId)
@@ -34,6 +28,18 @@ const canAccessDealChat = async (req, res, next) => {
         });
 
       if (deal) {
+        // Admins are granted access to deals where a dispute has been raised (or superadmins)
+        const adminRoles = ['superadmin', 'admin', 'moderator', 'support'];
+        const isAdmin = req.user && adminRoles.includes(req.user.role);
+        if (isAdmin) {
+          const isDisputed = deal.status === 'disputed' || Boolean(deal.disputeReason);
+          if (isDisputed || req.user.role === 'superadmin') {
+            return next();
+          }
+          return res.status(403).json({ 
+            message: 'Admin chat access is only available for deals where a dispute has been raised.' 
+          });
+        }
         const brandUserId = String(
           deal.brandId?.userId?._id || deal.brandId?.userId || 
           deal.applicationId?.campaignId?.brandId?.userId?._id || deal.applicationId?.campaignId?.brandId?.userId || ''

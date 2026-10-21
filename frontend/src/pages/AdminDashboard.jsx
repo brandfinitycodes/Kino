@@ -28,15 +28,18 @@ import {
   Unlock,
   Lock,
   ExternalLink,
-  CreditCard
+  CreditCard,
+  MessageSquare
 } from 'lucide-react';
 import DashboardLayout from '../components/DashboardLayout';
 import ClearanceQueue from '../components/AdminDashboard/ClearanceQueue';
+import ChatOverlay from '../components/ChatOverlay';
 
 const AdminDashboard = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('stats');
+  const [activeChatDeal, setActiveChatDeal] = useState(null);
 
   
   const queryClient = useQueryClient();
@@ -1027,12 +1030,21 @@ const AdminDashboard = () => {
 
                             <td className="px-6 py-5.5 text-right">
                               {d.status === 'disputed' ? (
-                                <button
-                                  onClick={() => setSelectedDetails({ type: 'deal', data: d })}
-                                  className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 shadow-md shadow-red-500/10"
-                                >
-                                  Resolve Dispute
-                                </button>
+                                <div className="flex items-center justify-end gap-2">
+                                  <button
+                                    onClick={() => setActiveChatDeal(d)}
+                                    className="px-3.5 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5 active:scale-95 shadow-xs cursor-pointer"
+                                    title="Open Dispute Chat with Creator & Brand"
+                                  >
+                                    <MessageSquare size={13} /> Chat
+                                  </button>
+                                  <button
+                                    onClick={() => setSelectedDetails({ type: 'deal', data: d })}
+                                    className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 shadow-md shadow-red-500/10 cursor-pointer"
+                                  >
+                                    Resolve Dispute
+                                  </button>
+                                </div>
                               ) : (
                                 <button
                                   onClick={() => setSelectedDetails({ type: 'deal', data: d })}
@@ -1885,6 +1897,22 @@ const AdminDashboard = () => {
                     <h4 className="text-xl font-black text-gray-900 mt-1">🪙{(selectedDetails.data.budget || 0).toLocaleString()}</h4>
                   </div>
 
+                  {selectedDetails.data.status === 'disputed' && (
+                    <div className="bg-red-50/70 border border-red-200 rounded-2xl p-4 flex flex-col">
+                      <span className="text-[9px] font-black text-red-600 uppercase tracking-widest flex items-center gap-1.5">
+                        <AlertCircle size={13} /> Dispute Reason Filed
+                      </span>
+                      <p className="text-xs font-bold text-gray-800 mt-1.5 leading-relaxed bg-white/70 p-2.5 rounded-xl border border-red-100">
+                        "{selectedDetails.data.disputeReason || 'No dispute reason specified.'}"
+                      </p>
+                      {selectedDetails.data.disputedAt && (
+                        <span className="text-[10px] text-gray-500 font-semibold mt-1">
+                          Filed: {new Date(selectedDetails.data.disputedAt).toLocaleString()}
+                        </span>
+                      )}
+                    </div>
+                  )}
+
                   <div className="bg-gray-50 border border-gray-100 rounded-2xl p-4 flex flex-col">
                     <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Submitted Deliverables</span>
                     {selectedDetails.data.contentUrl ? (
@@ -1900,6 +1928,21 @@ const AdminDashboard = () => {
                       <span className="text-xs text-gray-400 font-bold mt-2">No deliverables submitted yet.</span>
                     )}
                   </div>
+
+                  {/* Open Chat button if disputed */}
+                  {selectedDetails.data.status === 'disputed' && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const targetDeal = selectedDetails.data;
+                        setSelectedDetails(null);
+                        setActiveChatDeal(targetDeal);
+                      }}
+                      className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-[11px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 shadow-md shadow-indigo-600/20 active:scale-95 cursor-pointer"
+                    >
+                      <MessageSquare size={15} /> Open Dispute Chat & Arbitrate
+                    </button>
+                  )}
 
                   {selectedDetails.data.status === 'disputed' && (
                     <div className="border-t border-gray-100 pt-5 flex flex-col gap-2.5">
@@ -2315,6 +2358,15 @@ const AdminDashboard = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Dispute Chat Drawer for Admin Arbitrator */}
+      {activeChatDeal && (
+        <ChatOverlay
+          deal={activeChatDeal}
+          onClose={() => setActiveChatDeal(null)}
+          currentUser={user}
+        />
+      )}
 
     </DashboardLayout>
   );
