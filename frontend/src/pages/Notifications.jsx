@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from '../utils/axios';
 import { useAuth } from '../context/AuthContext';
-import { Bell, Check, Clock, Sparkles, Home, Compass, Users, ArrowLeft } from 'lucide-react';
+import { Bell, Check, Clock, Sparkles, Home, Compass, Users, ArrowLeft, ArrowUpRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import CreatorBottomNav from '../components/CreatorBottomNav';
@@ -51,6 +51,101 @@ const Notifications = () => {
   const formatDate = (dateString) => {
     const options = { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
     return new Date(dateString).toLocaleDateString(undefined, options);
+  };
+
+  const getActionDetails = (notification) => {
+    if (!notification) return null;
+    const userRole = user?.role;
+
+    // 1. Explicit link if provided
+    if (notification.link) {
+      return {
+        label: notification.actionLabel || 'View Details',
+        path: notification.link
+      };
+    }
+
+    const msg = (notification.message || '').toLowerCase();
+
+    // 2. Deliverables (Brand review or Creator revision/submit)
+    if (msg.includes('deliverable') || msg.includes('revision')) {
+      if (userRole === 'brand') {
+        return {
+          label: 'Review Deliverable',
+          path: '/brand-dashboard?tab=deals'
+        };
+      }
+      return {
+        label: 'Update Deliverable',
+        path: '/creator-dashboard?tab=deals'
+      };
+    }
+
+    // 3. Campaign Applications (Confirm participation or Review applicant)
+    if (msg.includes('applied') || msg.includes('application')) {
+      if (msg.includes('accepted') || msg.includes('confirm')) {
+        return {
+          label: 'Confirm Participation',
+          path: '/creator-dashboard?tab=applications'
+        };
+      }
+      if (userRole === 'brand') {
+        return {
+          label: 'Review Applicant',
+          path: '/brand-dashboard?tab=applications'
+        };
+      }
+      return {
+        label: 'View Applications',
+        path: '/creator-dashboard?tab=applications'
+      };
+    }
+
+    // 4. Deals & Collaborations (Payment secured, new deal, start work)
+    if (msg.includes('deal') || msg.includes('payment secured') || msg.includes('begin work')) {
+      const path = userRole === 'brand' ? '/brand-dashboard?tab=deals' : '/creator-dashboard?tab=deals';
+      return {
+        label: 'View Deal',
+        path
+      };
+    }
+
+    // 5. Wallet & Withdrawals (Approved / Rejected withdrawal request)
+    if (msg.includes('withdrawal') || msg.includes('funds released') || msg.includes('payout')) {
+      const path = userRole === 'brand' ? '/brand-dashboard?tab=wallet' : '/creator-dashboard?tab=wallet';
+      return {
+        label: 'Open Wallet',
+        path
+      };
+    }
+
+    // 6. KYC & Identity Verification
+    if (msg.includes('kyc') || msg.includes('identity verification') || msg.includes('aadhaar')) {
+      const path = userRole === 'brand' ? '/brand-dashboard?tab=settings' : '/creator-dashboard?tab=settings';
+      return {
+        label: 'Complete Verification',
+        path
+      };
+    }
+
+    // 7. Chat / Direct Messages
+    if (msg.includes('new message') || msg.includes('chat')) {
+      const path = userRole === 'brand' ? '/brand-dashboard?tab=deals' : '/creator-dashboard?tab=deals';
+      return {
+        label: 'Open Chat',
+        path
+      };
+    }
+
+    // Informational notifications -> No button rendered
+    return null;
+  };
+
+  const handleActionClick = async (notification, path) => {
+    if (!notification.read) {
+      await markAsRead(notification._id);
+    }
+    navigate(path);
   };
 
   if (loading) return (
@@ -112,50 +207,65 @@ const Notifications = () => {
         <div className="flex flex-col gap-5 relative z-10">
           <AnimatePresence>
             {notifications.length > 0 ? (
-              notifications.map((n) => (
-                <motion.div
-                  key={n._id}
-                  layout
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ duration: 0.3 }}
-                  className={`group relative p-5 sm:p-6 rounded-[32px] border transition-all duration-500 flex flex-col sm:flex-row items-start gap-5 sm:gap-6 backdrop-blur-xl ${n.read
-                      ? 'bg-white/60 border-white shadow-[0_5px_15px_rgba(0,0,0,0.02)] hover:shadow-[0_10px_30px_rgba(0,0,0,0.04)] hover:bg-white'
-                      : 'bg-white/90 border-indigo-100 shadow-[0_10px_30px_rgba(99,102,241,0.08)] hover:shadow-[0_15px_40px_rgba(99,102,241,0.15)] hover:-translate-y-1'
-                    }`}
-                >
-                  {!n.read && (
-                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-12 bg-gradient-to-b from-indigo-500 to-purple-500 rounded-r-full shadow-[0_0_15px_rgba(99,102,241,0.5)]"></div>
-                  )}
+              notifications.map((n) => {
+                const action = getActionDetails(n);
+                return (
+                  <motion.div
+                    key={n._id}
+                    layout
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ duration: 0.3 }}
+                    className={`group relative p-5 sm:p-6 rounded-[32px] border transition-all duration-500 flex flex-col sm:flex-row items-start gap-5 sm:gap-6 backdrop-blur-xl ${n.read
+                        ? 'bg-white/60 border-white shadow-[0_5px_15px_rgba(0,0,0,0.02)] hover:shadow-[0_10px_30px_rgba(0,0,0,0.04)] hover:bg-white'
+                        : 'bg-white/90 border-indigo-100 shadow-[0_10px_30px_rgba(99,102,241,0.08)] hover:shadow-[0_15px_40px_rgba(99,102,241,0.15)] hover:-translate-y-1'
+                      }`}
+                  >
+                    {!n.read && (
+                      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-12 bg-gradient-to-b from-indigo-500 to-purple-500 rounded-r-full shadow-[0_0_15px_rgba(99,102,241,0.5)]"></div>
+                    )}
 
-                  <div className={`shrink-0 w-14 h-14 rounded-[20px] flex items-center justify-center border shadow-sm transition-transform duration-500 group-hover:scale-110 group-hover:rotate-6 ${n.read ? 'bg-gray-50 border-gray-100 text-gray-400' : 'bg-gradient-to-br from-indigo-50 to-purple-50 border-indigo-100 text-indigo-600'}`}>
-                    <Bell size={24} className={!n.read ? "drop-shadow-sm" : ""} />
-                  </div>
-
-                  <div className="flex-1 min-w-0 w-full flex flex-col justify-center">
-                    <div className="flex flex-col xl:flex-row xl:justify-between xl:items-start gap-3 mb-3">
-                      <p className={`text-[15px] leading-relaxed pr-4 flex-1 ${n.read ? 'text-gray-600 font-medium' : 'text-gray-900 font-bold'}`}>
-                        {n.message}
-                      </p>
-                      <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 whitespace-nowrap shrink-0 flex items-center gap-1.5 bg-gray-50 px-3 py-1.5 rounded-full border border-gray-100 w-fit">
-                        <Clock size={12}/> {formatDate(n.createdAt)}
-                      </span>
+                    <div className={`shrink-0 w-14 h-14 rounded-[20px] flex items-center justify-center border shadow-sm transition-transform duration-500 group-hover:scale-110 group-hover:rotate-6 ${n.read ? 'bg-gray-50 border-gray-100 text-gray-400' : 'bg-gradient-to-br from-indigo-50 to-purple-50 border-indigo-100 text-indigo-600'}`}>
+                      <Bell size={24} className={!n.read ? "drop-shadow-sm" : ""} />
                     </div>
 
-                    {!n.read && (
-                      <div className="flex items-center mt-2">
-                        <button
-                          onClick={() => markAsRead(n._id)}
-                          className="flex items-center gap-2 text-indigo-600 text-[11px] font-black bg-indigo-50 hover:bg-indigo-600 hover:text-white px-5 py-2.5 rounded-xl transition-all uppercase tracking-widest shadow-sm hover:shadow-[0_5px_15px_rgba(99,102,241,0.3)]"
-                        >
-                          <Check size={14} strokeWidth={3} /> Mark as Read
-                        </button>
+                    <div className="flex-1 min-w-0 w-full flex flex-col justify-center">
+                      <div className="flex flex-col xl:flex-row xl:justify-between xl:items-start gap-3 mb-3">
+                        <p className={`text-[15px] leading-relaxed pr-4 flex-1 ${n.read ? 'text-gray-600 font-medium' : 'text-gray-900 font-bold'}`}>
+                          {n.message}
+                        </p>
+                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 whitespace-nowrap shrink-0 flex items-center gap-1.5 bg-gray-50 px-3 py-1.5 rounded-full border border-gray-100 w-fit">
+                          <Clock size={12}/> {formatDate(n.createdAt)}
+                        </span>
                       </div>
-                    )}
-                  </div>
-                </motion.div>
-              ))
+
+                      {/* Actions Row */}
+                      {(action || !n.read) && (
+                        <div className="flex flex-wrap items-center gap-3 mt-2">
+                          {action && (
+                            <button
+                              onClick={() => handleActionClick(n, action.path)}
+                              className="flex items-center gap-1.5 text-white text-[11px] font-black bg-gradient-to-r from-[#EA580C] to-[#eb4898] hover:shadow-md hover:brightness-105 active:scale-95 px-5 py-2.5 rounded-xl transition-all uppercase tracking-widest shadow-sm cursor-pointer"
+                            >
+                              {action.label} <ArrowUpRight size={14} strokeWidth={2.5} />
+                            </button>
+                          )}
+
+                          {!n.read && (
+                            <button
+                              onClick={() => markAsRead(n._id)}
+                              className="flex items-center gap-2 text-indigo-600 text-[11px] font-black bg-indigo-50 hover:bg-indigo-600 hover:text-white px-5 py-2.5 rounded-xl transition-all uppercase tracking-widest shadow-sm hover:shadow-[0_5px_15px_rgba(99,102,241,0.3)] cursor-pointer"
+                            >
+                              <Check size={14} strokeWidth={3} /> Mark as Read
+                            </button>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                );
+              })
             ) : (
               <motion.div 
                 initial={{ opacity: 0 }}

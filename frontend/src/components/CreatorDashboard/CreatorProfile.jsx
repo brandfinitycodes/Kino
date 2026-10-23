@@ -10,7 +10,8 @@ import {
   Folder, ArrowUpRight, Edit3, ChevronDown, Film, UploadCloud,
   LogOut, Users, Check, Plus, Trash2, MessageCircle, MessageSquare, MapPin, Gauge, Star, Quote, FileText, Copy,
   LayoutGrid, Columns, Bookmark, Zap, Lock, ShieldAlert, AlertCircle,
-  Calendar, FileSignature, Video, Filter
+  Calendar, FileSignature, Video, Filter,
+  Award, Sparkles
 } from "lucide-react";
 import ChatOverlay from "../ChatOverlay";
 import html2canvas from "html2canvas";
@@ -548,8 +549,106 @@ const CreatorProfile = ({ profile, deals = [], campaigns = [], applications = []
         </motion.div>
       </div>
 
-      {/* ROW 4: Activity */}
+      {/* ROW 4: Verified Deliverables & Activity */}
       <div className="flex flex-col lg:flex-row gap-8">
+        {/* Left: Verified Deliverables & Work in Numbers (lg:w-2/3) */}
+        <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="lg:w-2/3 bg-white/80 backdrop-blur-xl rounded-[40px] p-8 sm:p-10 border border-white shadow-[0_15px_50px_rgba(0,0,0,0.04)] relative overflow-hidden group flex flex-col justify-between">
+          <div className="absolute top-0 right-0 w-80 h-80 bg-emerald-100/40 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none group-hover:scale-110 transition-transform duration-1000"></div>
+
+          <div>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4 relative z-10">
+              <div>
+                <div className="flex items-center gap-3">
+                  <h3 className="font-display font-black text-gray-900 text-3xl tracking-tight">Verified Platform Work</h3>
+                  {completedDeals.length > 0 ? (
+                    <span className="text-[10px] font-black text-emerald-600 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full uppercase tracking-wider">
+                      {completedDeals.length} Verified
+                    </span>
+                  ) : (
+                    <span className="text-[10px] font-black text-orange-600 bg-orange-50 border border-orange-200 px-3 py-1 rounded-full uppercase tracking-wider">
+                      🌱 Rising Talent
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs font-medium text-gray-400 mt-1">
+                  Deliverables and numbers approved by brands on Kino. Source files protected.
+                </p>
+              </div>
+
+              {completedDeals.length > 0 && (
+                <div className="flex items-center gap-2 bg-emerald-50/70 border border-emerald-100 px-3.5 py-1.5 rounded-xl text-emerald-700 text-xs font-black">
+                  <Award size={15} /> 100% Fulfillment
+                </div>
+              )}
+            </div>
+
+            {completedDeals.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 relative z-10">
+                {completedDeals.map((deal, idx) => {
+                  const brand = deal.brandId || deal.applicationId?.campaignId?.brandId;
+                  const title = deal.title || deal.applicationId?.campaignId?.title || (deal.packageTier ? `${deal.packageTier.charAt(0).toUpperCase() + deal.packageTier.slice(1)} Package Collaboration` : 'Campaign Collaboration');
+                  const budget = deal.paymentAmount || deal.budget || deal.applicationId?.campaignId?.budget || 0;
+                  return (
+                    <div key={deal._id || idx} className="p-5 rounded-3xl bg-white border border-gray-100 hover:border-orange-200 shadow-xs hover:shadow-md transition-all flex flex-col justify-between gap-4">
+                      <div className="flex items-start gap-4">
+                        <div className="w-12 h-12 rounded-2xl bg-orange-50 border border-orange-100 flex items-center justify-center overflow-hidden shrink-0">
+                          {brand?.logo ? (
+                            <img src={brand.logo} alt="Brand" className="w-full h-full object-cover" />
+                          ) : (
+                            <Building2 size={20} className="text-orange-500" />
+                          )}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <span className="text-[10px] font-black uppercase text-orange-600 tracking-wider">
+                            {brand?.businessName || 'Verified Brand'}
+                          </span>
+                          <h4 className="text-sm font-bold text-gray-900 truncate mt-0.5">
+                            {title}
+                          </h4>
+                          <span className="text-[11px] font-bold text-gray-400">
+                            Completed • Approved
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between border-t border-gray-100 pt-3">
+                        <span className="text-sm font-black text-gray-900 flex items-center gap-1">
+                          <span className="text-orange-600">🪙</span> {budget.toLocaleString()}
+                        </span>
+                        <span className="px-3 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200/80 rounded-xl text-[10px] font-black uppercase tracking-wider flex items-center gap-1">
+                          <CheckCircle size={12} className="text-emerald-500" /> Verified Delivery
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              /* New Creator Friendly Milestone Showcase in Dashboard */
+              <div className="flex flex-col items-center justify-center py-10 px-6 text-center bg-gradient-to-b from-orange-50/40 via-amber-50/20 to-white rounded-3xl border border-dashed border-orange-200 relative z-10">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-orange-500 to-amber-500 text-white flex items-center justify-center shadow-lg shadow-orange-500/20 mb-3">
+                  <Sparkles size={24} />
+                </div>
+                <span className="text-[10px] font-black uppercase tracking-widest text-[#EA580C] bg-orange-100/70 px-3 py-1 rounded-full mb-2">
+                  🌱 Milestone 1 • 0 / 1 Deals
+                </span>
+                <h4 className="text-xl font-black text-gray-900 mb-1">Ready for Your First Campaign</h4>
+                <p className="text-xs text-gray-500 font-medium max-w-md leading-relaxed mb-6">
+                  Deliver your first collaboration to unlock the Verified Creator badge. Your work is shown to brands in numbers with 100% escrow protection.
+                </p>
+                <div className="flex flex-wrap items-center justify-center gap-3">
+                  <button onClick={() => setActiveTab('discover')} className="px-5 py-2.5 bg-[#EA580C] hover:bg-[#C2410C] text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-sm transition-all cursor-pointer">
+                    Discover Campaigns
+                  </button>
+                  <button onClick={() => setActiveTab('settings')} className="px-5 py-2.5 bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 rounded-xl text-xs font-black uppercase tracking-wider shadow-xs transition-all cursor-pointer">
+                    Configure Packages
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </motion.div>
+
+        {/* Right: Activity (lg:w-1/3) */}
         <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="lg:w-1/3 bg-white/80 backdrop-blur-xl rounded-[40px] p-8 sm:p-10 border border-white shadow-[0_15px_50px_rgba(0,0,0,0.04)] relative overflow-hidden group">
           <div className="absolute top-0 right-0 w-64 h-64 bg-orange-100/50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none group-hover:scale-125 transition-transform duration-1000"></div>
 

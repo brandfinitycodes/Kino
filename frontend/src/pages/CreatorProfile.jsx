@@ -16,7 +16,14 @@ import {
   Check,
   TrendingUp,
   MessageCircle,
-  Briefcase
+  Briefcase,
+  Sparkles,
+  Building2,
+  Calendar,
+  Award,
+  Clock,
+  Lock,
+  CheckCircle
 } from 'lucide-react';
 const getVideoSrc = (url) => {
   if (!url) return '';
@@ -226,15 +233,110 @@ const CreatorProfile = () => {
                   </span>
                 </div>
                 <div className="flex flex-col items-center md:items-start">
-                  <span className="text-[12px] font-bold text-gray-500 mb-1">Response</span>
-                  <span className="text-2xl font-bold text-gray-900 tracking-tight">
-                    {creator.responseTime || '548'}
-                  </span>
+                  <span className="text-[12px] font-bold text-gray-500 mb-1">Deals Done</span>
+                  {creator.platformStats?.completedDealsCount > 0 ? (
+                    <span className="text-2xl font-bold text-gray-900 tracking-tight flex items-center gap-1.5">
+                      {creator.platformStats.completedDealsCount}
+                      <span className="text-[10px] px-2 py-0.5 rounded-md font-black bg-emerald-50 text-emerald-600 border border-emerald-100">
+                        Verified
+                      </span>
+                    </span>
+                  ) : (
+                    <span className="text-sm font-black text-orange-600 tracking-tight flex items-center gap-1 bg-orange-50 px-2.5 py-1 rounded-lg border border-orange-200/60 mt-1">
+                      🌱 New Talent
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
             
           </div>
+        </div>
+      </div>
+
+      {/* Trust & Performance Statistics Matrix (Work in Numbers) */}
+      <div className="max-w-6xl mx-auto px-4 sm:px-8 mb-8">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+          {[
+            {
+              title: (creator.platformStats?.completedDealsCount || 0) > 0 ? 'Deals Completed' : 'Platform Milestone',
+              value: (creator.platformStats?.completedDealsCount || 0) > 0 ? `${creator.platformStats.completedDealsCount} Done` : '0 / 1 Deals',
+              icon: <Award size={18} strokeWidth={2.5} />,
+              bottomLabel: (creator.platformStats?.completedDealsCount || 0) > 0 ? '100% Brand Approved' : '🌱 Ready for 1st Deal',
+              progress: (creator.platformStats?.completedDealsCount || 0) > 0 ? 100 : 25,
+              grad: (creator.platformStats?.completedDealsCount || 0) > 0 ? 'from-emerald-400 to-teal-500' : 'from-orange-400 to-amber-500',
+              bgText: (creator.platformStats?.completedDealsCount || 0) > 0 ? 'text-emerald-500' : 'text-orange-500',
+              shadow: (creator.platformStats?.completedDealsCount || 0) > 0 ? 'shadow-emerald-500/20' : 'shadow-orange-500/20'
+            },
+            {
+              title: 'Turnaround Rate',
+              value: (creator.platformStats?.completedDealsCount || 0) > 0 ? '100% On-Time' : '24–48h Delivery',
+              icon: <Zap size={18} strokeWidth={2.5} />,
+              bottomLabel: (creator.platformStats?.completedDealsCount || 0) > 0 ? 'Fulfillment Track Record' : '⚡ Fast Delivery Promise',
+              progress: 100,
+              grad: 'from-blue-400 to-indigo-500',
+              bgText: 'text-blue-500',
+              shadow: 'shadow-blue-500/20'
+            },
+            {
+              title: 'Response Speed',
+              value: '< 2 Hours',
+              icon: <Clock size={18} strokeWidth={2.5} />,
+              bottomLabel: '98% Fast Reply Rate',
+              progress: 98,
+              grad: 'from-pink-400 to-rose-500',
+              bgText: 'text-pink-500',
+              shadow: 'shadow-pink-500/20'
+            },
+            {
+              title: 'Escrow Protection',
+              value: '100% Safe',
+              icon: <ShieldCheck size={18} strokeWidth={2.5} />,
+              bottomLabel: '🛡️ Zero Risk for Brands',
+              progress: 100,
+              grad: 'from-emerald-400 to-teal-500',
+              bgText: 'text-emerald-500',
+              shadow: 'shadow-emerald-500/20'
+            }
+          ].map((card, i) => (
+            <div 
+              key={i} 
+              className="bg-white/90 backdrop-blur-xl rounded-2xl sm:rounded-[28px] p-4 sm:p-6 shadow-[0_10px_35px_rgba(0,0,0,0.03)] border border-orange-100/70 flex flex-col hover:-translate-y-1 hover:shadow-[0_15px_35px_rgba(0,0,0,0.06)] transition-all duration-300 overflow-hidden relative group"
+            >
+              <div className={`absolute -right-6 -bottom-6 opacity-[0.04] ${card.bgText} transform group-hover:scale-125 group-hover:-rotate-12 transition-all duration-500`}>
+                {card.icon}
+              </div>
+
+              <div className="flex items-center gap-2 sm:gap-3 mb-3 relative z-10">
+                <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl flex items-center justify-center text-white bg-gradient-to-br ${card.grad} shadow-md sm:shadow-lg ${card.shadow} shrink-0`}>
+                  {card.icon}
+                </div>
+                <span className="text-[10px] sm:text-[12px] font-black uppercase tracking-wider text-gray-400 truncate">{card.title}</span>
+              </div>
+
+              <div className="mb-3 sm:mb-4 relative z-10">
+                <span className="text-xl sm:text-2xl lg:text-3xl font-display font-black text-gray-900 tracking-tight leading-none block truncate">{card.value}</span>
+              </div>
+
+              <div className="mt-auto relative z-10">
+                <div className="flex justify-between items-center mb-1.5">
+                  <span className="text-[9px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-wider truncate">{card.bottomLabel}</span>
+                  <span className="text-[9px] sm:text-[10px] font-black text-gray-900 ml-1 shrink-0">{card.progress}%</span>
+                </div>
+
+                <div className="flex gap-1 h-1.5">
+                  {[1, 2, 3, 4, 5].map(segment => {
+                    const segmentThreshold = segment * 20;
+                    const isFilled = card.progress >= segmentThreshold || (card.progress > segmentThreshold - 20 && card.progress > 0);
+                    const isPartial = isFilled && card.progress < segmentThreshold;
+                    return (
+                      <div key={segment} className={`flex-1 rounded-full transition-all duration-700 ${isFilled ? `bg-gradient-to-r ${card.grad}` : 'bg-gray-100'} ${isPartial ? 'opacity-60' : 'opacity-100'}`}></div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
@@ -311,12 +413,25 @@ const CreatorProfile = () => {
         {/* Right Main Content */}
         <div className="lg:col-span-8 flex flex-col">
           {/* Tabs */}
-          <div className="flex items-center gap-8 border-b border-gray-200 mb-8 overflow-x-auto hide-scrollbar">
+          <div className="flex items-center gap-6 sm:gap-8 border-b border-gray-200 mb-8 overflow-x-auto hide-scrollbar">
             <button 
               onClick={() => setActiveTab('background')}
-              className={`text-[13px] font-black pb-4 border-b-2 tracking-wide transition-all ${activeTab === 'background' ? 'text-orange-600 border-orange-600' : 'text-gray-400 border-transparent hover:text-gray-900'}`}
+              className={`text-[13px] font-black pb-4 border-b-2 tracking-wide transition-all whitespace-nowrap ${activeTab === 'background' ? 'text-orange-600 border-orange-600' : 'text-gray-400 border-transparent hover:text-gray-900'}`}
             >
               Background
+            </button>
+            <button 
+              onClick={() => setActiveTab('verifiedWork')}
+              className={`text-[13px] font-black pb-4 border-b-2 tracking-wide transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'verifiedWork' ? 'text-orange-600 border-orange-600' : 'text-gray-400 border-transparent hover:text-gray-900'}`}
+            >
+              Verified Work
+              <span className={`text-[10px] px-2 py-0.5 rounded-full font-black ${
+                (creator.verifiedWork?.length || 0) > 0 
+                  ? 'bg-emerald-100 text-emerald-700' 
+                  : 'bg-orange-100 text-orange-700'
+              }`}>
+                {(creator.verifiedWork?.length || 0) > 0 ? creator.verifiedWork.length : 'New'}
+              </span>
             </button>
             <button 
               onClick={() => setActiveTab('services')}
@@ -326,7 +441,7 @@ const CreatorProfile = () => {
             </button>
             <button 
               onClick={() => setActiveTab('portfolio')}
-              className={`text-[13px] font-black pb-4 border-b-2 tracking-wide transition-all ${activeTab === 'portfolio' ? 'text-orange-600 border-orange-600' : 'text-gray-400 border-transparent hover:text-gray-900'}`}
+              className={`text-[13px] font-black pb-4 border-b-2 tracking-wide transition-all whitespace-nowrap ${activeTab === 'portfolio' ? 'text-orange-600 border-orange-600' : 'text-gray-400 border-transparent hover:text-gray-900'}`}
             >
               Portfolio
             </button>
@@ -373,6 +488,100 @@ const CreatorProfile = () => {
                           </div>
                         </div>
                       ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Verified Work on Kino */}
+            {activeTab === 'verifiedWork' && (
+              <div className="flex flex-col gap-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-gray-100">
+                  <div>
+                    <h2 className="text-lg font-black text-gray-900 flex items-center gap-2">
+                      <ShieldCheck className="text-emerald-500" size={22} />
+                      Verified Platform Collaborations
+                    </h2>
+                    <p className="text-xs text-gray-500 font-medium mt-1">
+                      Real deliverables completed and approved by brands on Kino.
+                    </p>
+                  </div>
+                  {creator.verifiedWork?.length > 0 && (
+                    <span className="self-start sm:self-auto px-3 py-1 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-black">
+                      {creator.verifiedWork.length} Deals Completed
+                    </span>
+                  )}
+                </div>
+
+                {creator.verifiedWork && creator.verifiedWork.length > 0 ? (
+                  <div className="grid grid-cols-1 gap-4">
+                    {creator.verifiedWork.map((deal, idx) => (
+                      <div 
+                        key={deal._id || idx}
+                        className="p-5 rounded-2xl bg-white border border-gray-100 hover:border-orange-200 shadow-xs hover:shadow-md transition-all flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"
+                      >
+                        <div className="flex items-start gap-4 min-w-0">
+                          <div className="w-12 h-12 rounded-2xl bg-orange-50 border border-orange-100 flex items-center justify-center overflow-hidden shrink-0 shadow-xs">
+                            {deal.brandLogo ? (
+                              <img src={deal.brandLogo} alt={deal.brandName} className="w-full h-full object-cover" />
+                            ) : (
+                              <Building2 size={20} className="text-orange-600" />
+                            )}
+                          </div>
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="text-[11px] font-black uppercase text-orange-600 tracking-wider">
+                                {deal.brandName}
+                              </span>
+                              <span className="text-gray-300">•</span>
+                              <span className="text-[10px] font-bold text-gray-400">
+                                {deal.completedAt ? new Date(deal.completedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : 'Verified Delivery'}
+                              </span>
+                            </div>
+                            <h4 className="text-sm font-black text-gray-900 truncate max-w-md">
+                              {deal.title}
+                            </h4>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2.5 w-full sm:w-auto justify-between sm:justify-end border-t sm:border-none border-gray-100 pt-3 sm:pt-0 shrink-0">
+                          <span className="text-sm font-black text-gray-900 bg-orange-50/60 border border-orange-100 px-3 py-1.5 rounded-xl flex items-center gap-1 shadow-xs">
+                            <span className="text-[#EA580C]">🪙</span> {deal.budget?.toLocaleString()}
+                          </span>
+                          <span className="px-3 py-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200/80 rounded-xl text-[11px] font-black uppercase tracking-wider flex items-center gap-1.5 shadow-xs">
+                            <CheckCircle size={13} className="text-emerald-500" /> Verified Delivery
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  /* New Creator Friendly Onboarding State */
+                  <div className="flex flex-col items-center justify-center py-12 px-6 text-center bg-gradient-to-b from-orange-50/50 via-amber-50/20 to-white rounded-3xl border border-dashed border-orange-200">
+                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-500 to-amber-500 text-white flex items-center justify-center shadow-lg shadow-orange-500/20 mb-4">
+                      <Sparkles size={28} />
+                    </div>
+                    <span className="text-[10px] font-black uppercase tracking-widest text-[#EA580C] bg-orange-100/70 px-3 py-1 rounded-full mb-2">
+                      🌱 Rising Creator • New on Kino
+                    </span>
+                    <h3 className="text-xl font-black text-gray-900 mb-2">Ready for First Collaboration</h3>
+                    <p className="text-xs text-gray-500 font-medium max-w-md leading-relaxed mb-6">
+                      This creator is new on Kino and ready to deliver top-tier content. Be the first brand to collaborate with them and kickstart their verified track record!
+                    </p>
+                    <div className="flex flex-wrap items-center justify-center gap-3">
+                      <button
+                        onClick={handleHireMeClick}
+                        className="px-6 py-3 bg-[#EA580C] hover:bg-[#C2410C] text-white rounded-xl text-xs font-black uppercase tracking-widest shadow-md transition-all active:scale-95 flex items-center gap-2 cursor-pointer"
+                      >
+                        <Briefcase size={14} /> Hire This Creator
+                      </button>
+                      <button
+                        onClick={() => setActiveTab('portfolio')}
+                        className="px-6 py-3 bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 rounded-xl text-xs font-black uppercase tracking-widest shadow-xs transition-all cursor-pointer"
+                      >
+                        View Sample Portfolio
+                      </button>
                     </div>
                   </div>
                 )}

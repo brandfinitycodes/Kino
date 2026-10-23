@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import {
   Briefcase, Clock, CheckCircle, AlertCircle,
   ChevronLeft, LayoutDashboard, Edit3,
-  MessageSquare, Calendar, ChevronDown, ExternalLink
+  MessageSquare, Calendar, ChevronDown, ExternalLink, Building2
 } from "lucide-react";
 import ChatOverlay from "../ChatOverlay";
 import DealManager from "../DealManager";
@@ -193,6 +193,10 @@ const CreatorDeals = ({ deals, user, onUpdateDeal }) => {
           {filteredDeals.length > 0 ? filteredDeals.map((deal) => {
             const actionReq = deal.status === 'in_progress' || deal.status === 'revision_requested';
             
+            const campBrand = deal.brandId || deal.applicationId?.campaignId?.brandId;
+            const brandName = campBrand?.businessName || campBrand?.userId?.name || deal.brandName || 'Brand Partner';
+            const brandLogo = campBrand?.logo || campBrand?.userId?.profilePicture;
+
             const startsDate = new Date(deal.createdAt || Date.now());
             startsDate.setDate(startsDate.getDate() + 15);
             const formattedStarts = `Starts ${startsDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}`;
@@ -214,6 +218,18 @@ const CreatorDeals = ({ deals, user, onUpdateDeal }) => {
                     alt={deal.applicationId?.campaignId?.title} 
                     className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
                   />
+                  {/* Brand Pill */}
+                  <div className="absolute top-3 left-3 h-8 px-2.5 rounded-full bg-white/95 backdrop-blur-md border border-white/60 flex items-center gap-1.5 shadow-md overflow-hidden z-10">
+                    {brandLogo ? (
+                      <img src={brandLogo} alt={brandName} className="w-4 h-4 rounded-full object-cover shrink-0" />
+                    ) : (
+                      <Building2 size={13} className="text-[#ea580c] shrink-0" />
+                    )}
+                    <span className="text-[10px] font-black text-gray-900 tracking-tight max-w-[120px] truncate">
+                      {brandName}
+                    </span>
+                  </div>
+
                   {/* Status Badge */}
                   <div className={`absolute top-3 right-3 px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest shadow-md ${badgeBg[deal.status] || 'bg-gray-500 text-white'}`}>
                     {badgeText[deal.status] || deal.status?.replace(/_/g, ' ')?.toUpperCase()}
@@ -225,10 +241,16 @@ const CreatorDeals = ({ deals, user, onUpdateDeal }) => {
                 {/* Body Content */}
                 <div className="px-2 flex-1 flex flex-col justify-between">
                   <div>
-                    {/* Subtitle */}
-                    <span className="text-[10px] font-black uppercase tracking-widest text-[#ea580c] block mb-1">
-                      {deal.originType === 'package' || (!deal.campaignId && !deal.applicationId?.campaignId) ? 'PACKAGE ORDER' : 'CAMPAIGN DEAL'} • #{deal._id.slice(-4).toUpperCase()}
-                    </span>
+                    {/* Subtitle with Brand */}
+                    <div className="flex items-center gap-1.5 mb-1.5">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-[#ea580c] truncate">
+                        {brandName}
+                      </span>
+                      <span className="text-gray-300 text-[10px]">•</span>
+                      <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider shrink-0">
+                        #{deal._id.slice(-4).toUpperCase()}
+                      </span>
+                    </div>
                     {/* Title */}
                     <h4 className="text-[18px] font-black text-gray-900 tracking-tight leading-snug line-clamp-2 mb-4 group-hover:text-[#ea580c] transition-colors">
                       {deal.originType === 'package' || (!deal.campaignId && !deal.applicationId?.campaignId)

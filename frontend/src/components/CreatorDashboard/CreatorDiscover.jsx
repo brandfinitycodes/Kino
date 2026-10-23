@@ -103,7 +103,7 @@ const CreatorDiscover = ({ campaigns, applications, profile, onApply, setActiveT
     const isSaved = savedCampaigns[camp._id];
 
     // Dynamic timeline and competition
-    const deadlineDays = camp.deadline 
+    const deadlineDays = camp.deadline
       ? Math.max(0, Math.ceil((new Date(camp.deadline) - new Date()) / (1000 * 60 * 60 * 24)))
       : null;
     const deadlineText = deadlineDays !== null ? (deadlineDays === 0 ? 'Ends Today' : `${deadlineDays} Days Left`) : 'Ongoing';
@@ -123,15 +123,15 @@ const CreatorDiscover = ({ campaigns, applications, profile, onApply, setActiveT
           {/* Brand Logo Float with Error Fallback */}
           <div className="absolute top-4 right-4 w-12 h-12 rounded-[14px] bg-white/20 backdrop-blur-md border border-white/40 flex items-center justify-center shadow-lg overflow-hidden z-10 group-hover:-translate-y-1 transition-transform">
             {camp.brandId?.logo ? (
-              <img 
-                src={camp.brandId.logo} 
+              <img
+                src={camp.brandId.logo}
                 alt={camp.brandId?.businessName || 'Brand'}
                 onError={(e) => {
                   e.currentTarget.style.display = 'none';
                   const fallback = e.currentTarget.parentElement.querySelector('.brand-fallback-icon');
                   if (fallback) fallback.style.display = 'block';
                 }}
-                className="w-full h-full object-cover" 
+                className="w-full h-full object-cover"
               />
             ) : null}
             <Building2 size={20} className={`text-white drop-shadow-md brand-fallback-icon ${camp.brandId?.logo ? 'hidden' : 'block'}`} />
@@ -188,18 +188,18 @@ const CreatorDiscover = ({ campaigns, applications, profile, onApply, setActiveT
 
           <div className="grid grid-cols-2 gap-3 mb-5">
             <div className="bg-orange-50/50 rounded-xl p-3 border border-orange-100/50 flex flex-col justify-center">
-              <p className="text-[9px] font-black text-orange-400 uppercase tracking-widest mb-1 flex items-center gap-1"><Clock size={10}/> Deadline</p>
+              <p className="text-[9px] font-black text-orange-400 uppercase tracking-widest mb-1 flex items-center gap-1"><Clock size={10} /> Deadline</p>
               <p className="text-[13px] font-bold text-gray-900">{deadlineText}</p>
             </div>
             <div className="bg-purple-50/50 rounded-xl p-3 border border-purple-100/50 flex flex-col justify-center">
-              <p className="text-[9px] font-black text-purple-400 uppercase tracking-widest mb-1 flex items-center gap-1"><User size={10}/> Competition</p>
+              <p className="text-[9px] font-black text-purple-400 uppercase tracking-widest mb-1 flex items-center gap-1"><User size={10} /> Competition</p>
               <p className="text-[13px] font-bold text-gray-900">{competitionText}</p>
             </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-2 mb-6 min-h-[32px]">
             <span className="inline-flex items-center gap-1.5 bg-gray-50 text-gray-700 border border-gray-200 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest shadow-sm">
-               {camp.niche || 'Any Niche'}
+              {camp.niche || 'Any Niche'}
             </span>
             {matchScore >= 85 && (
               <span className="inline-flex items-center gap-1.5 bg-gradient-to-r from-orange-100 to-amber-100 text-[#EA580C] border border-orange-200 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest shadow-sm">
@@ -209,28 +209,28 @@ const CreatorDiscover = ({ campaigns, applications, profile, onApply, setActiveT
           </div>
 
           <div className="mt-auto">
-          {hasApplied ? (
-            <button 
-              onClick={(e) => {
-                e.stopPropagation();
-                if (setActiveTab) setActiveTab('applications');
-                else navigate('/creator-dashboard?tab=applications');
-              }}
-              className="w-full bg-emerald-50 hover:bg-emerald-100 text-emerald-600 text-[12px] font-black uppercase tracking-widest py-4 rounded-xl border border-emerald-200 flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer"
-            >
-              <CheckCircle size={14} /> View Application <ArrowUpRight size={14} />
-            </button>
-          ) : (
-            <Link 
-              to={`/campaigns/${camp._id}`} 
-              className="relative overflow-hidden w-full bg-gradient-to-r from-[#EA580C] to-[#F59E0B] text-white text-[12px] font-black uppercase tracking-widest py-4 rounded-xl transition-all shadow-[0_8px_20px_rgba(234,88,12,0.2)] hover:shadow-[0_15px_30px_rgba(234,88,12,0.3)] hover:-translate-y-0.5 group/btn flex items-center justify-center gap-2"
-            >
-              <span className="relative z-10 flex items-center justify-center gap-2">
-                View Details <ArrowUpRight size={16} className="group-hover/btn:translate-x-1 group-hover/btn:-translate-y-1 transition-transform" />
-              </span>
-              <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300 ease-out rounded-xl"></div>
-            </Link>
-          )}
+            {hasApplied ? (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (setActiveTab) setActiveTab('applications');
+                  else navigate('/creator-dashboard?tab=applications');
+                }}
+                className="w-full bg-emerald-50 hover:bg-emerald-100 text-emerald-600 text-[12px] font-black uppercase tracking-widest py-4 rounded-xl border border-emerald-200 flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer"
+              >
+                <CheckCircle size={14} /> View Application <ArrowUpRight size={14} />
+              </button>
+            ) : (
+              <Link
+                to={`/campaigns/${camp._id}`}
+                className="relative overflow-hidden w-full bg-gradient-to-r from-[#EA580C] to-[#F59E0B] text-white text-[12px] font-black uppercase tracking-widest py-4 rounded-xl transition-all shadow-[0_8px_20px_rgba(234,88,12,0.2)] hover:shadow-[0_15px_30px_rgba(234,88,12,0.3)] hover:-translate-y-0.5 group/btn flex items-center justify-center gap-2"
+              >
+                <span className="relative z-10 flex items-center justify-center gap-2">
+                  View Details <ArrowUpRight size={16} className="group-hover/btn:translate-x-1 group-hover/btn:-translate-y-1 transition-transform" />
+                </span>
+                <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300 ease-out rounded-xl"></div>
+              </Link>
+            )}
           </div>
         </div>
       </motion.div>
@@ -268,7 +268,7 @@ const CreatorDiscover = ({ campaigns, applications, profile, onApply, setActiveT
           <div className="flex items-center justify-between mb-8">
             <h3 className="text-2xl sm:text-3xl font-black font-display text-gray-900 tracking-tight flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#EA580C] to-[#eb4898] flex items-center justify-center shadow-lg">
-                <Star className="text-white fill-white" size={20} /> 
+                <Star className="text-white fill-white" size={20} />
               </div>
               Top Picks for You
             </h3>
@@ -400,15 +400,15 @@ const CreatorDiscover = ({ campaigns, applications, profile, onApply, setActiveT
                     <div className="flex items-center gap-4 mb-4">
                       <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center overflow-hidden shrink-0 shadow-inner">
                         {selectedCampaign.brandId?.logo ? (
-                          <img 
-                            src={selectedCampaign.brandId.logo} 
+                          <img
+                            src={selectedCampaign.brandId.logo}
                             alt={selectedCampaign.brandId?.businessName || 'Brand'}
                             onError={(e) => {
                               e.currentTarget.style.display = 'none';
                               const fallback = e.currentTarget.parentElement.querySelector('.modal-brand-fallback');
                               if (fallback) fallback.style.display = 'block';
                             }}
-                            className="w-full h-full object-cover" 
+                            className="w-full h-full object-cover"
                           />
                         ) : null}
                         <Building2 size={24} className={`text-gray-900 modal-brand-fallback ${selectedCampaign.brandId?.logo ? 'hidden' : 'block'}`} />
@@ -444,7 +444,7 @@ const CreatorDiscover = ({ campaigns, applications, profile, onApply, setActiveT
 
                 <h2 className="text-4xl lg:text-5xl font-display font-black text-gray-900 leading-[1.1] mb-6">{selectedCampaign.title}</h2>
                 <div className="text-3xl font-black text-gray-900 flex items-center gap-3 mb-10 pb-8 border-b border-gray-100">
-                  <div className="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center shrink-0"><Wallet size={24} className="text-emerald-500" /></div> 
+                  <div className="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center shrink-0"><Wallet size={24} className="text-emerald-500" /></div>
                   <span className="flex items-center gap-1.5 leading-none">
                     <span className="text-2xl leading-none">🪙</span>
                     <span>{selectedCampaign.budget?.toLocaleString()}</span>
@@ -469,8 +469,8 @@ const CreatorDiscover = ({ campaigns, applications, profile, onApply, setActiveT
                       <h3 className="text-[11px] font-black uppercase tracking-widest text-gray-400 mb-2">Expected Timeline</h3>
                       <p className="font-bold text-gray-900 flex items-center gap-2 text-[15px]">
                         <Calendar size={18} className="text-[#EA580C]" /> {
-                          selectedCampaign.deadline 
-                            ? `${Math.max(0, Math.ceil((new Date(selectedCampaign.deadline) - new Date()) / (1000 * 60 * 60 * 24)))} Days Left` 
+                          selectedCampaign.deadline
+                            ? `${Math.max(0, Math.ceil((new Date(selectedCampaign.deadline) - new Date()) / (1000 * 60 * 60 * 24)))} Days Left`
                             : 'Flexible Timeline'
                         }
                       </p>
@@ -486,8 +486,8 @@ const CreatorDiscover = ({ campaigns, applications, profile, onApply, setActiveT
                       {(Array.isArray(selectedCampaign.requirements) && selectedCampaign.requirements.length > 0
                         ? selectedCampaign.requirements.filter(r => typeof r === 'string' && r.trim().length > 0)
                         : typeof selectedCampaign.requirements === 'string' && selectedCampaign.requirements.trim()
-                        ? selectedCampaign.requirements.split(',').map(r => r.trim()).filter(Boolean)
-                        : ['Dedicated content collaboration', 'High-quality brand integration', 'Standard usage and posting rights']
+                          ? selectedCampaign.requirements.split(',').map(r => r.trim()).filter(Boolean)
+                          : ['Dedicated content collaboration', 'High-quality brand integration', 'Standard usage and posting rights']
                       ).map((req, i) => (
                         <li key={i} className="flex items-start gap-4">
                           <div className="w-6 h-6 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center shrink-0 mt-0.5 border border-emerald-100">

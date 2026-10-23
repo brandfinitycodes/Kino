@@ -568,7 +568,7 @@ const getUserDeals = async (req, res) => {
       .populate({
         path: 'applicationId',
         populate: [
-          { path: 'campaignId' },
+          { path: 'campaignId', populate: { path: 'brandId' } },
           { path: 'creatorId', populate: { path: 'userId', select: 'name email profilePicture' } }
         ]
       })
@@ -948,7 +948,11 @@ const cancelDeal = async (req, res) => {
 
 const editDealDetails = async (req, res) => {
   const { id } = req.params;
-  const { brandAssetsUrl, dealNotes, deadline, contentUrl } = req.body;
+  const { brandAssetsUrl, dealNotes, deadline } = req.body;
+
+  if (req.user.role !== 'brand' && req.user.role !== 'admin' && req.user.role !== 'superadmin') {
+    return res.status(403).json({ message: 'Only brands are authorized to edit deal parameters.' });
+  }
 
   try {
     const deal = await Deal.findById(id);

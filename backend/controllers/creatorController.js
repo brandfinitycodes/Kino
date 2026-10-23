@@ -1,5 +1,7 @@
 const path = require('path');
 const CreatorProfile = require('../models/CreatorProfile');
+const Deal = require('../models/Deal');
+const Application = require('../models/Application');
 const { imagekit } = require('../middleware/uploadMiddleware');
 
 const updateProfile = async (req, res) => {
@@ -124,7 +126,62 @@ const getCreatorById = async (req, res) => {
       }
     }
 
-    res.json(creator);
+    // Fetch real completed deals and platform stats
+    const possibleCreatorIds = [creator._id];
+    if (creator.userId?._id || creator.userId) {
+      possibleCreatorIds.push(creator.userId._id || creator.userId);
+    }
+
+    const applications = await Application.find({ creatorId: { $in: possibleCreatorIds } });
+    const applicationIds = applications.map(a => a._id);
+
+    const dealQuery = {
+      $or: [
+        { creatorId: { $in: possibleCreatorIds } },
+        ...(applicationIds.length > 0 ? [{ applicationId: { $in: applicationIds } }] : [])
+      ]
+    };
+
+    const completedDeals = await Deal.find({
+      ...dealQuery,
+      status: 'completed'
+    })
+      .sort({ updatedAt: -1 })
+      .populate('brandId', 'businessName logo')
+      .populate({
+        path: 'applicationId',
+        populate: [
+          { path: 'campaignId', populate: { path: 'brandId', select: 'businessName logo' } }
+        ]
+      })
+      .lean();
+
+    const totalDealsCount = await Deal.countDocuments(dealQuery);
+
+    const verifiedWork = completedDeals.map(d => {
+      const brand = d.brandId || d.applicationId?.campaignId?.brandId;
+      const title = d.title || d.applicationId?.campaignId?.title || (d.packageTier ? `${d.packageTier.charAt(0).toUpperCase() + d.packageTier.slice(1)} Tier Package Collaboration` : 'Campaign Deal');
+      return {
+        _id: d._id,
+        title,
+        brandName: brand?.businessName || 'Verified Brand',
+        brandLogo: brand?.logo || null,
+        budget: d.budget || d.applicationId?.campaignId?.budget || 0,
+        completedAt: d.updatedAt || d.createdAt,
+        originType: d.originType || 'campaign'
+      };
+    });
+
+    const creatorObj = creator.toObject ? creator.toObject() : { ...creator };
+    creatorObj.verifiedWork = verifiedWork;
+    creatorObj.platformStats = {
+      completedDealsCount: verifiedWork.length,
+      totalDealsCount,
+      completionRate: totalDealsCount > 0 ? Math.round((verifiedWork.length / totalDealsCount) * 100) : 100,
+      isNewCreator: verifiedWork.length === 0
+    };
+
+    res.json(creatorObj);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -161,7 +218,57 @@ const getCreatorProfileMe = async (req, res) => {
       }
     }
 
-    res.json(creator);
+    const possibleCreatorIds = [creator._id, req.user.id];
+    const applications = await Application.find({ creatorId: { $in: possibleCreatorIds } });
+    const applicationIds = applications.map(a => a._id);
+
+    const dealQuery = {
+      $or: [
+        { creatorId: { $in: possibleCreatorIds } },
+        ...(applicationIds.length > 0 ? [{ applicationId: { $in: applicationIds } }] : [])
+      ]
+    };
+
+    const completedDeals = await Deal.find({
+      ...dealQuery,
+      status: 'completed'
+    })
+      .sort({ updatedAt: -1 })
+      .populate('brandId', 'businessName logo')
+      .populate({
+        path: 'applicationId',
+        populate: [
+          { path: 'campaignId', populate: { path: 'brandId', select: 'businessName logo' } }
+        ]
+      })
+      .lean();
+
+    const totalDealsCount = await Deal.countDocuments(dealQuery);
+
+    const verifiedWork = completedDeals.map(d => {
+      const brand = d.brandId || d.applicationId?.campaignId?.brandId;
+      const title = d.title || d.applicationId?.campaignId?.title || (d.packageTier ? `${d.packageTier.charAt(0).toUpperCase() + d.packageTier.slice(1)} Tier Package Collaboration` : 'Campaign Deal');
+      return {
+        _id: d._id,
+        title,
+        brandName: brand?.businessName || 'Verified Brand',
+        brandLogo: brand?.logo || null,
+        budget: d.budget || d.applicationId?.campaignId?.budget || 0,
+        completedAt: d.updatedAt || d.createdAt,
+        originType: d.originType || 'campaign'
+      };
+    });
+
+    const creatorObj = creator.toObject ? creator.toObject() : { ...creator };
+    creatorObj.verifiedWork = verifiedWork;
+    creatorObj.platformStats = {
+      completedDealsCount: verifiedWork.length,
+      totalDealsCount,
+      completionRate: totalDealsCount > 0 ? Math.round((verifiedWork.length / totalDealsCount) * 100) : 100,
+      isNewCreator: verifiedWork.length === 0
+    };
+
+    res.json(creatorObj);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

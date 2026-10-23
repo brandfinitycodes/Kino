@@ -9,6 +9,7 @@ const BrandProfile = require('../models/BrandProfile');
 const Application = require('../models/Application');
 const AdminAuditLog = require('../models/AdminAuditLog');
 const KycProfile = require('../models/KycProfile');
+const Notification = require('../models/Notification');
 
 const getPendingWithdrawals = async (req, res) => {
   try {
@@ -115,6 +116,19 @@ const approveWithdrawal = async (req, res) => {
       }
     }
 
+    // In-App Notification to Creator
+    try {
+      const grossCoins = Math.abs(transaction.amount);
+      const netPayout = Math.round(grossCoins * 0.95);
+      const refText = referenceId ? ` (Ref: ${referenceId})` : '';
+      await Notification.create({
+        userId: transaction.userId,
+        message: `🎉 Your withdrawal request for 🪙${grossCoins.toLocaleString()} (Net payout: ₹${netPayout.toLocaleString()}) has been approved and processed${refText}.`
+      });
+    } catch (notifErr) {
+      console.error('Withdrawal approval notification error:', notifErr.message);
+    }
+
     res.json({ message: 'Withdrawal approved successfully.', transaction });
   } catch (error) {
     console.error('Error approving withdrawal:', error);
@@ -173,6 +187,17 @@ const rejectWithdrawal = async (req, res) => {
           details: `Rejected withdrawal transaction ID ${transaction._id} of amount 🪙${Math.abs(transaction.amount)} for user ${transaction.userId}. Funds refunded.`
         });
       }
+    }
+
+    // In-App Notification to Creator
+    try {
+      const refundCoins = Math.abs(transaction.amount);
+      await Notification.create({
+        userId: transaction.userId,
+        message: `❌ Your withdrawal request for 🪙${refundCoins.toLocaleString()} was rejected and the coins have been refunded to your wallet balance.`
+      });
+    } catch (notifErr) {
+      console.error('Withdrawal rejection notification error:', notifErr.message);
     }
 
     res.json({

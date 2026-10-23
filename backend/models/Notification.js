@@ -13,6 +13,14 @@ const notificationSchema = new mongoose.Schema({
   read: {
     type: Boolean,
     default: false
+  },
+  link: {
+    type: String,
+    default: null
+  },
+  actionLabel: {
+    type: String,
+    default: null
   }
 }, { timestamps: true });
 

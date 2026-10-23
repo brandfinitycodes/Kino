@@ -32,7 +32,7 @@ router.post('/:id/review', authMiddleware, checkRole('brand'), isVerifiedMiddlew
 router.post('/:id/pause', authMiddleware, isVerifiedMiddleware, pauseDeal);
 router.post('/:id/resume', authMiddleware, isVerifiedMiddleware, resumeDeal);
 router.post('/:id/cancel', authMiddleware, isVerifiedMiddleware, cancelDeal);
-router.put('/:id/details', authMiddleware, isVerifiedMiddleware, editDealDetails);
+router.put('/:id/details', authMiddleware, checkRole('brand'), isVerifiedMiddleware, editDealDetails);
 
 router.put('/:id/status', authMiddleware, isVerifiedMiddleware, updateDealStatus);
 router.post('/:id/deliverables', authMiddleware, isVerifiedMiddleware, submitDeliverables);

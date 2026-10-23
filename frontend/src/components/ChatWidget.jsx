@@ -1,18 +1,48 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageSquare, Send, X, Smile } from 'lucide-react';
+import { MessageSquare, Send, X, Smile, Building2, User } from 'lucide-react';
 import { useSocket } from '../context/SocketContext';
 import { useAuth } from '../context/AuthContext';
 import axios from '../utils/axios';
 
-function ChatWidget({ dealId, isCompleted }) {
+function ChatWidget({ dealId, deal, isCompleted }) {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const socket = useSocket();
   const { user } = useAuth();
-  const isKycApproved = user?.role === 'admin' || user?.kycStatus === 'APPROVED';
+
+  const brandName = 
+    deal?.brandId?.businessName || 
+    deal?.applicationId?.campaignId?.brandId?.businessName || 
+    deal?.brandId?.userId?.name || 
+    deal?.applicationId?.campaignId?.brandId?.userId?.name || 
+    'Brand Partner';
+
+  const brandLogo = 
+    deal?.brandId?.logo || 
+    deal?.applicationId?.campaignId?.brandId?.logo || 
+    deal?.brandId?.userId?.profilePicture;
+
+  const creatorName = 
+    deal?.creatorId?.name || 
+    deal?.creatorId?.userId?.name || 
+    deal?.applicationId?.creatorId?.name || 
+    'Creator';
+
+  const creatorAvatar = 
+    deal?.creatorId?.profilePicture || 
+    deal?.creatorId?.userId?.profilePicture;
+
+  const isBrandUser = user?.role === 'brand';
+  const otherPartyName = isBrandUser ? creatorName : brandName;
+  const otherPartyAvatar = isBrandUser ? creatorAvatar : brandLogo;
+
+  const adminRoles = ['superadmin', 'admin', 'moderator', 'support'];
+  const isAdmin = adminRoles.includes(user?.role);
+  const isKycApproved = isAdmin || user?.kycStatus === 'APPROVED' || Boolean(user?.isVerified);
+
   const messagesContainerRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -26,17 +56,24 @@ function ChatWidget({ dealId, isCompleted }) {
       socket.emit('join_deal_chat', dealId);
 
       const onReceiveMessage = (message) => {
-        // Only add if it belongs to this conversation to be safe
         setMessages((prev) => {
-          // Prevent duplicates (e.g. if socket and optimistic update both trigger)
-          if (prev.some(m => m._id === message._id)) return prev;
+          const msgId = String(message?._id || '');
+          if (msgId && prev.some(m => String(m._id) === msgId)) return prev;
           return [...prev, message];
         });
+        setTimeout(scrollToBottom, 50);
+      };
+
+      const handleConnect = () => {
+        socket.emit('join_deal_chat', dealId);
       };
 
       socket.on('receive_message', onReceiveMessage);
+      socket.on('connect', handleConnect);
+
       return () => {
         socket.off('receive_message', onReceiveMessage);
+        socket.off('connect', handleConnect);
       };
     }
   }, [socket, isOpen, dealId, isKycApproved]);
@@ -47,12 +84,15 @@ function ChatWidget({ dealId, isCompleted }) {
     }
   }, [isOpen, dealId, isKycApproved]);
 
-  useEffect(scrollToBottom, [messages]);
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   const fetchMessages = async () => {
     try {
       const { data } = await axios.get(`/chat/${dealId}`);
-      setMessages(data);
+      setMessages(data || []);
+      setTimeout(scrollToBottom, 50);
     } catch (err) {
       console.error("Failed to fetch messages:", err);
     }
@@ -67,8 +107,16 @@ function ChatWidget({ dealId, isCompleted }) {
 
     try {
       setLoading(true);
-      await axios.post(`/chat/${dealId}`, { content: messageContent });
-      // We don't manually add to state here because the socket will emit back to us
+      const res = await axios.post(`/chat/${dealId}`, { content: messageContent });
+      if (res.data) {
+        // Immediate local render so message appears in real time without waiting for socket
+        setMessages((prev) => {
+          const resId = String(res.data._id || '');
+          if (resId && prev.some(m => String(m._id) === resId)) return prev;
+          return [...prev, res.data];
+        });
+        setTimeout(scrollToBottom, 50);
+      }
     } catch (err) {
       console.error("Failed to send message:", err);
       setNewMessage(messageContent); // Restore on failure
@@ -77,7 +125,7 @@ function ChatWidget({ dealId, isCompleted }) {
     }
   };
 
-  const currentUserId = user?.id || user?._id;
+  const currentUserId = String(user?.id || user?._id || user?.userId || '');
 
   return (
     <div className="relative z-[60]">
@@ -101,34 +149,58 @@ function ChatWidget({ dealId, isCompleted }) {
             className="absolute top-[70px] left-0 sm:left-auto sm:right-0 w-[320px] max-w-[90vw] sm:w-[400px] h-[65vh] sm:h-[450px] bg-surface-container-low border border-outline-variant/10 rounded-[2rem] shadow-[0_30px_60px_rgba(0,0,0,0.5)] flex flex-col overflow-hidden backdrop-blur-3xl origin-top-left sm:origin-top-right z-[10000]"
           >
             {/* Header */}
-            <div className="p-5 sm:p-6 bg-surface-container border-b border-outline-variant/10 flex justify-between items-center shrink-0">
-              <div>
-                <h4 className="font-black text-on-surface text-lg tracking-tight">Collaboration Chat</h4>
-                <div className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-accent-teal animate-pulse" />
-                  <p className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/60">Live Now</p>
+            <div className="p-4 sm:p-5 bg-surface-container border-b border-outline-variant/10 flex justify-between items-center shrink-0">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-10 h-10 rounded-xl bg-surface-container-high border border-outline-variant/15 flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
+                  {otherPartyAvatar ? (
+                    <img src={otherPartyAvatar} alt={otherPartyName} className="w-full h-full object-cover" />
+                  ) : isBrandUser ? (
+                    <User size={18} className="text-secondary" />
+                  ) : (
+                    <Building2 size={18} className="text-secondary" />
+                  )}
+                </div>
+                <div className="min-w-0">
+                  <h4 className="font-black text-on-surface text-sm sm:text-base tracking-tight truncate max-w-[200px]">
+                    {otherPartyName}
+                  </h4>
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-1.5 h-1.5 rounded-full bg-accent-teal animate-pulse" />
+                    <p className="text-[9px] font-black uppercase tracking-widest text-on-surface-variant/60 truncate">
+                      {isBrandUser ? 'Creator Partner' : 'Brand Partner'} • Live Chat
+                    </p>
+                  </div>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={(e) => { e.preventDefault(); e.stopPropagation(); setIsOpen(false); }}
-                className="w-10 h-10 rounded-full bg-surface-container-high hover:bg-surface-container-highest flex items-center justify-center text-on-surface-variant transition-colors relative z-[60] cursor-pointer shrink-0 shadow-sm"
+                className="w-9 h-9 rounded-full bg-surface-container-high hover:bg-surface-container-highest flex items-center justify-center text-on-surface-variant transition-colors relative z-[60] cursor-pointer shrink-0 shadow-sm"
                 title="Close Chat"
               >
-                <X size={18} />
+                <X size={16} />
               </button>
             </div>
 
             {/* Messages Area */}
             <div ref={messagesContainerRef} className={`flex-1 overflow-y-auto p-6 space-y-6 scrollbar-hide ${!isKycApproved ? 'blur-sm select-none pointer-events-none' : ''}`}>
               {messages.map((msg, i) => {
-                const isMe = msg.senderId === currentUserId;
+                const senderIdStr = String(msg.senderId?._id || msg.senderId || '');
+                const isMe = Boolean(currentUserId && senderIdStr && currentUserId === senderIdStr);
+                const senderRole = msg.senderId?.role;
+                const senderName = msg.senderId?.name;
+
+                let label = isMe ? 'You' : (isBrandUser ? (creatorName || 'Creator') : (brandName || 'Brand'));
+                if (!isMe && senderName && senderName !== label) {
+                  label = `${label} (${senderName})`;
+                }
+
                 return (
-                  <div key={i} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
+                  <div key={msg._id || i} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
                     <span className="text-[8px] font-black uppercase tracking-widest text-on-surface-variant/40 mb-1 px-1">
-                      {isMe ? 'You' : (user.role === 'brand' ? 'Creator' : 'Brand')}
+                      {label}
                     </span>
-                    <div className={`max-w-[85%] p-4 rounded-2xl text-sm font-bold leading-relaxed ${isMe
+                    <div className={`max-w-[85%] p-4 rounded-2xl text-sm font-bold leading-relaxed break-words ${isMe
                         ? 'bg-primary text-on-primary rounded-tr-none shadow-lg shadow-primary/20'
                         : 'bg-surface-container-high text-on-surface rounded-tl-none border border-outline-variant/10'
                       }`}>

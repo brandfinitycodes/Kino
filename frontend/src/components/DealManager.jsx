@@ -55,6 +55,30 @@ function DealManager({ deal, onUpdate, user: userProp }) {
     ['in_review', 'revision_requested', 'pending_clearance', 'completed'].includes(normalizedStatus)
   );
 
+  const brandName = 
+    deal.brandId?.businessName || 
+    deal.applicationId?.campaignId?.brandId?.businessName || 
+    deal.brandId?.userId?.name || 
+    deal.applicationId?.campaignId?.brandId?.userId?.name || 
+    'Brand Partner';
+
+  const brandLogo = 
+    deal.brandId?.logo || 
+    deal.applicationId?.campaignId?.brandId?.logo || 
+    deal.brandId?.userId?.profilePicture;
+
+  const creatorName = 
+    deal.creatorId?.name || 
+    deal.creatorId?.userId?.name || 
+    deal.applicationId?.creatorId?.name || 
+    deal.applicationId?.creatorId?.userId?.name || 
+    'Creator';
+
+  const creatorAvatar = 
+    deal.creatorId?.profilePicture || 
+    deal.creatorId?.userId?.profilePicture || 
+    deal.applicationId?.creatorId?.profilePicture;
+
   const handleAction = async (actionType, payload = {}) => {
     setLoading(true);
     setError('');
@@ -116,13 +140,23 @@ function DealManager({ deal, onUpdate, user: userProp }) {
     <div className="p-6 sm:p-8 rounded-[2.5rem_1rem_2.5rem_1rem] bg-surface-container/15 backdrop-blur-xl border border-outline-variant/10 hover:border-secondary transition-all shadow-2xl group">
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-10">
         <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-5 text-left w-full lg:w-auto">
-          <div className="w-16 h-16 rounded-2xl bg-surface-container/15 backdrop-blur-md flex items-center justify-center text-secondary border border-outline-variant/10 shadow-xl shrink-0 group-hover:scale-105 transition-transform duration-500">
-            <Building2 size={32} />
+          <div className="w-16 h-16 rounded-2xl bg-surface-container/15 backdrop-blur-md flex items-center justify-center text-secondary border border-outline-variant/10 shadow-xl shrink-0 group-hover:scale-105 transition-transform duration-500 overflow-hidden">
+            {brandLogo ? (
+              <img src={brandLogo} alt={brandName} className="w-full h-full object-cover" />
+            ) : (
+              <Building2 size={32} />
+            )}
           </div>
           <div className="flex-1 min-w-0">
-            <span className="console-label mb-1">
-              {deal.originType === 'package' ? 'Package Order' : 'Campaign Deal'} / 0x{deal._id.slice(-4).toUpperCase()}
-            </span>
+            <div className="flex flex-wrap items-center gap-2 mb-1">
+              <span className="console-label">
+                {deal.originType === 'package' ? 'Package Order' : 'Campaign Deal'} / 0x{deal._id.slice(-4).toUpperCase()}
+              </span>
+              <span className="text-outline-variant/40 hidden sm:inline">•</span>
+              <span className="text-[11px] font-black uppercase tracking-wider text-secondary flex items-center gap-1 bg-secondary/10 px-2 py-0.5 rounded-md border border-secondary/20">
+                <Building2 size={12} /> Brand: {brandName}
+              </span>
+            </div>
             <h3 className="text-2xl sm:text-3xl font-black text-on-surface tracking-tighter group-hover:text-violet-400 transition-colors break-words">
               {deal.originType === 'package' || (!deal.campaignId && !deal.applicationId?.campaignId)
                 ? `${(deal.packageTier ? deal.packageTier.charAt(0).toUpperCase() + deal.packageTier.slice(1) : 'Custom')} Tier Package Order` 
@@ -137,10 +171,10 @@ function DealManager({ deal, onUpdate, user: userProp }) {
         </div>
         <div className="flex flex-col items-start sm:items-end gap-3 w-full lg:w-auto border-t lg:border-t-0 border-outline-variant/5 pt-4 lg:pt-0 shrink-0">
           <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-             <ChatWidget dealId={deal._id} isCompleted={normalizedStatus === 'completed' || normalizedStatus === 'cancelled'} />
+             <ChatWidget dealId={deal._id} deal={deal} isCompleted={normalizedStatus === 'completed' || normalizedStatus === 'cancelled'} />
              
-             {/* Edit Deal Button */}
-             {normalizedStatus !== 'completed' && normalizedStatus !== 'cancelled' && (
+             {/* Edit Deal Button (Brands only) */}
+             {currentRole === 'brand' && normalizedStatus !== 'completed' && normalizedStatus !== 'cancelled' && (
                <button
                  onClick={() => setShowEditModal(true)}
                  className="px-3.5 py-2 rounded-2xl text-[10px] font-black uppercase tracking-wider bg-surface-container/30 hover:bg-surface-container text-on-surface border border-outline-variant/20 hover:border-secondary transition-all flex items-center gap-1.5 shadow-sm active:scale-95 cursor-pointer"
@@ -675,11 +709,15 @@ function DealManager({ deal, onUpdate, user: userProp }) {
               <UserSquare size={14} className="text-secondary" /> {currentRole === 'brand' ? 'Creator Profile' : 'Brand Profile'}
             </h4>
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-secondary to-primary flex items-center justify-center text-black font-black shadow-md shrink-0">
-                {currentRole === 'brand' ? deal.creatorId?.userId?.name?.charAt(0) || 'C' : (deal.brandId?.userId?.name?.charAt(0) || 'B')}
+              <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-secondary to-primary flex items-center justify-center text-black font-black shadow-md shrink-0 overflow-hidden">
+                {currentRole === 'brand' ? (
+                  creatorAvatar ? <img src={creatorAvatar} alt={creatorName} className="w-full h-full object-cover" /> : creatorName.charAt(0).toUpperCase()
+                ) : (
+                  brandLogo ? <img src={brandLogo} alt={brandName} className="w-full h-full object-cover" /> : brandName.charAt(0).toUpperCase()
+                )}
               </div>
               <div className="flex-1 min-w-0">
-                <h5 className="text-sm font-black text-on-surface truncate">{currentRole === 'brand' ? deal.creatorId?.userId?.name || 'Creator' : (deal.brandId?.userId?.name || 'Verified Brand')}</h5>
+                <h5 className="text-sm font-black text-on-surface truncate">{currentRole === 'brand' ? creatorName : brandName}</h5>
                 <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">⭐ 4.9 • Verified Partnership</p>
               </div>
             </div>
@@ -889,8 +927,8 @@ function DealManager({ deal, onUpdate, user: userProp }) {
         </div>
       )}
 
-      {/* EDIT DEAL PARAMETERS MODAL */}
-      {showEditModal && (
+      {/* EDIT DEAL PARAMETERS MODAL (Brands only) */}
+      {currentRole === 'brand' && showEditModal && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
           <div className="bg-surface border border-outline-variant/20 rounded-[2rem] p-8 max-w-lg w-full relative shadow-2xl">
             <div className="flex items-center justify-between mb-4">
