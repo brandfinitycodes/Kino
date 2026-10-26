@@ -8,13 +8,14 @@ import {
 } from 'lucide-react';
 import ChatWidget from './ChatWidget';
 
-function DealManager({ deal, onUpdate, user: userProp }) {
+function DealManager({ deal: initialDeal, onUpdate, user: userProp }) {
   const { user: authUser } = useAuth();
   const user = userProp || authUser || {};
   const currentRole = (user.role || authUser?.role || '').toLowerCase();
+  const [deal, setDeal] = useState(initialDeal || {});
   const [loading, setLoading] = useState(false);
-  const [contentUrl, setContentUrl] = useState(deal.contentUrl || '');
-  const [brandAssetsUrl, setBrandAssetsUrl] = useState(deal.brandAssetsUrl || '');
+  const [contentUrl, setContentUrl] = useState(initialDeal?.contentUrl || '');
+  const [brandAssetsUrl, setBrandAssetsUrl] = useState(initialDeal?.brandAssetsUrl || '');
   const [error, setError] = useState('');
   
   // Modals
@@ -29,22 +30,35 @@ function DealManager({ deal, onUpdate, user: userProp }) {
 
   const [showEditModal, setShowEditModal] = useState(false);
   const [editForm, setEditForm] = useState({
-    brandAssetsUrl: deal.brandAssetsUrl || '',
-    dealNotes: deal.dealNotes || '',
-    deadline: deal.deadline ? new Date(deal.deadline).toISOString().split('T')[0] : ''
+    brandAssetsUrl: initialDeal?.brandAssetsUrl || '',
+    dealNotes: initialDeal?.dealNotes || '',
+    deadline: initialDeal?.deadline ? new Date(initialDeal.deadline).toISOString().split('T')[0] : ''
   });
 
-  // Scroll to top when deal is opened & sync edit form
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    setBrandAssetsUrl(deal.brandAssetsUrl || '');
-    setContentUrl(deal.contentUrl || '');
+  const openEditModal = () => {
+    setError('');
     setEditForm({
       brandAssetsUrl: deal.brandAssetsUrl || '',
       dealNotes: deal.dealNotes || '',
       deadline: deal.deadline ? new Date(deal.deadline).toISOString().split('T')[0] : ''
     });
-  }, [deal._id, deal.updatedAt]);
+    setShowEditModal(true);
+  };
+
+  // Scroll to top when deal is opened & sync edit form
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (initialDeal) {
+      setDeal(initialDeal);
+      setBrandAssetsUrl(initialDeal.brandAssetsUrl || '');
+      setContentUrl(initialDeal.contentUrl || '');
+      setEditForm({
+        brandAssetsUrl: initialDeal.brandAssetsUrl || '',
+        dealNotes: initialDeal.dealNotes || '',
+        deadline: initialDeal.deadline ? new Date(initialDeal.deadline).toISOString().split('T')[0] : ''
+      });
+    }
+  }, [initialDeal?._id, initialDeal?.updatedAt, initialDeal?.brandAssetsUrl, initialDeal?.dealNotes, initialDeal?.deadline]);
 
   // Handle older database entries that might have used hyphens or no budget field
   const normalizedStatus = (deal.status || '').replace('-', '_');
@@ -94,16 +108,29 @@ function DealManager({ deal, onUpdate, user: userProp }) {
       else if (actionType === 'cancel') url += '/cancel';
       else if (actionType === 'edit-details') {
         url += '/details';
-        await axios.put(url, payload);
-        if (onUpdate) onUpdate();
+        const res = await axios.put(url, payload);
+        const updated = res.data?.deal;
+        if (updated) {
+          setDeal(updated);
+          setBrandAssetsUrl(updated.brandAssetsUrl || '');
+          setEditForm({
+            brandAssetsUrl: updated.brandAssetsUrl || '',
+            dealNotes: updated.dealNotes || '',
+            deadline: updated.deadline ? new Date(updated.deadline).toISOString().split('T')[0] : ''
+          });
+        }
+        if (onUpdate) onUpdate(updated || deal);
         setShowEditModal(false);
         setLoading(false);
         return;
       }
 
-      await axios.post(url, payload);
+      const res = await axios.post(url, payload);
+      if (res.data?.deal) {
+        setDeal(res.data.deal);
+      }
       
-      if (onUpdate) onUpdate(); // Refresh parent component data
+      if (onUpdate) onUpdate(res.data?.deal || deal); // Refresh parent component data
     } catch (err) {
       setError(err.response?.data?.message || 'Action failed.');
     } finally {
@@ -176,7 +203,7 @@ function DealManager({ deal, onUpdate, user: userProp }) {
              {/* Edit Deal Button (Brands only) */}
              {currentRole === 'brand' && normalizedStatus !== 'completed' && normalizedStatus !== 'cancelled' && (
                <button
-                 onClick={() => setShowEditModal(true)}
+                 onClick={openEditModal}
                  className="px-3.5 py-2 rounded-2xl text-[10px] font-black uppercase tracking-wider bg-surface-container/30 hover:bg-surface-container text-on-surface border border-outline-variant/20 hover:border-secondary transition-all flex items-center gap-1.5 shadow-sm active:scale-95 cursor-pointer"
                  title="Edit brand requirements, notes or deadline"
                >
@@ -352,16 +379,16 @@ function DealManager({ deal, onUpdate, user: userProp }) {
           )}
 
           {/* DEAL NOTES & BRIEF GUIDELINES (IF ANY) */}
-          {deal.dealNotes && (
+          {deal.dealNotes ? (
             <div className="bg-surface-container/10 backdrop-blur-md border border-outline-variant/15 p-6 rounded-[1.5rem_0.5rem_1.5rem_0.5rem] mb-4">
               <div className="flex items-center justify-between gap-2 mb-2">
                 <h4 className="font-black text-secondary uppercase text-xs tracking-widest flex items-center gap-2">
                   <FileText size={16} /> Collaboration Brief & Instructions
                 </h4>
-                {normalizedStatus !== 'completed' && normalizedStatus !== 'cancelled' && (
+                {currentRole === 'brand' && normalizedStatus !== 'completed' && normalizedStatus !== 'cancelled' && (
                   <button 
-                    onClick={() => setShowEditModal(true)}
-                    className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant hover:text-secondary flex items-center gap-1 transition-colors"
+                    onClick={openEditModal}
+                    className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant hover:text-secondary flex items-center gap-1 transition-colors cursor-pointer"
                   >
                     <Edit3 size={12} /> Edit Notes
                   </button>
@@ -371,40 +398,83 @@ function DealManager({ deal, onUpdate, user: userProp }) {
                 {deal.dealNotes}
               </p>
             </div>
+          ) : (
+            currentRole === 'brand' && normalizedStatus !== 'completed' && normalizedStatus !== 'cancelled' && (
+              <div className="bg-surface-container/5 backdrop-blur-md border border-dashed border-outline-variant/30 p-5 rounded-[1.5rem_0.5rem_1.5rem_0.5rem] mb-4 flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-secondary/10 text-secondary flex items-center justify-center shrink-0">
+                    <FileText size={16} />
+                  </div>
+                  <div>
+                    <h5 className="text-xs font-black text-on-surface">No Brief or Notes Added Yet</h5>
+                    <p className="text-[11px] text-on-surface-variant font-medium">Add creative requirements, talking points or guidelines for the creator.</p>
+                  </div>
+                </div>
+                <button
+                  onClick={openEditModal}
+                  className="px-3.5 py-2 rounded-xl bg-secondary/20 hover:bg-secondary text-secondary hover:text-black text-[10px] font-black uppercase tracking-wider transition-all flex items-center gap-1 shrink-0 cursor-pointer"
+                >
+                  <Edit3 size={12} /> Add Instructions
+                </button>
+              </div>
+            )
           )}
 
           {/* BRAND ASSETS & REQUIREMENTS LINK DISPLAY (FOR BOTH BRAND & CREATOR) */}
           {(() => {
             const reqUrl = deal.brandAssetsUrl || deal.requirementsUrl || deal.applicationId?.campaignId?.requirementsLink;
-            if (!reqUrl) return null;
-            return (
-              <div className="bg-amber-500/10 backdrop-blur-md border border-amber-500/20 p-6 rounded-[1.5rem_0.5rem_1.5rem_0.5rem] mb-6">
-                <div className="flex items-center justify-between gap-2 mb-2">
-                  <h4 className="font-black text-amber-400 uppercase text-xs tracking-widest flex items-center gap-2">
-                    <ExternalLink size={16} /> Brand Requirements & Raw Video Assets (Google Drive)
-                  </h4>
-                  {currentRole === 'brand' && normalizedStatus !== 'completed' && normalizedStatus !== 'cancelled' && (
-                    <button 
-                      onClick={() => setShowEditModal(true)}
-                      className="text-[10px] font-bold uppercase tracking-wider text-amber-300 hover:text-amber-200 flex items-center gap-1 transition-colors cursor-pointer"
-                    >
-                      <Edit3 size={12} /> Edit Link
-                    </button>
-                  )}
+            if (reqUrl) {
+              return (
+                <div className="bg-amber-500/10 backdrop-blur-md border border-amber-500/20 p-6 rounded-[1.5rem_0.5rem_1.5rem_0.5rem] mb-6">
+                  <div className="flex items-center justify-between gap-2 mb-2">
+                    <h4 className="font-black text-amber-400 uppercase text-xs tracking-widest flex items-center gap-2">
+                      <ExternalLink size={16} /> Brand Requirements & Raw Video Assets (Google Drive)
+                    </h4>
+                    {currentRole === 'brand' && normalizedStatus !== 'completed' && normalizedStatus !== 'cancelled' && (
+                      <button 
+                        onClick={openEditModal}
+                        className="text-[10px] font-bold uppercase tracking-wider text-amber-300 hover:text-amber-200 flex items-center gap-1 transition-colors cursor-pointer"
+                      >
+                        <Edit3 size={12} /> Edit Link
+                      </button>
+                    )}
+                  </div>
+                  <p className="text-xs text-on-surface-variant mb-4 font-medium leading-relaxed">
+                    The brand has attached requirement files and raw video assets for this collaboration:
+                  </p>
+                  <a 
+                    href={reqUrl} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="inline-flex items-center gap-2 px-5 py-3 bg-amber-500 hover:bg-amber-400 text-black font-black text-xs uppercase tracking-widest rounded-xl transition-all shadow-md active:scale-95 cursor-pointer"
+                  >
+                    Open Requirements & Video Data Drive Link <ArrowUpRight size={14} />
+                  </a>
                 </div>
-                <p className="text-xs text-on-surface-variant mb-4 font-medium leading-relaxed">
-                  The brand has attached requirement files and raw video assets for this collaboration:
-                </p>
-                <a 
-                  href={reqUrl} 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  className="inline-flex items-center gap-2 px-5 py-3 bg-amber-500 hover:bg-amber-400 text-black font-black text-xs uppercase tracking-widest rounded-xl transition-all shadow-md active:scale-95 cursor-pointer"
-                >
-                  Open Requirements & Video Data Drive Link <ArrowUpRight size={14} />
-                </a>
-              </div>
-            );
+              );
+            }
+            if (currentRole === 'brand' && normalizedStatus !== 'completed' && normalizedStatus !== 'cancelled') {
+              return (
+                <div className="bg-surface-container/5 backdrop-blur-md border border-dashed border-outline-variant/30 p-5 rounded-[1.5rem_0.5rem_1.5rem_0.5rem] mb-6 flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center shrink-0">
+                      <ExternalLink size={16} />
+                    </div>
+                    <div>
+                      <h5 className="text-xs font-black text-on-surface">No Assets Drive Link Added</h5>
+                      <p className="text-[11px] text-on-surface-variant font-medium">Attach a Google Drive folder with video clips, logos, or raw assets.</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={openEditModal}
+                    className="px-3.5 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500 text-amber-300 hover:text-black text-[10px] font-black uppercase tracking-wider transition-all flex items-center gap-1 shrink-0 cursor-pointer"
+                  >
+                    <Edit3 size={12} /> Add Drive Link
+                  </button>
+                </div>
+              );
+            }
+            return null;
           })()}
 
           {/* BRAND ACTIONS */}
@@ -638,41 +708,61 @@ function DealManager({ deal, onUpdate, user: userProp }) {
         <div className="flex flex-col gap-6">
           
           {/* 1. Deadlines / Countdowns UI */}
-          <div className="bg-surface-container/5 backdrop-blur-md border border-outline-variant/10 rounded-[1.5rem_0.5rem_1.5rem_0.5rem] p-5">
-            <h4 className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant mb-4 flex items-center gap-2">
-              <Calendar size={14} className="text-secondary" /> Key Dates
-            </h4>
-            <div className="flex flex-col gap-3">
-              <div className="flex justify-between items-center">
-                <span className="text-xs font-bold text-on-surface-variant">Content Due</span>
-                <span className="text-xs font-black text-on-surface bg-surface-container/30 px-2 py-1 rounded-md">
-                  {new Date(Date.now() + 86400000 * 7).toLocaleDateString()}
-                </span>
+          {(() => {
+            const dueDate = deal.deadline ? new Date(deal.deadline) : new Date(new Date(deal.createdAt || Date.now()).getTime() + 86400000 * 7);
+            const autoReleaseDate = new Date(dueDate.getTime() + 86400000 * 7);
+            const diffDays = Math.ceil((dueDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+
+            return (
+              <div className="bg-surface-container/5 backdrop-blur-md border border-outline-variant/10 rounded-[1.5rem_0.5rem_1.5rem_0.5rem] p-5">
+                <div className="flex items-center justify-between mb-4">
+                  <h4 className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant flex items-center gap-2">
+                    <Calendar size={14} className="text-secondary" /> Key Dates
+                  </h4>
+                  {currentRole === 'brand' && normalizedStatus !== 'completed' && normalizedStatus !== 'cancelled' && (
+                    <button
+                      onClick={openEditModal}
+                      className="text-[9px] font-bold uppercase tracking-wider text-on-surface-variant hover:text-secondary flex items-center gap-1 transition-colors cursor-pointer"
+                    >
+                      <Edit3 size={11} /> Edit Date
+                    </button>
+                  )}
+                </div>
+                <div className="flex flex-col gap-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs font-bold text-on-surface-variant">Content Due</span>
+                    <span className="text-xs font-black text-on-surface bg-surface-container/30 px-2 py-1 rounded-md">
+                      {dueDate.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs font-bold text-on-surface-variant">Auto-Release</span>
+                    <span className="text-xs font-black text-on-surface bg-surface-container/30 px-2 py-1 rounded-md">
+                      {autoReleaseDate.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
+                    </span>
+                  </div>
+                </div>
+                {normalizedStatus === 'in_progress' && (
+                  <div className="mt-4 bg-secondary/10 border border-secondary/20 p-3 rounded-xl flex items-start gap-3">
+                    <Clock size={16} className="text-secondary mt-0.5 shrink-0" />
+                    <p className="text-[11px] font-bold text-secondary leading-snug">
+                      {diffDays <= 0 
+                        ? 'Target deadline reached or delivery overdue.' 
+                        : `${diffDays} day${diffDays > 1 ? 's' : ''} remaining to submit deliverables.`}
+                    </p>
+                  </div>
+                )}
+                {normalizedStatus === 'in_review' && (
+                  <div className="mt-4 bg-primary/10 border border-primary/20 p-3 rounded-xl flex items-start gap-3">
+                    <Clock size={16} className="text-primary mt-0.5 shrink-0" />
+                    <p className="text-[11px] font-bold text-primary leading-snug">
+                      Brand has 3 days to review before auto-approval.
+                    </p>
+                  </div>
+                )}
               </div>
-              <div className="flex justify-between items-center">
-                <span className="text-xs font-bold text-on-surface-variant">Auto-Release</span>
-                <span className="text-xs font-black text-on-surface bg-surface-container/30 px-2 py-1 rounded-md">
-                  {new Date(Date.now() + 86400000 * 14).toLocaleDateString()}
-                </span>
-              </div>
-            </div>
-            {normalizedStatus === 'in_progress' && (
-              <div className="mt-4 bg-secondary/10 border border-secondary/20 p-3 rounded-xl flex items-start gap-3">
-                <Clock size={16} className="text-secondary mt-0.5 shrink-0" />
-                <p className="text-[11px] font-bold text-secondary leading-snug">
-                  7 days remaining to submit deliverables.
-                </p>
-              </div>
-            )}
-            {normalizedStatus === 'in_review' && (
-              <div className="mt-4 bg-primary/10 border border-primary/20 p-3 rounded-xl flex items-start gap-3">
-                <Clock size={16} className="text-primary mt-0.5 shrink-0" />
-                <p className="text-[11px] font-bold text-primary leading-snug">
-                  Brand has 3 days to review before auto-approval.
-                </p>
-              </div>
-            )}
-          </div>
+            );
+          })()}
 
           {/* 2. Interactive Deliverables Checklist */}
           <div className="bg-surface-container/5 backdrop-blur-md border border-outline-variant/10 rounded-[1.5rem_0.5rem_1.5rem_0.5rem] p-5">
@@ -948,6 +1038,13 @@ function DealManager({ deal, onUpdate, user: userProp }) {
                 <X size={18} />
               </button>
             </div>
+
+            {error && (
+              <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-bold flex items-center gap-2">
+                <AlertCircle size={14} className="shrink-0" />
+                <span>{error}</span>
+              </div>
+            )}
 
             <div className="flex flex-col gap-4 mb-6">
               <div>

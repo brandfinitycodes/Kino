@@ -39,8 +39,10 @@ const CreatorCard = ({ creator }) => {
 
       <div className="w-full pt-6 border-t border-gray-100 flex items-center justify-between gap-4">
         <div className="text-left">
-           <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Starting at</p>
-           <p className="text-sm font-black text-gray-900">🪙{creator.pricing?.basic?.price?.toLocaleString() || '0'}</p>
+           <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Audience</p>
+           <p className="text-sm font-black text-gray-900">
+             {creator.followerCount >= 1000 ? (creator.followerCount / 1000).toFixed(1) + 'K' : creator.followerCount || 'Rising'}
+           </p>
         </div>
         <Link 
           to={`/creators/${creator._id}`} 

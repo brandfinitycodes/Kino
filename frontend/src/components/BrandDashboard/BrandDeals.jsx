@@ -34,6 +34,20 @@ const BrandDeals = (props) => {
     }
   };
 
+  const handleSaveAssetsLink = async (dealId) => {
+    try {
+      const link = assetsLinks[dealId] !== undefined ? assetsLinks[dealId] : '';
+      const res = await axios.put(`/deals/${dealId}/details`, { brandAssetsUrl: link });
+      if (showToast) showToast('Requirements link updated successfully!', 'success');
+      if (res.data?.deal && selectedDeal?._id === dealId) {
+        setSelectedDeal(res.data.deal);
+      }
+      if (onUpdateDeal) onUpdateDeal();
+    } catch (err) {
+      if (showToast) showToast(err.response?.data?.message || 'Failed to update requirements link.', 'error');
+    }
+  };
+
   // Keep selectedDeal in sync with updated list
   const currentSelectedDeal = selectedDeal ? deals.find(d => d._id === selectedDeal._id) : null;
 
@@ -49,7 +63,8 @@ const BrandDeals = (props) => {
         <DealManager 
           deal={currentSelectedDeal || selectedDeal} 
           user={user}
-          onUpdate={() => {
+          onUpdate={(updatedDeal) => {
+            if (updatedDeal) setSelectedDeal(updatedDeal);
             if (onUpdateDeal) onUpdateDeal();
           }} 
         />
@@ -173,6 +188,15 @@ const BrandDeals = (props) => {
                         className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-900 outline-none focus:border-[#EA580C] focus:bg-white transition-all shadow-inner"
                       />
                     </div>
+                    {assetsLinks[d._id] !== undefined && assetsLinks[d._id] !== (d.brandAssetsUrl || '') && (
+                      <button
+                        type="button"
+                        onClick={() => handleSaveAssetsLink(d._id)}
+                        className="mt-2 text-[10px] font-black uppercase tracking-wider text-[#EA580C] hover:text-white bg-orange-50 hover:bg-[#EA580C] border border-orange-200 px-3 py-1.5 rounded-lg flex items-center gap-1.5 cursor-pointer transition-all active:scale-95 shadow-sm"
+                      >
+                        <Check size={12} /> Save Requirements Link
+                      </button>
+                    )}
                   </div>
 
                   <div className="flex gap-3">

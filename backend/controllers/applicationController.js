@@ -17,6 +17,19 @@ const resolveBrandUserId = async (brandIdOrProfile) => {
   return brandIdOrProfile;
 };
 
+// Helper to resolve creator User ObjectId for notifications
+const resolveCreatorUserId = async (creatorIdOrProfile) => {
+  if (!creatorIdOrProfile) return null;
+  if (typeof creatorIdOrProfile === 'object' && creatorIdOrProfile.userId) {
+    return creatorIdOrProfile.userId;
+  }
+  const creatorProf = await CreatorProfile.findById(creatorIdOrProfile);
+  if (creatorProf && creatorProf.userId) {
+    return creatorProf.userId;
+  }
+  return creatorIdOrProfile;
+};
+
 const applyToCampaign = async (req, res) => {
   const { campaignId, message } = req.body;
   try {
@@ -178,57 +191,143 @@ const updateApplicationStatus = async (req, res) => {
       }
     }
 
-    // Send notifications (non-blocking)
+    // Send notifications & real-time events (non-blocking)
     try {
       const campaignTitle = application.campaignId?.title || 'a campaign';
+      const creatorUserId = await resolveCreatorUserId(application.creatorId);
+      const brandUserId = await resolveBrandUserId(application.campaignId?.brandId);
+      const creatorName = application.creatorId?.name || 'Creator';
+      const io = req.app.get('socketio');
+
       if (status === 'shortlisted') {
-        let creatorUserId = application.creatorId?.userId;
-        if (!creatorUserId && application.creatorId) {
-          const CreatorProfile = require('../models/CreatorProfile');
-          const creatorProf = await CreatorProfile.findById(application.creatorId);
-          creatorUserId = creatorProf?.userId;
-        }
         if (creatorUserId) {
           await Notification.create({
             userId: creatorUserId,
-            message: `⭐ Great news! You have been Shortlisted for "${campaignTitle}". The brand is reviewing top candidates!`
+            message: `⭐ Great news! You have been Shortlisted for "${campaignTitle}". The brand is reviewing top candidates!`,
+            link: '/creator-dashboard?tab=applications',
+            actionLabel: 'View Application'
           });
+          if (io) io.to(String(creatorUserId)).emit('notification', { message: `Shortlisted for "${campaignTitle}"` });
         }
-      } else if (status === 'accepted' || status === 'rejected') {
-        let creatorUserId = application.creatorId?.userId;
-        if (!creatorUserId && application.creatorId) {
-          const CreatorProfile = require('../models/CreatorProfile');
-          const creatorProf = await CreatorProfile.findById(application.creatorId);
-          creatorUserId = creatorProf?.userId;
-        }
+      } else if (status === 'accepted') {
         if (creatorUserId) {
           await Notification.create({
             userId: creatorUserId,
-            message: `Your application for "${campaignTitle}" has been ${status}. ${status === 'accepted' ? 'Please check Active Deals to view requirement details.' : ''}`
+            message: `🎉 Great news! Brand accepted your application for "${campaignTitle}". Please review & confirm your collaboration commitment (Reassurance) in Applications.`,
+            link: '/creator-dashboard?tab=applications',
+            actionLabel: 'Confirm Collaboration'
           });
-        }
-      } else if (status === 'confirmed_by_creator' || status === 'rejected_by_creator') {
-        let brandUserId = application.campaignId?.brandId?.userId;
-        if (!brandUserId && application.campaignId?.brandId) {
-          const BrandProfile = require('../models/BrandProfile');
-          const brandProf = await BrandProfile.findById(application.campaignId.brandId);
-          brandUserId = brandProf?.userId || application.campaignId.brandId;
+          if (io) {
+            io.to(String(creatorUserId)).emit('notification', { message: `Accepted for "${campaignTitle}" - Reassurance Required` });
+            io.to(String(creatorUserId)).emit('application_status_changed', { applicationId: application._id, status: 'accepted', campaignId });
+          }
         }
         if (brandUserId) {
-          const actionMsg = status === 'confirmed_by_creator' 
-            ? 'has confirmed their collaboration' 
-            : 'has declined the collaboration after acceptance';
           await Notification.create({
             userId: brandUserId,
-            message: `A creator ${actionMsg} for "${campaignTitle}".`
+            message: `Candidate @${creatorName} accepted for "${campaignTitle}". Stage: Waiting for creator reassurance & confirmation before milestone escrow funding begins.`,
+            link: `/campaigns/${campaignId}`,
+            actionLabel: 'View Candidate'
           });
+          if (io) {
+            io.to(String(brandUserId)).emit('notification', { message: `Awaiting reassurance for "${campaignTitle}"` });
+            io.to(String(brandUserId)).emit('application_status_changed', { applicationId: application._id, status: 'accepted', campaignId });
+          }
+        }
+      } else if (status === 'rejected') {
+        if (creatorUserId) {
+          await Notification.create({
+            userId: creatorUserId,
+            message: `Your application for "${campaignTitle}" was not selected by the brand.`,
+            link: '/creator-dashboard?tab=applications',
+            actionLabel: 'View Applications'
+          });
+          if (io) io.to(String(creatorUserId)).emit('notification', { message: `Application update for "${campaignTitle}"` });
+        }
+      } else if (status === 'confirmed_by_creator') {
+        if (brandUserId) {
+          await Notification.create({
+            userId: brandUserId,
+            message: `🚀 @${creatorName} has confirmed reassurance for "${campaignTitle}"! Deal is ready in Active Deals — fund Milestone Coins into escrow to start work.`,
+            link: '/brand-dashboard?tab=deals',
+            actionLabel: 'Fund Deal'
+          });
+          if (io) {
+            io.to(String(brandUserId)).emit('notification', { message: `@${creatorName} confirmed reassurance for "${campaignTitle}"!` });
+            io.to(String(brandUserId)).emit('application_status_changed', { applicationId: application._id, status: 'confirmed_by_creator', campaignId });
+          }
+        }
+        if (creatorUserId) {
+          await Notification.create({
+            userId: creatorUserId,
+            message: `Collaboration confirmed for "${campaignTitle}"! The deal is initiated. Waiting for brand to secure Milestone Coins in escrow.`,
+            link: '/creator-dashboard?tab=deals',
+            actionLabel: 'View Deal'
+          });
+          if (io) {
+            io.to(String(creatorUserId)).emit('notification', { message: `Deal initiated for "${campaignTitle}"` });
+            io.to(String(creatorUserId)).emit('application_status_changed', { applicationId: application._id, status: 'confirmed_by_creator', campaignId });
+          }
+        }
+      } else if (status === 'rejected_by_creator') {
+        if (brandUserId) {
+          await Notification.create({
+            userId: brandUserId,
+            message: `@${creatorName} declined the collaboration for "${campaignTitle}". Campaign has been reactivated for other applicants.`,
+            link: `/campaigns/${campaignId}`,
+            actionLabel: 'View Campaign'
+          });
+          if (io) {
+            io.to(String(brandUserId)).emit('notification', { message: `Collaboration declined for "${campaignTitle}"` });
+            io.to(String(brandUserId)).emit('application_status_changed', { applicationId: application._id, status: 'rejected_by_creator', campaignId });
+          }
         }
       }
     } catch (notifError) {
       console.error('Notification creation failed (non-critical):', notifError.message);
     }
 
-    res.json(application);
+    const populatedApp = await Application.findById(application._id)
+      .populate({ path: 'campaignId', populate: { path: 'brandId' } })
+      .populate('creatorId');
+
+    res.json(populatedApp || application);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const nudgeCreator = async (req, res) => {
+  try {
+    const application = await Application.findById(req.params.id)
+      .populate({ path: 'campaignId', populate: { path: 'brandId' } })
+      .populate('creatorId');
+
+    if (!application) return res.status(404).json({ message: 'Application not found' });
+    if (application.status !== 'accepted') {
+      return res.status(400).json({ message: 'Only accepted applications awaiting confirmation can be nudged' });
+    }
+
+    const creatorUserId = await resolveCreatorUserId(application.creatorId);
+    const campaignTitle = application.campaignId?.title || 'a campaign';
+
+    if (creatorUserId) {
+      await Notification.create({
+        userId: creatorUserId,
+        message: `🔔 Reminder: Brand is waiting for your reassurance confirmation for "${campaignTitle}". Please confirm in Applications to activate the deal!`,
+        link: '/creator-dashboard?tab=applications',
+        actionLabel: 'Confirm Collaboration'
+      });
+
+      const io = req.app.get('socketio');
+      if (io) {
+        io.to(String(creatorUserId)).emit('notification', {
+          message: `Reminder for "${campaignTitle}".`
+        });
+      }
+    }
+
+    res.json({ message: 'Creator nudged successfully.' });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -326,6 +425,7 @@ module.exports = {
   updateApplicationStatus, 
   getAllApplications, 
   nudgeBrand, 
+  nudgeCreator,
   withdrawApplication,
   editApplicationProposal
 };

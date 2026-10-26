@@ -21,12 +21,11 @@ import { useAuth } from "../../context/AuthContext";
 export const calculateProfileCompletion = (profile) => {
   if (!profile) return 0;
   let score = 0;
-  if (profile.bio) score += 15;
+  if (profile.bio) score += 20;
   if (profile.niche && profile.niche !== 'Other') score += 15;
-  if (profile.profilePicture) score += 15;
+  if (profile.profilePicture) score += 20;
   if (profile.instagramProfile?.connected) score += 20;
   if (profile.expertise && profile.expertise.length > 0) score += 15;
-  if (profile.pricing?.basic?.price > 0 || profile.pricing?.standard?.price > 0 || profile.pricing?.premium?.price > 0) score += 10;
   if (profile.payoutDetails?.isComplete || profile.payoutDetails?.upiId || profile.payoutDetails?.bankAccountNumber) score += 10;
   return score;
 };
@@ -306,8 +305,6 @@ const CreatorSettings = ({ profile, onSave, onUploadAvatar, isUploading, onLogou
     if (!validateStep(activeChunk)) return;
 
     if (activeChunk === 'profile') {
-      setActiveChunk('pricing');
-    } else if (activeChunk === 'pricing') {
       setActiveChunk('connections');
     } else if (activeChunk === 'connections') {
       setActiveChunk('security');
@@ -324,10 +321,8 @@ const CreatorSettings = ({ profile, onSave, onUploadAvatar, isUploading, onLogou
   };
 
   const handleBack = () => {
-    if (activeChunk === 'pricing') {
+    if (activeChunk === 'connections') {
       setActiveChunk('profile');
-    } else if (activeChunk === 'connections') {
-      setActiveChunk('pricing');
     } else if (activeChunk === 'security') {
       setActiveChunk('connections');
     } else if (activeChunk === 'kyc') {
@@ -372,10 +367,9 @@ const CreatorSettings = ({ profile, onSave, onUploadAvatar, isUploading, onLogou
             className="h-full bg-[#EA580C] transition-all duration-500 ease-out"
             style={{
               width:
-                activeChunk === 'profile' ? '20%' :
-                activeChunk === 'pricing' ? '40%' :
-                activeChunk === 'connections' ? '60%' :
-                activeChunk === 'security' ? '80%' : '100%'
+                activeChunk === 'profile' ? '25%' :
+                activeChunk === 'connections' ? '50%' :
+                activeChunk === 'security' ? '75%' : '100%'
             }}
           />
         </div>
@@ -383,17 +377,15 @@ const CreatorSettings = ({ profile, onSave, onUploadAvatar, isUploading, onLogou
         {/* Step Circles */}
         {[
           { id: 'profile', step: 1 },
-          { id: 'pricing', step: 2 },
-          { id: 'connections', step: 3 },
-          { id: 'security', step: 4 },
-          { id: 'kyc', step: 5 }
+          { id: 'connections', step: 2 },
+          { id: 'security', step: 3 },
+          { id: 'kyc', step: 4 }
         ].map((node, index) => {
           const isCurrent = activeChunk === node.id;
           const isCompleted =
-            (activeChunk === 'pricing' && index < 1) ||
-            (activeChunk === 'connections' && index < 2) ||
-            (activeChunk === 'security' && index < 3) ||
-            (activeChunk === 'kyc' && index < 4);
+            (activeChunk === 'connections' && index < 1) ||
+            (activeChunk === 'security' && index < 2) ||
+            (activeChunk === 'kyc' && index < 3);
 
           const isActiveOrCompleted = isCurrent || isCompleted;
 
@@ -426,16 +418,14 @@ const CreatorSettings = ({ profile, onSave, onUploadAvatar, isUploading, onLogou
           <div className="mb-8">
             <h2 className="text-xl font-bold text-gray-900">
               {activeChunk === 'profile' ? 'Basic Information' :
-               activeChunk === 'pricing' ? 'Pricing & Packages' :
-               activeChunk === 'connections' ? 'Audience & Metrics' :
-               activeChunk === 'security' ? 'Account Security' :
+               activeChunk === 'connections' ? 'Audience & Content Boundaries' :
+               activeChunk === 'security' ? 'Account Security & Payout' :
                'Identity Verification (KYC)'}
             </h2>
             <p className="text-sm text-gray-500 mt-1 font-medium">
               {activeChunk === 'profile' ? 'Tell us about your creator identity and details' :
-               activeChunk === 'pricing' ? 'Set rates and deliverables for your packages' :
-               activeChunk === 'connections' ? 'Manage your follower count and average response time' :
-               activeChunk === 'security' ? 'Update your shipping address and login password' :
+               activeChunk === 'connections' ? 'Manage your follower count, response time, and content boundaries' :
+               activeChunk === 'security' ? 'Update your payout details and account security' :
                'Review your KYC identity verification details and status'}
             </p>
           </div>
@@ -696,71 +686,6 @@ const CreatorSettings = ({ profile, onSave, onUploadAvatar, isUploading, onLogou
               </motion.div>
             )}
 
-            {activeChunk === 'pricing' && (
-              <motion.div
-                key="pricing"
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -15 }}
-                transition={{ duration: 0.2 }}
-                className="flex flex-col"
-              >
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                  {[
-                    { id: 'basic', title: 'Basic Tier', color: 'orange', text: 'text-orange-500', bg: 'bg-orange-50/30', border: 'border-orange-100/60' },
-                    { id: 'standard', title: 'Standard Tier', color: 'pink', text: 'text-pink-500', bg: 'bg-pink-50/20', border: 'border-pink-100/50' },
-                    { id: 'premium', title: 'Premium Tier', color: 'purple', text: 'text-purple-500', bg: 'bg-purple-50/20', border: 'border-purple-100/50' }
-                  ].map(tier => (
-                    <div key={tier.id} className={`${tier.bg} border ${tier.border} rounded-2xl p-6 shadow-sm flex flex-col gap-4 hover:shadow-md transition-all`}>
-                      <div className="flex justify-between items-center">
-                        <span className="text-xs font-black uppercase tracking-wider text-gray-800">{tier.title}</span>
-                        <span className={`${tier.text}`}><TrendingUp size={16} /></span>
-                      </div>
-                      <div className="flex flex-col gap-3">
-                        <div className="relative">
-                          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-sm">🪙</span>
-                          <input
-                            type="number"
-                            placeholder="Rate"
-                            value={formData.pricing?.[tier.id]?.price || ''}
-                            onChange={e => setFormData({ ...formData, pricing: { ...formData.pricing, [tier.id]: { ...formData.pricing?.[tier.id], price: e.target.value } } })}
-                            className="w-full bg-white border border-gray-200 focus:border-[#EA580C] focus:ring-2 focus:ring-orange-100/50 rounded-xl pl-8 pr-4 py-2.5 text-sm font-semibold text-gray-900 outline-none transition-all shadow-sm"
-                          />
-                        </div>
-                        <textarea
-                          rows="4"
-                          placeholder="What is included (e.g. 1 Instagram Post, 1 Story)"
-                          value={formData.pricing?.[tier.id]?.description || ''}
-                          onChange={e => setFormData({ ...formData, pricing: { ...formData.pricing, [tier.id]: { ...formData.pricing?.[tier.id], description: e.target.value } } })}
-                          className="w-full bg-white border border-gray-200 focus:border-[#EA580C] focus:ring-2 focus:ring-orange-100/50 rounded-xl px-4 py-3 text-xs font-medium text-gray-700 outline-none transition-all resize-none leading-relaxed shadow-sm"
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Divider */}
-                <div className="border-t border-gray-100 my-8"></div>
-
-                {/* Content Boundaries */}
-                <div className="mb-6">
-                  <h3 className="text-lg font-bold text-gray-900">Content Boundaries</h3>
-                  <p className="text-xs text-gray-400 mt-0.5">Filter out deal categories that do not align with your brand values.</p>
-                </div>
-
-                <div className="flex flex-col gap-2 max-w-2xl">
-                  <label className="text-xs font-bold text-gray-700">"Will Not Promote" Tags (comma separated)</label>
-                  <input
-                    type="text"
-                    value={willNotPromote.join(', ')}
-                    onChange={e => setWillNotPromote(e.target.value.split(',').map(s => s.trim()))}
-                    className="w-full bg-white border border-gray-200 focus:border-red-400 focus:ring-2 focus:ring-red-100 rounded-xl px-4 py-3 text-sm text-gray-900 outline-none transition-all placeholder:text-red-300 shadow-sm"
-                    placeholder="e.g. Gambling, Alcohol, Adult Content"
-                  />
-                </div>
-              </motion.div>
-            )}
-
             {activeChunk === 'connections' && (
               <motion.div
                 key="connections"
@@ -802,6 +727,23 @@ const CreatorSettings = ({ profile, onSave, onUploadAvatar, isUploading, onLogou
                       <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                     </div>
                   </div>
+                </div>
+
+                {/* Content Boundaries */}
+                <div className="border-t border-gray-100 pt-8 mt-2 mb-6">
+                  <h3 className="text-lg font-bold text-gray-900">Content Boundaries</h3>
+                  <p className="text-xs text-gray-400 mt-0.5">Filter out deal categories that do not align with your brand values.</p>
+                </div>
+
+                <div className="flex flex-col gap-2 max-w-2xl">
+                  <label className="text-xs font-bold text-gray-700">"Will Not Promote" Tags (comma separated)</label>
+                  <input
+                    type="text"
+                    value={willNotPromote.join(', ')}
+                    onChange={e => setWillNotPromote(e.target.value.split(',').map(s => s.trim()))}
+                    className="w-full bg-white border border-gray-200 focus:border-red-400 focus:ring-2 focus:ring-red-100 rounded-xl px-4 py-3 text-sm text-gray-900 outline-none transition-all placeholder:text-red-300 shadow-sm"
+                    placeholder="e.g. Gambling, Alcohol, Adult Content"
+                  />
                 </div>
               </motion.div>
             )}

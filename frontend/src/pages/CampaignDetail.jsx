@@ -29,7 +29,9 @@ import {
   ShieldAlert,
   AlertTriangle,
   Flag,
-  Star
+  Star,
+  Bell,
+  Sparkles
 } from "lucide-react";
 
 const NICHES = ['Tech', 'Lifestyle', 'Fashion', 'Food', 'Travel', 'Gaming', 'Beauty', 'Finance', 'Health', 'Other'];
@@ -44,6 +46,26 @@ const CampaignDetail = () => {
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState({ type: "", text: "" });
   const [submitLoading, setSubmitLoading] = useState(false);
+  const [nudgingCreatorId, setNudgingCreatorId] = useState(null);
+
+  const handleNudgeCreator = async (appId) => {
+    setNudgingCreatorId(appId);
+    try {
+      await axios.post(`/applications/${appId}/nudge-creator`);
+      setStatus({ 
+        type: "success", 
+        text: "Reassurance reminder sent to creator! They will receive a notification to confirm collaboration." 
+      });
+    } catch (err) {
+      console.error(err);
+      setStatus({ 
+        type: "error", 
+        text: err.response?.data?.message || "Failed to send reminder to creator." 
+      });
+    } finally {
+      setNudgingCreatorId(null);
+    }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -92,11 +114,26 @@ const CampaignDetail = () => {
 
   const updateAppStatus = async (appId, newStatus) => {
     try {
-      await axios.put(`/applications/${appId}/status`, { status: newStatus });
-      setApplications(prev => prev.map(a => a._id === appId ? { ...a, status: newStatus } : a));
+      const res = await axios.put(`/applications/${appId}/status`, { status: newStatus });
+      setApplications(prev => prev.map(a => a._id === appId ? (res.data?.application || { ...a, status: newStatus }) : a));
+      
+      if (newStatus === 'accepted') {
+        setStatus({
+          type: "success",
+          text: "Creator accepted! Campaign is now in Reassurance Stage. Creator has been prompted to confirm collaboration commitment."
+        });
+      }
+
+      // Re-fetch campaign to update stage and badge data without requiring page reload
+      try {
+        const campRes = await axios.get(`/campaigns/${id}`);
+        setCampaign(campRes.data);
+      } catch (cErr) {
+        console.error("Failed to refresh campaign details:", cErr);
+      }
     } catch (err) {
       console.error(err);
-      alert(err.response?.data?.message || "Failed to update application status.");
+      setStatus({ type: "error", text: err.response?.data?.message || "Failed to update application status." });
     }
   };
 
@@ -247,6 +284,20 @@ const CampaignDetail = () => {
                   }`} />
                   {campaign.status}
                 </span>
+
+                {/* Stage Badge */}
+                {(campaign.stage === 'awaiting_reassurance' || campaign.hasAwaitingReassurance || applications.some(a => a.status === 'accepted')) && (
+                  <span className="px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-md border self-center flex items-center gap-1.5 bg-indigo-50 text-indigo-700 border-indigo-200 shadow-sm animate-pulse">
+                    <Clock size={12} className="text-indigo-600" />
+                    Stage: Waiting for Reassurance
+                  </span>
+                )}
+                {(campaign.stage === 'confirmed' || applications.some(a => a.status === 'confirmed_by_creator')) && (
+                  <span className="px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-md border self-center flex items-center gap-1.5 bg-emerald-50 text-emerald-700 border-emerald-200 shadow-sm">
+                    <CheckCircle size={12} className="text-emerald-600" />
+                    Stage: Reassurance Confirmed
+                  </span>
+                )}
               </div>
 
               {/* Owner Action Buttons Toolbar */}
@@ -373,8 +424,31 @@ const CampaignDetail = () => {
             </div>
 
             {/* Brand View: Talent Pipeline */}
-            {user?.role === 'brand' && (String(campaign.brandId?._id || campaign.brandId || '') === String(user.profileId || '')) && (
+            {user?.role === 'brand' && (String(campaign.brandId?._id || campaign.brandId || '') === String(user.profileId || user.brandId || '')) && (
               <div className="bg-white rounded-3xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.02)] border border-gray-100/50 p-8 sm:p-10">
+                
+                {/* Reassurance Stage Banner */}
+                {(campaign.stage === 'awaiting_reassurance' || campaign.hasAwaitingReassurance || applications.some(a => a.status === 'accepted')) && (
+                  <div className="mb-8 p-5 rounded-2xl bg-gradient-to-r from-indigo-50 via-purple-50 to-amber-50 border border-indigo-200/80 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div className="flex items-start gap-3.5">
+                      <div className="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shrink-0 shadow-md shadow-indigo-600/20">
+                        <Clock size={20} className="animate-spin-slow" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-[10px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-indigo-600 text-white">
+                            Reassurance Stage
+                          </span>
+                          <span className="text-xs font-black text-indigo-950">Awaiting Creator Confirmation</span>
+                        </div>
+                        <p className="text-xs text-indigo-800 font-medium leading-relaxed">
+                          You accepted a candidate! We sent them an instant notification to confirm their collaboration commitment. Once confirmed, your deal will activate and Milestone Escrow Funding will be available in Active Deals.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 <div className="flex items-center justify-between mb-8">
                   <h2 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center gap-3">
                     <User className="text-[#007A8A]" size={24} /> Talent Pipeline
@@ -401,13 +475,17 @@ const CampaignDetail = () => {
                               <h4 className="font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
                                 {app.creatorId?.name || "Premium Talent"}
                               </h4>
-                              <span className={`text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-md ${
+                              <span className={`text-[9px] font-bold uppercase tracking-widest px-2.5 py-0.5 rounded-md ${
                                 app.status === 'shortlisted' ? 'bg-indigo-100 text-indigo-700 font-black' :
-                                app.status === 'accepted' || app.status === 'confirmed_by_creator' ? 'bg-emerald-100 text-emerald-700 font-black' :
+                                app.status === 'accepted' ? 'bg-amber-100 text-amber-800 font-black border border-amber-200' :
+                                app.status === 'confirmed_by_creator' ? 'bg-emerald-100 text-emerald-700 font-black border border-emerald-200' :
                                 app.status === 'rejected' ? 'bg-red-100 text-red-600 font-black' :
                                 'text-gray-400 bg-gray-100'
                               }`}>
-                                Status: {app.status === 'shortlisted' ? '⭐ Shortlisted' : app.status.replace(/_/g, ' ')}
+                                {app.status === 'shortlisted' ? '⭐ Shortlisted' :
+                                 app.status === 'accepted' ? '⏳ Waiting for Reassurance' :
+                                 app.status === 'confirmed_by_creator' ? '✅ Reassurance Confirmed' :
+                                 app.status.replace(/_/g, ' ')}
                               </span>
                             </div>
                           </Link>
@@ -459,24 +537,54 @@ const CampaignDetail = () => {
 
                         {app.status === "accepted" && (
                           <div className="flex flex-col gap-3">
-                            <div className="bg-amber-50 text-amber-900 px-4 py-3.5 rounded-xl border border-amber-200 text-xs font-bold flex items-center gap-2">
-                              <Clock size={16} className="text-amber-600 shrink-0" />
-                              <span>Application Accepted! Payment required to activate deal.</span>
+                            <div className="bg-gradient-to-r from-amber-50 to-orange-50 text-amber-950 px-4 py-3.5 rounded-2xl border border-amber-200 text-xs font-medium flex flex-col gap-1.5 shadow-sm">
+                              <div className="flex items-center gap-2 font-black text-amber-900 text-xs uppercase tracking-wider">
+                                <Clock size={16} className="text-amber-600 shrink-0" />
+                                <span>Accepted — Waiting for Creator Reassurance</span>
+                              </div>
+                              <p className="text-amber-800 text-[11px] leading-relaxed">
+                                Creator has been notified to confirm their collaboration commitment. Once they confirm, the Deal activates and you can fund milestone escrow in Active Deals.
+                              </p>
                             </div>
-                            <Link to="/brand-dashboard?tab=deals" className="w-full bg-[#EA580C] hover:bg-orange-600 text-white text-center py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors shadow-sm flex items-center justify-center gap-1.5">
-                              Go to Active Deals to Pay & Fund Escrow <ArrowUpRight size={14} />
-                            </Link>
+                            <div className="flex items-center gap-3">
+                              <button 
+                                onClick={() => handleNudgeCreator(app._id)}
+                                disabled={nudgingCreatorId === app._id}
+                                className="flex-1 bg-amber-500 hover:bg-amber-600 text-white py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
+                              >
+                                {nudgingCreatorId === app._id ? (
+                                  <>
+                                    <Loader2 size={14} className="animate-spin" /> Sending Reminder...
+                                  </>
+                                ) : (
+                                  <>
+                                    <Bell size={14} /> Send Reassurance Reminder
+                                  </>
+                                )}
+                              </button>
+                              <button 
+                                onClick={() => updateAppStatus(app._id, "pending")}
+                                className="px-4 py-3 bg-white border border-gray-200 hover:bg-gray-50 text-gray-600 text-[10px] font-bold uppercase tracking-wider rounded-xl transition-colors cursor-pointer"
+                              >
+                                Revert to Review
+                              </button>
+                            </div>
                           </div>
                         )}
 
                         {app.status === "confirmed_by_creator" && (
                           <div className="flex flex-col gap-3">
-                            <div className="bg-amber-50 text-amber-900 px-4 py-3.5 rounded-xl border border-amber-200 text-xs font-bold flex items-center gap-2">
-                              <CheckCircle size={16} className="text-amber-600 shrink-0" />
-                              <span>Collaboration Confirmed! Payment required to start deal.</span>
+                            <div className="bg-emerald-50 text-emerald-950 px-4 py-3.5 rounded-2xl border border-emerald-200 text-xs font-medium flex flex-col gap-1.5 shadow-sm">
+                              <div className="flex items-center gap-2 font-black text-emerald-900 text-xs uppercase tracking-wider">
+                                <CheckCircle size={16} className="text-emerald-600 shrink-0" />
+                                <span>Creator Confirmed Reassurance! Deal Ready</span>
+                              </div>
+                              <p className="text-emerald-800 text-[11px] leading-relaxed">
+                                Collaboration is locked in. Please fund milestone coins into escrow in Active Deals to start project execution.
+                              </p>
                             </div>
-                            <Link to="/brand-dashboard?tab=deals" className="w-full bg-[#EA580C] hover:bg-orange-600 text-white text-center py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors shadow-sm flex items-center justify-center gap-1.5">
-                              Go to Active Deals to Pay & Fund Escrow <ArrowUpRight size={14} />
+                            <Link to="/brand-dashboard?tab=deals" className="w-full bg-[#EA580C] hover:bg-orange-600 text-white text-center py-3.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors shadow-md flex items-center justify-center gap-1.5 cursor-pointer">
+                              Go to Active Deals to Fund Milestone Escrow <ArrowUpRight size={14} />
                             </Link>
                           </div>
                         )}
@@ -526,6 +634,25 @@ const CampaignDetail = () => {
                         {campaign.status}
                       </span>
                     </div>
+
+                    {/* Campaign Stage */}
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="text-gray-500 font-bold uppercase tracking-wider">Campaign Stage</span>
+                      <span className={`font-black uppercase text-[10px] px-2.5 py-0.5 rounded-full ${
+                        (campaign.stage === 'awaiting_reassurance' || campaign.hasAwaitingReassurance || applications.some(a => a.status === 'accepted'))
+                          ? 'bg-indigo-100 text-indigo-700 font-black animate-pulse'
+                          : (campaign.stage === 'confirmed' || applications.some(a => a.status === 'confirmed_by_creator'))
+                          ? 'bg-emerald-100 text-emerald-700 font-black'
+                          : 'bg-gray-100 text-gray-600'
+                      }`}>
+                        {(campaign.stage === 'awaiting_reassurance' || campaign.hasAwaitingReassurance || applications.some(a => a.status === 'accepted'))
+                          ? 'Reassurance'
+                          : (campaign.stage === 'confirmed' || applications.some(a => a.status === 'confirmed_by_creator'))
+                          ? 'Confirmed'
+                          : 'Open'}
+                      </span>
+                    </div>
+
                     <div className="flex justify-between items-center text-xs">
                       <span className="text-gray-500 font-bold uppercase tracking-wider">Applicants</span>
                       <span className="font-black text-gray-900 text-sm">{applications.length} creators</span>

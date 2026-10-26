@@ -95,11 +95,36 @@ const getAllCampaigns = async (req, res) => {
   }
 };
 
+const Application = require('../models/Application');
+
 const getCampaignById = async (req, res) => {
   try {
     const campaign = await Campaign.findById(req.params.id).populate('brandId', 'businessName website description logo');
     if (!campaign) return res.status(404).json({ message: 'Campaign not found' });
-    res.json(campaign);
+
+    const applications = await Application.find({ campaignId: campaign._id })
+      .populate('creatorId', 'name profilePicture')
+      .lean();
+
+    const acceptedApp = applications.find(a => a.status === 'accepted');
+    const confirmedApp = applications.find(a => a.status === 'confirmed_by_creator');
+
+    let stage = 'open';
+    if (confirmedApp) {
+      stage = 'confirmed';
+    } else if (acceptedApp) {
+      stage = 'awaiting_reassurance';
+    }
+
+    const campObj = campaign.toObject ? campaign.toObject() : campaign;
+    res.json({
+      ...campObj,
+      applicationsCount: applications.length,
+      hasAwaitingReassurance: Boolean(acceptedApp),
+      acceptedCreatorName: acceptedApp?.creatorId?.name || null,
+      confirmedCreatorName: confirmedApp?.creatorId?.name || null,
+      stage
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -111,8 +136,36 @@ const getMyCampaigns = async (req, res) => {
     if (!brandProfile) {
       return res.status(404).json({ message: 'Brand profile not found' });
     }
-    const campaigns = await Campaign.find({ brandId: brandProfile._id }).sort({ createdAt: -1 });
-    res.json(campaigns);
+    const campaigns = await Campaign.find({ brandId: brandProfile._id }).sort({ createdAt: -1 }).lean();
+    const campaignIds = campaigns.map(c => c._id);
+
+    const applications = await Application.find({ campaignId: { $in: campaignIds } })
+      .populate('creatorId', 'name profilePicture')
+      .lean();
+
+    const campaignsWithStats = campaigns.map(camp => {
+      const campApps = applications.filter(a => a.campaignId.toString() === camp._id.toString());
+      const acceptedApp = campApps.find(a => a.status === 'accepted');
+      const confirmedApp = campApps.find(a => a.status === 'confirmed_by_creator');
+
+      let stage = 'open';
+      if (confirmedApp) {
+        stage = 'confirmed';
+      } else if (acceptedApp) {
+        stage = 'awaiting_reassurance';
+      }
+
+      return {
+        ...camp,
+        applicationsCount: campApps.length,
+        hasAwaitingReassurance: Boolean(acceptedApp),
+        acceptedCreatorName: acceptedApp?.creatorId?.name || null,
+        confirmedCreatorName: confirmedApp?.creatorId?.name || null,
+        stage
+      };
+    });
+
+    res.json(campaignsWithStats);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

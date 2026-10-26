@@ -7,7 +7,7 @@ const { imagekit } = require('../middleware/uploadMiddleware');
 const updateProfile = async (req, res) => {
   const { 
     name, age, bio, location, niche, expertise, 
-    portfolioLink, pricing, followerCount, responseTime, portfolioVideos,
+    portfolioLink, followerCount, responseTime, portfolioVideos,
     payoutDetails, socialLinks, shippingAddress, willNotPromote
   } = req.body;
   try {
@@ -31,10 +31,6 @@ const updateProfile = async (req, res) => {
 
     if (willNotPromote) {
       updateData.willNotPromote = willNotPromote;
-    }
-
-    if (pricing) {
-      updateData.pricing = pricing;
     }
 
     if (payoutDetails) {

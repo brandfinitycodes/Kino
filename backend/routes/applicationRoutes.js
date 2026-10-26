@@ -6,6 +6,7 @@ const {
   updateApplicationStatus, 
   getAllApplications, 
   nudgeBrand, 
+  nudgeCreator,
   withdrawApplication,
   editApplicationProposal
 } = require('../controllers/applicationController');
@@ -22,6 +23,7 @@ router.put('/:id', authMiddleware, checkRole('creator'), isVerifiedMiddleware, e
 router.put('/:id/status', authMiddleware, isVerifiedMiddleware, updateApplicationStatus); // Logic within controller handles role
 
 router.post('/:id/nudge', authMiddleware, checkRole('creator'), isVerifiedMiddleware, nudgeBrand);
+router.post('/:id/nudge-creator', authMiddleware, checkRole('brand'), isVerifiedMiddleware, nudgeCreator);
 router.delete('/:id/withdraw', authMiddleware, checkRole('creator'), withdrawApplication);
 
 module.exports = router;

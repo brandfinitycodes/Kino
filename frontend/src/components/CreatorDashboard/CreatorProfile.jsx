@@ -21,12 +21,11 @@ import { useAuth } from "../../context/AuthContext";
 export const calculateProfileCompletion = (profile) => {
   if (!profile) return 0;
   let score = 0;
-  if (profile.bio) score += 15;
+  if (profile.bio) score += 20;
   if (profile.niche && profile.niche !== 'Other') score += 15;
-  if (profile.profilePicture) score += 15;
+  if (profile.profilePicture) score += 20;
   if (profile.instagramProfile?.connected) score += 20;
   if (profile.expertise && profile.expertise.length > 0) score += 15;
-  if (profile.pricing?.basic?.price > 0 || profile.pricing?.standard?.price > 0 || profile.pricing?.premium?.price > 0) score += 10;
   if (profile.payoutDetails?.isComplete || profile.payoutDetails?.upiId || profile.payoutDetails?.bankAccountNumber) score += 10;
   return score;
 };
@@ -640,7 +639,7 @@ const CreatorProfile = ({ profile, deals = [], campaigns = [], applications = []
                     Discover Campaigns
                   </button>
                   <button onClick={() => setActiveTab('settings')} className="px-5 py-2.5 bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 rounded-xl text-xs font-black uppercase tracking-wider shadow-xs transition-all cursor-pointer">
-                    Configure Packages
+                    Complete Profile
                   </button>
                 </div>
               </div>

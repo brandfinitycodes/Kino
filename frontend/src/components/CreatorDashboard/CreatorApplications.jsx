@@ -10,7 +10,7 @@ import {
   Receipt, Download, ChevronLeft, ChevronRight, X, Building2, LayoutDashboard,
   Folder, ArrowUpRight, Edit3, ChevronDown, Film, UploadCloud,
   LogOut, Users, Check, Plus, Trash2, MessageCircle, MessageSquare, MapPin, Gauge, Star, Quote, FileText, Copy,
-  LayoutGrid, Columns, Bookmark, Zap, Lock, ShieldAlert, AlertCircle,
+  LayoutGrid, Columns, Bookmark, Zap, Lock, ShieldAlert, AlertCircle, Sparkles,
   Calendar, FileSignature, Video, Filter
 } from "lucide-react";
 import ChatOverlay from "../ChatOverlay";
@@ -21,12 +21,11 @@ import { useAuth } from "../../context/AuthContext";
 export const calculateProfileCompletion = (profile) => {
   if (!profile) return 0;
   let score = 0;
-  if (profile.bio) score += 15;
+  if (profile.bio) score += 20;
   if (profile.niche && profile.niche !== 'Other') score += 15;
-  if (profile.profilePicture) score += 15;
+  if (profile.profilePicture) score += 20;
   if (profile.instagramProfile?.connected) score += 20;
   if (profile.expertise && profile.expertise.length > 0) score += 15;
-  if (profile.pricing?.basic?.price > 0 || profile.pricing?.standard?.price > 0 || profile.pricing?.premium?.price > 0) score += 10;
   if (profile.payoutDetails?.isComplete || profile.payoutDetails?.upiId || profile.payoutDetails?.bankAccountNumber) score += 10;
   return score;
 };
@@ -142,12 +141,16 @@ const CreatorApplications = ({ applications, deals, onConfirm, onNudge, onWithdr
 
           <div className="absolute bottom-3 left-3 z-10">
             <span className={`px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest backdrop-blur-md flex items-center gap-1.5 shadow-sm ${
-              app.status === 'accepted' || app.status === 'confirmed_by_creator' ? 'bg-emerald-500 text-white border border-emerald-400' :
+              app.status === 'accepted' ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white border border-emerald-400 shadow-md animate-pulse' :
+              app.status === 'confirmed_by_creator' ? 'bg-emerald-600 text-white border border-emerald-400' :
               app.status === 'shortlisted' ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white border border-indigo-400 shadow-md animate-pulse' :
               app.status === 'rejected' ? 'bg-[#eb4898] text-white border border-[#eb4898]' :
               'bg-[#EA580C] text-white border border-[#EA580C]'
               }`}>
-              {app.status === 'shortlisted' ? '⭐ Shortlisted' : app.status.replace(/_/g, ' ')}
+              {app.status === 'shortlisted' ? '⭐ Shortlisted' :
+               app.status === 'accepted' ? '🎉 Reassurance Needed' :
+               app.status === 'confirmed_by_creator' ? '✅ Reassurance Confirmed' :
+               app.status.replace(/_/g, ' ')}
             </span>
           </div>
         </div>
@@ -176,13 +179,26 @@ const CreatorApplications = ({ applications, deals, onConfirm, onNudge, onWithdr
             </p>
           )}
 
+          {/* Reassurance Callout Box */}
+          {app.status === "accepted" && (
+            <div className="mb-3 p-3 bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-xl flex flex-col gap-1.5 text-left">
+              <div className="flex items-center gap-1.5 text-xs font-black text-emerald-900">
+                <Sparkles size={14} className="text-emerald-600 shrink-0" />
+                <span>Brand Selected You! Reassurance Needed</span>
+              </div>
+              <p className="text-[11px] text-emerald-800 font-medium leading-relaxed">
+                The brand has chosen your application! Please confirm your commitment (Reassurance) below so they can fund milestone escrow and activate your deal.
+              </p>
+            </div>
+          )}
+
           <div className="mt-auto flex flex-col gap-2 pt-2 border-t border-gray-50">
             {(app.status === "accepted" || app.status === "confirmed_by_creator") && !deals.some(d => (d.applicationId?._id || d.applicationId)?.toString() === app._id?.toString()) && (
               <button
                 onClick={() => onConfirm(app._id, app.status)}
-                className="w-full bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-500 hover:to-teal-600 text-white text-[11px] font-black uppercase tracking-widest py-3 rounded-xl transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-1.5 cursor-pointer"
+                className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-[11px] font-black uppercase tracking-widest py-3 rounded-xl transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-1.5 cursor-pointer"
               >
-                {app.status === "confirmed_by_creator" ? "Retry Deal" : "Accept & Start Deal"} <ArrowUpRight size={14} />
+                {app.status === "confirmed_by_creator" ? "Retry Deal" : "Confirm Collaboration (Reassurance)"} <ArrowUpRight size={14} />
               </button>
             )}
             {(app.status === "accepted" || app.status === "confirmed_by_creator") && deals.some(d => (d.applicationId?._id || d.applicationId)?.toString() === app._id?.toString()) && (

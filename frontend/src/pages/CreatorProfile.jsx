@@ -43,29 +43,17 @@ const CreatorProfile = () => {
   const [activeTab, setActiveTab] = useState('background');
   const { user } = useAuth();
   const navigate = useNavigate();
-  const packagesScrollRef = useRef(null);
-
   const handleHireMeClick = () => {
-    setActiveTab('services');
-    setTimeout(() => {
-      packagesScrollRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, 100);
-  };
-
-  useEffect(() => {
-    if (creator && packagesScrollRef.current) {
-      const timer = setTimeout(() => {
-        const container = packagesScrollRef.current;
-        if (container && container.children && container.children.length > 1) {
-          const middleCard = container.children[1];
-          if (middleCard) {
-            container.scrollLeft = middleCard.offsetLeft - (container.clientWidth / 2) + (middleCard.clickedWidth / 2 || middleCard.clientWidth / 2);
-          }
-        }
-      }, 300);
-      return () => clearTimeout(timer);
+    if (!user) {
+      navigate('/login');
+      return;
     }
-  }, [creator]);
+    if (user.role === 'brand') {
+      navigate('/brand-dashboard?tab=create');
+    } else {
+      navigate('/creator-dashboard?tab=discover');
+    }
+  };
 
   useEffect(() => {
     const fetchCreator = async () => {
@@ -80,33 +68,6 @@ const CreatorProfile = () => {
     };
     fetchCreator();
   }, [id]);
-
-  const handlePackageCheckout = async (tier) => {
-    if (!user) {
-      navigate('/login');
-      return;
-    }
-    if (user.role !== 'brand') {
-      setMessage({ type: 'error', text: 'Only brands can purchase packages.' });
-      return;
-    }
-
-    setCheckoutLoading(true);
-    setMessage({ type: '', text: '' });
-    try {
-      const res = await axios.post('/deals/package-checkout', {
-        creatorId: creator._id,
-        packageTier: tier
-      });
-      const dealId = res.data._id;
-      await axios.post(`/deals/${dealId}/pay`);
-      navigate('/brand-dashboard');
-    } catch (err) {
-      setMessage({ type: 'error', text: err.response?.data?.message || 'Checkout failed.' });
-    } finally {
-      setCheckoutLoading(false);
-    }
-  };
 
   if (loading) return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -434,12 +395,6 @@ const CreatorProfile = () => {
               </span>
             </button>
             <button 
-              onClick={() => setActiveTab('services')}
-              className={`text-[13px] font-black pb-4 border-b-2 tracking-wide whitespace-nowrap transition-all ${activeTab === 'services' ? 'text-orange-600 border-orange-600' : 'text-gray-400 border-transparent hover:text-gray-900'}`}
-            >
-              Service Architectures
-            </button>
-            <button 
               onClick={() => setActiveTab('portfolio')}
               className={`text-[13px] font-black pb-4 border-b-2 tracking-wide transition-all whitespace-nowrap ${activeTab === 'portfolio' ? 'text-orange-600 border-orange-600' : 'text-gray-400 border-transparent hover:text-gray-900'}`}
             >
@@ -588,54 +543,6 @@ const CreatorProfile = () => {
               </div>
             )}
 
-            {/* Experience (Packages) */}
-            {activeTab === 'services' && (
-              <div ref={packagesScrollRef} className="scroll-mt-24">
-                <h2 className="text-lg font-black text-gray-900 mb-6">Service Architectures</h2>
-                
-                {message.text && (
-                  <div className={`mb-6 p-4 rounded-xl flex items-center gap-3 font-bold text-sm ${message.type === 'error' ? 'bg-red-50 text-red-500 border border-red-200' : 'bg-emerald-50 text-emerald-500 border border-emerald-200'}`}>
-                    {message.text}
-                  </div>
-                )}
-
-                <div className="flex flex-col gap-4">
-                  {['basic', 'standard', 'premium'].map((tier) => {
-                    const pkg = creator.pricing?.[tier];
-                    const actualPrice = pkg?.price;
-                    const isAvailable = actualPrice > 0;
-                    const titleMap = { basic: 'Base Package', standard: 'Pro Package', premium: 'Enterprise Package' };
-                    
-                    if (!isAvailable) return null;
-
-                    return (
-                      <div key={tier} className="group bg-white rounded-2xl p-6 border border-gray-100 flex flex-col sm:flex-row gap-6 justify-between items-start sm:items-center hover:border-orange-200 transition-all">
-                        <div className="flex items-start gap-4">
-                          <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${tier === 'standard' ? 'bg-orange-100 text-orange-600' : 'bg-gray-50 text-gray-500 group-hover:bg-orange-50 group-hover:text-orange-500 transition-colors'}`}>
-                            <Briefcase size={20} />
-                          </div>
-                          <div>
-                            <h4 className="text-[15px] font-black text-gray-900 mb-1">{titleMap[tier]}</h4>
-                            <p className="text-[11px] text-gray-400 font-black uppercase tracking-widest mb-2">Delivery: {pkg?.deliveryDays || 3} Days</p>
-                            <p className="text-[13px] text-gray-500 font-medium max-w-md line-clamp-2 leading-relaxed">{pkg?.description || 'Custom content creation package with revisions and analytics reporting.'}</p>
-                          </div>
-                        </div>
-                        <div className="flex flex-col items-start sm:items-end gap-3 shrink-0 w-full sm:w-auto mt-2 sm:mt-0 pt-4 sm:pt-0 border-t sm:border-none border-gray-50">
-                          <span className="text-2xl font-black text-gray-900">🪙{actualPrice.toLocaleString()}</span>
-                          <button 
-                            onClick={() => handlePackageCheckout(tier)}
-                            disabled={checkoutLoading || !isAvailable}
-                            className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-orange-50 text-orange-600 font-black text-[10px] uppercase tracking-widest hover:bg-orange-600 hover:text-white transition-all disabled:opacity-50"
-                          >
-                            {checkoutLoading ? 'Processing...' : 'Select Package'}
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
 
             {/* Portfolio */}
             {activeTab === 'portfolio' && creator.portfolioVideos?.length > 0 && (

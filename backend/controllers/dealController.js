@@ -103,74 +103,11 @@ const createDeal = async (req, res) => {
 };
 
 const createPackageCheckout = async (req, res) => {
-  try {
-    const { creatorId, packageTier } = req.body;
-    
-    if (req.user.role !== 'brand') {
-      return res.status(403).json({ message: 'Only brands can purchase packages.' });
-    }
-
-    const brandProfile = await BrandProfile.findOne({ userId: req.user.id });
-    if (!brandProfile) return res.status(404).json({ message: 'Brand profile not found.' });
-
-    const creator = await CreatorProfile.findById(creatorId);
-    if (!creator) {
-      return res.status(404).json({ message: 'Creator not found.' });
-    }
-
-    let pkg = creator.pricing && creator.pricing[packageTier] ? creator.pricing[packageTier] : null;
-    if (!pkg || !pkg.price || pkg.price <= 0) {
-      pkg = {
-        price: packageTier === 'premium' ? 10000 : (packageTier === 'standard' ? 5000 : 2500),
-        description: `Mock ${packageTier} package deliverables for testing.`,
-        deliveryDays: 5,
-        revisions: 2
-      };
-    }
-
-    const existingDeal = await Deal.findOne({
-      originType: 'package',
-      brandId: brandProfile._id,
-      creatorId: creator._id,
-      packageTier,
-      status: { $nin: ['completed', 'disputed'] }
-    });
-
-    if (existingDeal) {
-      return res.status(409).json({ message: 'You already have an active order for this package.' });
-    }
-
-    const deal = new Deal({
-      originType: 'package',
-      applicationId: new mongoose.Types.ObjectId(),
-      brandId: brandProfile._id,
-      creatorId: creator._id,
-      packageTier,
-      packageSnapshot: pkg,
-      budget: pkg.price,
-      status: 'pending_payment',
-      paymentDetails: { status: 'pending' }
-    });
-
-    await deal.save();
-
-    // In-app Notification to Creator
-    try {
-      const tierName = packageTier ? packageTier.charAt(0).toUpperCase() + packageTier.slice(1) : 'Custom';
-      await Notification.create({
-        userId: creator.userId,
-        message: `New ${tierName} Tier Package Order created! Awaiting brand payment.`
-      });
-    } catch (notifErr) {
-      console.error('Notification Error (non-critical):', notifErr.message);
-    }
-
-    res.status(201).json(deal);
-  } catch (error) {
-    console.error("Package Checkout Error:", error);
-    res.status(500).json({ message: error.message });
-  }
+  return res.status(400).json({ 
+    message: 'Direct packages have been discontinued. Please collaborate with creators through campaigns.' 
+  });
 };
+
 
 const fundDeal = async (req, res) => {
   const { id } = req.params;
@@ -948,7 +885,7 @@ const cancelDeal = async (req, res) => {
 
 const editDealDetails = async (req, res) => {
   const { id } = req.params;
-  const { brandAssetsUrl, dealNotes, deadline } = req.body;
+  const { brandAssetsUrl, dealNotes, deadline, contentUrl } = req.body;
 
   if (req.user.role !== 'brand' && req.user.role !== 'admin' && req.user.role !== 'superadmin') {
     return res.status(403).json({ message: 'Only brands are authorized to edit deal parameters.' });
@@ -969,6 +906,24 @@ const editDealDetails = async (req, res) => {
 
     await deal.save();
 
+    // Populate updated deal to return consistent populated object to frontend
+    const updatedDeal = await Deal.findById(deal._id)
+      .populate({
+        path: 'applicationId',
+        populate: [
+          { path: 'campaignId', populate: { path: 'brandId' } },
+          { path: 'creatorId', populate: { path: 'userId', select: 'name email profilePicture' } }
+        ]
+      })
+      .populate({
+        path: 'creatorId',
+        populate: { path: 'userId', select: 'name email profilePicture' }
+      })
+      .populate({
+        path: 'brandId',
+        populate: { path: 'userId', select: 'name email profilePicture' }
+      });
+
     // Notify other party
     try {
       const dealTitle = await getDealTitle(deal);
@@ -985,7 +940,7 @@ const editDealDetails = async (req, res) => {
       console.error("Edit Deal Notification Error:", notifErr.message);
     }
 
-    res.json({ message: 'Deal details updated successfully.', deal });
+    res.json({ message: 'Deal details updated successfully.', deal: updatedDeal || deal });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

@@ -84,7 +84,7 @@ const dealSchema = new mongoose.Schema({
   paymentDetails: {
     status: {
       type: String,
-      enum: ['pending', 'funds_secured_held', 'released', 'refunded'],
+      enum: ['pending', 'funds_secured_held', 'escrow_held', 'released', 'refunded'],
       default: 'pending'
     },
     razorpayOrderId: {
@@ -95,5 +95,14 @@ const dealSchema = new mongoose.Schema({
     }
   }
 }, { timestamps: true });
+
+dealSchema.pre('validate', function() {
+  if (this.status && typeof this.status === 'string') {
+    this.status = this.status.replace('-', '_');
+  }
+  if (this.paymentDetails && this.paymentDetails.status === 'escrow_held') {
+    this.paymentDetails.status = 'funds_secured_held';
+  }
+});
 
 module.exports = mongoose.model('Deal', dealSchema);

@@ -19,7 +19,8 @@ import {
   Loader2,
   Calendar,
   Layers,
-  Flag
+  Flag,
+  Clock
 } from 'lucide-react';
 import axios from '../../utils/axios';
 
@@ -61,12 +62,15 @@ const BrandCampaigns = (props) => {
   // Status Toggle Loading State per campaign id
   const [togglingId, setTogglingId] = useState(null);
 
+  const isAwaitingReassurance = (c) => c.stage === 'awaiting_reassurance' || Boolean(c.hasAwaitingReassurance);
+
   // Status Filter Counts
   const counts = {
     All: campaigns.length,
-    Active: campaigns.filter(c => c.status === 'active').length,
+    Active: campaigns.filter(c => c.status === 'active' || isAwaitingReassurance(c)).length,
+    Reassurance: campaigns.filter(c => isAwaitingReassurance(c)).length,
     Paused: campaigns.filter(c => c.status === 'paused').length,
-    Inactive: campaigns.filter(c => c.status === 'inactive').length,
+    Inactive: campaigns.filter(c => c.status === 'inactive' && !isAwaitingReassurance(c)).length,
   };
 
   // Open Edit Modal
@@ -192,9 +196,10 @@ const BrandCampaigns = (props) => {
   // Filter campaigns
   const filteredCampaigns = campaigns.filter(c => {
     if (campaignFilter === 'All') return true;
-    if (campaignFilter === 'Active') return c.status === 'active';
+    if (campaignFilter === 'Active') return c.status === 'active' || isAwaitingReassurance(c);
+    if (campaignFilter === 'Reassurance') return isAwaitingReassurance(c);
     if (campaignFilter === 'Paused') return c.status === 'paused';
-    if (campaignFilter === 'Inactive') return c.status === 'inactive';
+    if (campaignFilter === 'Inactive') return c.status === 'inactive' && !isAwaitingReassurance(c);
     return true;
   }).filter(c => 
     c.title?.toLowerCase().includes(campaignSearch.toLowerCase()) || 
@@ -237,6 +242,7 @@ const BrandCampaigns = (props) => {
           {[
             { id: 'All', label: 'All Campaigns', count: counts.All },
             { id: 'Active', label: 'Active', count: counts.Active },
+            ...(counts.Reassurance > 0 ? [{ id: 'Reassurance', label: 'Reassurance Stage', count: counts.Reassurance }] : []),
             { id: 'Paused', label: 'Paused', count: counts.Paused },
             { id: 'Inactive', label: 'Inactive', count: counts.Inactive }
           ].map(tab => {
@@ -292,28 +298,37 @@ const BrandCampaigns = (props) => {
                     </span>
 
                     {/* Status Badge */}
-                    {isActive && (
-                      <span className="px-3 py-1 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                        ACTIVE
+                    {isAwaitingReassurance(camp) ? (
+                      <span className="px-3 py-1 rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-200 text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 animate-pulse shadow-sm">
+                        <Clock size={12} className="text-indigo-600" />
+                        AWAITING REASSURANCE
                       </span>
-                    )}
-                    {isPaused && (
-                      <span className="px-3 py-1 rounded-lg bg-amber-50 text-amber-700 border border-amber-200 text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-                        PAUSED
-                      </span>
-                    )}
-                    {isInactive && (
-                      <span className="px-3 py-1 rounded-lg bg-gray-100 text-gray-600 border border-gray-200 text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-gray-400"></span>
-                        INACTIVE
-                      </span>
-                    )}
-                    {camp.status === 'completed' && (
-                      <span className="px-3 py-1 rounded-lg bg-blue-50 text-blue-700 border border-blue-200 text-[10px] font-black uppercase tracking-wider">
-                        COMPLETED
-                      </span>
+                    ) : (
+                      <>
+                        {isActive && (
+                          <span className="px-3 py-1 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                            ACTIVE
+                          </span>
+                        )}
+                        {isPaused && (
+                          <span className="px-3 py-1 rounded-lg bg-amber-50 text-amber-700 border border-amber-200 text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                            PAUSED
+                          </span>
+                        )}
+                        {isInactive && (
+                          <span className="px-3 py-1 rounded-lg bg-gray-100 text-gray-600 border border-gray-200 text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-gray-400"></span>
+                            INACTIVE
+                          </span>
+                        )}
+                        {camp.status === 'completed' && (
+                          <span className="px-3 py-1 rounded-lg bg-blue-50 text-blue-700 border border-blue-200 text-[10px] font-black uppercase tracking-wider">
+                            COMPLETED
+                          </span>
+                        )}
+                      </>
                     )}
                   </div>
 
@@ -335,6 +350,24 @@ const BrandCampaigns = (props) => {
                     {camp.description || 'No detailed campaign overview provided.'}
                   </p>
                 </div>
+
+                {/* Reassurance Callout Banner */}
+                {isAwaitingReassurance(camp) && (
+                  <div className="bg-gradient-to-r from-indigo-50 via-purple-50 to-amber-50 border border-indigo-200/80 rounded-2xl p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-sm">
+                    <div className="flex items-center gap-2 text-indigo-950 font-bold">
+                      <Clock size={16} className="text-indigo-600 shrink-0" />
+                      <span>
+                        Candidate {camp.acceptedCreatorName ? `@${camp.acceptedCreatorName} ` : ''}accepted! Awaiting creator reassurance confirmation.
+                      </span>
+                    </div>
+                    <Link 
+                      to={`/campaigns/${camp._id}`}
+                      className="shrink-0 px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-[10px] uppercase tracking-wider transition-colors text-center shadow-sm"
+                    >
+                      View & Nudge Creator
+                    </Link>
+                  </div>
+                )}
 
                 {/* Requirements / Deliverables Chips */}
                 {camp.requirements && camp.requirements.length > 0 && (
