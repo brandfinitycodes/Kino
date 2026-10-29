@@ -22,13 +22,12 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 lg:gap-8">
           {/* Brand Info */}
           <div className="flex flex-col items-start gap-5 lg:col-span-1">
-            <Link to="/" className="flex items-center gap-2.5 group">
-              <div className="relative w-9 h-9 rounded-xl bg-gradient-to-tr from-orange-600 to-amber-500 flex items-center justify-center transition-transform group-hover:scale-105 shadow-md shadow-orange-500/20">
-                <span className="text-white font-sans font-black text-xl tracking-tighter">K</span>
-              </div>
-              <span className="text-2xl font-black font-display text-gray-900 tracking-tight lowercase">
-                kino
-              </span>
+            <Link to="/" className="flex items-center group transition-transform group-hover:scale-105">
+              <img
+                src="/growfox.png"
+                alt="GrowFox"
+                className="h-8 w-auto object-contain"
+              />
             </Link>
             <p className="font-sans text-sm text-gray-500 leading-relaxed font-medium">
               Empowering the next generation of storytellers and brands through high-impact, transparent collaborations.
@@ -146,7 +145,7 @@ const Footer = () => {
             <ul className="space-y-3.5">
               <li>
                 <span className="text-sm font-bold text-gray-800">
-                  kino by Brandfinity
+                  GrowFox by Brandfinity
                 </span>
               </li>
               <li>
@@ -169,7 +168,7 @@ const Footer = () => {
         {/* Bottom bar */}
         <div className="mt-12 pt-8 border-t border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-4 text-center sm:text-left">
           <p className="font-sans text-xs text-gray-400 font-medium tracking-wide">
-            © {new Date().getFullYear()} kino. All rights reserved.
+            © {new Date().getFullYear()} GrowFox. All rights reserved.
           </p>
           <span className="text-xs text-gray-400 font-medium tracking-wide flex items-center justify-center gap-1.5">
             <Sparkles size={12} className="text-amber-500" /> Made with precision for the creator economy.

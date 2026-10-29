@@ -169,6 +169,7 @@ const addFunds = async (req, res) => {
     const tx = new Transaction({
       userId: req.user.id,
       amount: depositAmount,
+      requestedAmount: depositAmount,
       type: 'coin_purchase',
       status: 'pending',
       referenceId: referenceId,

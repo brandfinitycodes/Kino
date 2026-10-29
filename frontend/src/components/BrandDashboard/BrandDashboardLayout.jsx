@@ -362,11 +362,12 @@ const MobileBrandDashboard = () => {
 
       {/* Mobile Top Header */}
       <header className="fixed top-0 left-0 right-0 w-full bg-white/95 backdrop-blur-xl z-40 border-b border-gray-100 flex items-center justify-between px-4 py-3.5 shadow-sm max-w-[500px] mx-auto">
-        <Link to="/" className="flex items-center gap-2.5">
-          <div className="w-9 h-9 bg-black rounded-xl flex items-center justify-center text-white font-black text-xl shadow-md">
-            <span className="text-white font-sans font-black text-xl tracking-tighter">K</span>
-          </div>
-          <span className="font-sans font-black text-[18px] text-gray-900 tracking-tight lowercase">kino</span>
+        <Link to="/" className="flex items-center">
+          <img
+            src="/growfox.png"
+            alt="GrowFox"
+            className="h-7 w-auto object-contain"
+          />
         </Link>
         <div className="flex items-center gap-3">
           <Link to="/notifications" className="relative p-2 text-gray-500 hover:text-[#4f46e5] hover:bg-gray-50 rounded-xl transition-all">

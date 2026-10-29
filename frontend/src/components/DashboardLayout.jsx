@@ -40,9 +40,12 @@ const DashboardLayout = ({ sidebarItems, activeTab, setActiveTab, children, bran
 
       {/* Mobile Top Header */}
       <header className="md:hidden sticky top-0 left-0 w-full bg-white z-40 border-b border-gray-100 flex items-center justify-between px-4 py-3 shadow-[0_4px_20px_rgba(0,0,0,0.02)]">
-        <Link to={logoPath} className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-gradient-to-tr from-orange-600 to-amber-500 rounded-lg flex items-center justify-center text-white font-black text-lg shadow-sm shadow-orange-500/20">K</div>
-          <span className="font-black text-[17px] text-gray-900 tracking-tight lowercase">kino</span>
+        <Link to={logoPath} className="flex items-center">
+          <img
+            src="/growfox.png"
+            alt="GrowFox"
+            className="h-7 w-auto object-contain"
+          />
         </Link>
         <div className="flex items-center gap-4">
           <div className="relative cursor-pointer">

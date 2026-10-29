@@ -91,7 +91,15 @@ const PageLoader = () => (
   </div>
 );
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 60 * 1000, // Keep data fresh for 1 minute without refetching
+      refetchOnWindowFocus: false, // Don't trigger request storm on tab focus
+      retry: 1 // Automatically retry failed queries once
+    }
+  }
+});
 
 const App = () => {
   // Wake up Render free tier backend on initial load
@@ -101,11 +109,11 @@ const App = () => {
   }, []);
 
   const [showSplash, setShowSplash] = React.useState(() => {
-    return !sessionStorage.getItem('kino_splash_shown');
+    return !sessionStorage.getItem('growfox_splash_v5');
   });
 
   const handleSplashComplete = () => {
-    sessionStorage.setItem('kino_splash_shown', 'true');
+    sessionStorage.setItem('growfox_splash_v5', 'true');
     setShowSplash(false);
   };
 

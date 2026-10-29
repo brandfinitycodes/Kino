@@ -400,6 +400,7 @@ const getAdminDeals = async (req, res) => {
   try {
     const deals = await Deal.find({})
       .sort({ updatedAt: -1 })
+      .limit(100)
       .populate({
         path: 'applicationId',
         populate: [
@@ -413,7 +414,8 @@ const getAdminDeals = async (req, res) => {
         ]
       })
       .populate('creatorId')
-      .populate('brandId');
+      .populate('brandId')
+      .lean();
     res.json(deals);
   } catch (error) {
     console.error('Error fetching admin deals:', error);
@@ -668,7 +670,9 @@ const getAdminTransactions = async (req, res) => {
   try {
     const transactions = await Transaction.find({})
       .populate('userId', 'email role')
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .limit(100)
+      .lean();
     res.json(transactions);
   } catch (error) {
     console.error('Error fetching admin transactions:', error);
@@ -680,7 +684,9 @@ const getAdminAuditLogs = async (req, res) => {
   try {
     const logs = await AdminAuditLog.find({})
       .sort({ createdAt: -1 })
-      .populate('adminId', 'email role');
+      .limit(100)
+      .populate('adminId', 'email role')
+      .lean();
     res.json(logs);
   } catch (error) {
     console.error('Error fetching admin audit logs:', error);
@@ -693,6 +699,7 @@ const getAdminSocialMonitor = async (req, res) => {
     const creators = await CreatorProfile.find({})
       .populate('userId', 'email')
       .select('name userId instagramProfile socialLinks followerCount')
+      .limit(100)
       .lean();
     res.json(creators);
   } catch (error) {
@@ -851,6 +858,8 @@ const getPendingDeposits = async (req, res) => {
       return {
         _id: t._id,
         amount: t.amount,
+        requestedAmount: t.requestedAmount || t.amount,
+        adminNote: t.adminNote || '',
         status: t.status,
         description: t.description,
         referenceId: t.referenceId,
@@ -872,6 +881,7 @@ const getPendingDeposits = async (req, res) => {
 
 const approveDeposit = async (req, res) => {
   const { id } = req.params;
+  const { actualAmount, note } = req.body;
   
   const session = await mongoose.startSession();
   session.startTransaction();
@@ -889,21 +899,50 @@ const approveDeposit = async (req, res) => {
       return res.status(400).json({ message: 'Invalid or already processed deposit request.' });
     }
 
+    const originalRequested = transaction.requestedAmount || transaction.amount;
+    const parsedActual = Number(actualAmount);
+    const hasAdjustment = !isNaN(parsedActual) && parsedActual > 0 && parsedActual !== transaction.amount;
+    const finalAmount = hasAdjustment ? parsedActual : transaction.amount;
+
     let wallet = await Wallet.findOne({ userId: transaction.userId }).session(session);
     if (!wallet) {
       wallet = new Wallet({ userId: transaction.userId, balance: 0 });
     }
 
     // Add funds to wallet
-    wallet.balance += transaction.amount;
+    wallet.balance += finalAmount;
     await wallet.save({ session });
 
-    // Mark as completed
+    // Mark as completed with adjusted details if changed
+    transaction.requestedAmount = originalRequested;
+    transaction.amount = finalAmount;
     transaction.status = 'completed';
+    if (note && note.trim()) {
+      transaction.adminNote = note.trim();
+    }
+    if (hasAdjustment) {
+      transaction.description = `Deposit approved: 🪙${finalAmount.toLocaleString()} credited (Requested: 🪙${originalRequested.toLocaleString()})${note?.trim() ? ` - Note: ${note.trim()}` : ''}`;
+    } else if (note?.trim()) {
+      transaction.description += ` - Note: ${note.trim()}`;
+    }
     await transaction.save({ session });
 
     await session.commitTransaction();
     session.endSession();
+
+    // In-app Notification
+    try {
+      await Notification.create({
+        userId: transaction.userId,
+        message: hasAdjustment
+          ? `Your deposit request has been approved with an adjusted amount: 🪙${finalAmount.toLocaleString()} credited to your wallet (Requested: 🪙${originalRequested.toLocaleString()}).${note?.trim() ? ` Note: ${note.trim()}` : ''}`
+          : `Your deposit of 🪙${finalAmount.toLocaleString()} has been approved and added to your wallet.${note?.trim() ? ` Note: ${note.trim()}` : ''}`,
+        link: '/wallet',
+        actionLabel: 'View Wallet'
+      });
+    } catch (notifErr) {
+      console.error('Deposit approval notification error:', notifErr.message);
+    }
 
     // Audit log
     if (req.user?.id) {
@@ -915,12 +954,18 @@ const approveDeposit = async (req, res) => {
           adminRole: req.user.role,
           action: 'APPROVE_DEPOSIT',
           targetId: transaction.userId,
-          details: `Approved deposit transaction ID ${transaction._id} of amount 🪙${transaction.amount} for user ${transaction.userId}.`
+          details: `Approved deposit ID ${transaction._id}. Credited: 🪙${finalAmount} (Requested: 🪙${originalRequested}). Note: "${note?.trim() || 'None'}" for user ${transaction.userId}.`
         });
       }
     }
 
-    res.json({ message: 'Deposit approved successfully.', transaction, newBalance: wallet.balance });
+    res.json({
+      message: hasAdjustment
+        ? `Deposit approved with adjusted amount 🪙${finalAmount.toLocaleString()} (Requested: 🪙${originalRequested.toLocaleString()}).`
+        : 'Deposit approved successfully.',
+      transaction,
+      newBalance: wallet.balance
+    });
   } catch (error) {
     if (session.inTransaction()) {
       await session.abortTransaction();
@@ -933,6 +978,7 @@ const approveDeposit = async (req, res) => {
 
 const rejectDeposit = async (req, res) => {
   const { id } = req.params;
+  const { reason } = req.body;
 
   try {
     const transaction = await Transaction.findById(id);
@@ -944,8 +990,25 @@ const rejectDeposit = async (req, res) => {
     }
 
     transaction.status = 'failed';
-    transaction.description += ' (Rejected by Admin)';
+    if (reason && reason.trim()) {
+      transaction.adminNote = reason.trim();
+      transaction.description += ` (Rejected: ${reason.trim()})`;
+    } else {
+      transaction.description += ' (Rejected by Admin)';
+    }
     await transaction.save();
+
+    // In-app Notification
+    try {
+      await Notification.create({
+        userId: transaction.userId,
+        message: `Your deposit request of 🪙${transaction.amount.toLocaleString()} was rejected.${reason?.trim() ? ` Reason: ${reason.trim()}` : ''}`,
+        link: '/wallet',
+        actionLabel: 'View Wallet'
+      });
+    } catch (notifErr) {
+      console.error('Deposit rejection notification error:', notifErr.message);
+    }
 
     // Audit log
     if (req.user?.id) {
@@ -957,7 +1020,7 @@ const rejectDeposit = async (req, res) => {
           adminRole: req.user.role,
           action: 'REJECT_DEPOSIT',
           targetId: transaction.userId,
-          details: `Rejected deposit transaction ID ${transaction._id} of amount 🪙${transaction.amount} for user ${transaction.userId}.`
+          details: `Rejected deposit transaction ID ${transaction._id} of amount 🪙${transaction.amount}. Reason: "${reason?.trim() || 'None'}" for user ${transaction.userId}.`
         });
       }
     }

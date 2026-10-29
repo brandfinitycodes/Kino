@@ -1,187 +1,226 @@
-import React, { useEffect } from 'react';
-import { motion } from 'framer-motion';
+import React, { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const KinoWelcome = ({ onComplete }) => {
+  const [phase, setPhase] = useState('launch'); // launch -> pulse -> unfold -> shine
+
   useEffect(() => {
-    // Hold the splash screen active (total 4.2 seconds)
+    // Stage sequence
+    const t1 = setTimeout(() => setPhase('pulse'), 850);
+    const t2 = setTimeout(() => setPhase('unfold'), 1300);
+    const t3 = setTimeout(() => setPhase('shine'), 2200);
+
+    // End splash and transition smoothly into app
     const timer = setTimeout(() => {
       if (onComplete) {
         onComplete();
       }
-    }, 4200);
+    }, 3900);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+      clearTimeout(timer);
+    };
   }, [onComplete]);
-
-  // Dot drawing coordinates timeline:
-  // 1. Vertical stem of K (from 30,25 to 30,75)
-  // 2. Fly to top of upper branch (from 30,75 to 65,25)
-  // 3. Draw upper branch (from 65,25 to 32,50)
-  // 4. Draw lower branch (from 32,50 to 65,75)
-  // 5. Float up to the dot position of 'i' (from 65,75 to 85,25)
-  const dotX = [30, 30, 65, 32, 65, 85];
-  const dotY = [25, 75, 25, 50, 75, 25];
 
   return (
     <motion.div
       initial={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.5, ease: 'easeInOut' }}
-      className="fixed inset-0 bg-[#0C0A09] flex flex-col items-center justify-center z-[9999] overflow-hidden"
+      exit={{ opacity: 0, scale: 1.03 }}
+      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+      className="fixed inset-0 bg-[#090807] flex flex-col items-center justify-center z-[9999] overflow-hidden select-none"
     >
-      {/* Subtle warm ambient background glow */}
-      <div className="absolute w-[500px] h-[500px] bg-orange-600/10 rounded-full blur-[120px] pointer-events-none z-0" />
-      <div className="absolute w-[300px] h-[300px] bg-amber-500/5 rounded-full blur-[100px] pointer-events-none z-0 translate-x-1/2 -translate-y-1/2" />
+      {/* Ambient background glows */}
+      <div className="absolute w-[600px] h-[600px] bg-gradient-to-tr from-orange-600/15 to-amber-500/10 rounded-full blur-[140px] pointer-events-none z-0 -translate-y-10" />
+      <div className="absolute w-[350px] h-[350px] bg-indigo-900/10 rounded-full blur-[100px] pointer-events-none z-0 translate-y-32" />
 
-      {/* Centered logo and tagline container */}
-      <div className="flex flex-col items-center gap-14 relative z-10">
-        {/* SVG Animated Logo */}
-        <div className="scale-[1.75] sm:scale-[2.5] transform origin-center">
-          <svg
-            width="220"
-            height="100"
-            viewBox="0 0 220 100"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            className="drop-shadow-[0_0_20px_rgba(234,88,12,0.2)]"
-          >
-            {/* LETTER K PATHS */}
-            {/* Vertical Stem */}
-            <motion.path
-              d="M 30,25 L 30,75"
-              stroke="url(#orangeGradient)"
-              strokeWidth="7"
-              strokeLinecap="round"
-              initial={{ pathLength: 0 }}
-              animate={{ pathLength: 1 }}
-              transition={{
-                duration: 0.8,
-                ease: 'easeInOut',
-                delay: 0.2,
-              }}
-            />
+      {/* Floating subtle micro-sparkles */}
+      <div className="absolute inset-0 pointer-events-none z-0">
+        {[...Array(6)].map((_, i) => (
+          <motion.div
+            key={i}
+            initial={{
+              x: `${15 + i * 14}%`,
+              y: '65%',
+              opacity: 0,
+              scale: 0.5
+            }}
+            animate={{
+              y: ['65%', '35%'],
+              opacity: [0, 0.7, 0],
+              scale: [0.5, 1, 0.3]
+            }}
+            transition={{
+              duration: 2.5 + (i % 3) * 0.5,
+              repeat: Infinity,
+              delay: 0.3 * i,
+              ease: 'easeOut'
+            }}
+            className="absolute w-1.5 h-1.5 rounded-full bg-gradient-to-r from-orange-400 to-amber-300 blur-[0.5px]"
+          />
+        ))}
+      </div>
 
-            {/* Upper Diagonal Branch */}
-            <motion.path
-              d="M 65,25 L 32,50"
-              stroke="url(#orangeGradient)"
-              strokeWidth="7"
-              strokeLinecap="round"
-              initial={{ pathLength: 0 }}
-              animate={{ pathLength: 1 }}
-              transition={{
-                duration: 0.6,
-                ease: 'easeInOut',
-                delay: 1.2,
-              }}
-            />
-
-            {/* Lower Diagonal Branch */}
-            <motion.path
-              d="M 32,50 L 65,75"
-              stroke="url(#orangeGradient)"
-              strokeWidth="7"
-              strokeLinecap="round"
-              initial={{ pathLength: 0 }}
-              animate={{ pathLength: 1 }}
-              transition={{
-                duration: 0.6,
-                ease: 'easeInOut',
-                delay: 1.8,
-              }}
-            />
-
-            {/* LETTERS 'ino' PATHS (Splashed / Faded in as dot lands) */}
-            <g className="letters-ino">
-              {/* i (Stem) */}
-              <motion.path
-                d="M 85,42 L 85,75"
-                stroke="white"
-                strokeWidth="7"
-                strokeLinecap="round"
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{
-                  duration: 0.5,
-                  ease: 'easeOut',
-                  delay: 2.8,
-                }}
+      {/* Main Branding Stage */}
+      <div className="relative z-10 flex flex-col items-center gap-7 px-4">
+        
+        {/* Glow badge pill backing */}
+        <div className="relative flex items-center justify-center">
+          
+          {/* Radial shockwave on arrow pulse */}
+          <AnimatePresence>
+            {phase !== 'launch' && (
+              <motion.div
+                key="shockwave"
+                initial={{ scale: 0.6, opacity: 0.9 }}
+                animate={{ scale: 2.2, opacity: 0 }}
+                transition={{ duration: 0.9, ease: 'easeOut' }}
+                className="absolute w-36 h-36 rounded-full border border-orange-500/40 bg-orange-500/10 blur-sm pointer-events-none"
               />
+            )}
+          </AnimatePresence>
 
-              {/* n */}
-              <motion.path
-                d="M 105,42 L 105,75 M 105,48 C 110,38 126,38 126,52 L 126,75"
-                stroke="white"
-                strokeWidth="7"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{
-                  duration: 0.5,
-                  ease: 'easeOut',
-                  delay: 3.0,
+          {/* Shooting Growth Arrow Pulse */}
+          <AnimatePresence>
+            {phase !== 'launch' && (
+              <motion.div
+                key="growth-arrow"
+                initial={{ x: -95, y: 25, scale: 0.5, opacity: 0 }}
+                animate={{
+                  x: [-95, -65, -35],
+                  y: [25, -45, -75],
+                  scale: [0.5, 1.4, 0.9],
+                  opacity: [0, 1, 0]
                 }}
-              />
+                transition={{ duration: 0.75, ease: 'easeOut' }}
+                className="absolute z-20 pointer-events-none flex items-center justify-center"
+              >
+                <div className="relative">
+                  {/* Arrow Head Icon */}
+                  <svg
+                    width="34"
+                    height="34"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#F97316"
+                    strokeWidth="3.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="drop-shadow-[0_0_15px_#EA580C]"
+                  >
+                    <line x1="7" y1="17" x2="17" y2="7" />
+                    <polyline points="7 7 17 7 17 17" />
+                  </svg>
+                  {/* Glowing comet tail */}
+                  <div className="absolute top-3 left-3 w-10 h-10 bg-orange-500/35 rounded-full blur-lg -z-10" />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-              {/* o (Mathematically Perfect Circle aligned with n and i) */}
-              <motion.circle
-                cx="162.5"
-                cy="58.5"
-                r="16.5"
-                stroke="white"
-                strokeWidth="7"
-                strokeLinecap="round"
-                fill="none"
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{
-                  duration: 0.5,
-                  ease: 'easeOut',
-                  delay: 3.2,
+          {/* Ambient Backlight Glow behind the logo stage */}
+          <div className="absolute -inset-6 bg-gradient-to-r from-orange-500/30 via-amber-500/25 to-orange-600/30 blur-3xl rounded-[48px] pointer-events-none" />
+
+          {/* Logo Assembly Container (Enlarged Sleek Dark Obsidian Glass Stage with Luminous Glow) */}
+          <div className="relative overflow-hidden flex items-center px-8 py-5 sm:px-12 sm:py-7 md:px-14 md:py-8 rounded-[32px] sm:rounded-[40px] bg-white/[0.05] backdrop-blur-2xl border border-white/15 shadow-[0_0_80px_rgba(234,88,12,0.35),0_30px_70px_rgba(0,0,0,0.85)]">
+            
+            {/* Shimmer light sweep across the logo */}
+            {phase === 'shine' && (
+              <motion.div
+                initial={{ x: '-120%' }}
+                animate={{ x: '250%' }}
+                transition={{ duration: 0.9, ease: 'easeInOut' }}
+                className="absolute inset-y-0 w-36 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12 pointer-events-none z-30"
+              />
+            )}
+
+            <div className="flex items-center gap-1.5 sm:gap-2.5">
+              {/* Fox Cart 'G' Emblem - Launches with rolling momentum */}
+              <motion.div
+                initial={{ x: -200, opacity: 0, rotate: -35, scale: 0.7 }}
+                animate={{
+                  x: 0,
+                  opacity: 1,
+                  rotate: [ -35, 6, -3, 0 ],
+                  scale: [ 0.7, 1.08, 0.97, 1 ]
                 }}
-              />
-            </g>
+                transition={{
+                  duration: 0.85,
+                  ease: [0.175, 0.885, 0.32, 1.15]
+                }}
+                className="relative shrink-0 flex items-center justify-center"
+              >
+                <img
+                  src="/growfox-icon-darkmode.png"
+                  alt="GrowFox Emblem"
+                  className="h-16 sm:h-24 md:h-28 w-auto object-contain drop-shadow-[0_0_30px_rgba(255,255,255,0.3)]"
+                />
+              </motion.div>
 
-            {/* THE DRAWING DOT */}
-            <motion.circle
-              r="5"
-              fill="#EA580C"
-              className="shadow-[0_0_15px_#EA580C]"
-              initial={{ cx: 30, cy: 25, opacity: 0 }}
-              animate={{
-                cx: dotX,
-                cy: dotY,
-                opacity: [0, 1, 1, 1, 1, 1],
-                scale: [1, 1.3, 1, 1.3, 1, 1.5],
-              }}
-              transition={{
-                // Align dot movements with path drawings
-                times: [0, 0.18, 0.27, 0.45, 0.63, 1], 
-                duration: 2.8,
-                ease: 'easeInOut',
-                delay: 0.2,
-              }}
-            />
-
-            {/* GRADIENTS DEFINITION */}
-            <defs>
-              <linearGradient id="orangeGradient" x1="30" y1="25" x2="65" y2="75" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" stopColor="#EA580C" />
-                <stop offset="100%" stopColor="#F59E0B" />
-              </linearGradient>
-            </defs>
-          </svg>
+              {/* "row Fox" Typography - Unrolls outward to the right */}
+              <motion.div
+                initial={{ width: 0, opacity: 0 }}
+                animate={{
+                  width: phase === 'launch' ? 0 : 'auto',
+                  opacity: phase === 'launch' ? 0 : 1
+                }}
+                transition={{
+                  duration: 0.8,
+                  ease: [0.16, 1, 0.3, 1]
+                }}
+                className="overflow-hidden flex items-center shrink-0"
+              >
+                <motion.div
+                  initial={{ x: -25, opacity: 0 }}
+                  animate={{
+                    x: phase === 'launch' ? -25 : 0,
+                    opacity: phase === 'launch' ? 0 : 1
+                  }}
+                  transition={{
+                    duration: 0.6,
+                    ease: 'easeOut',
+                    delay: 0.05
+                  }}
+                  className="flex items-center"
+                >
+                  <img
+                    src="/growfox-text-darkmode.png"
+                    alt="GrowFox Text"
+                    className="h-11 sm:h-16 md:h-20 w-auto object-contain drop-shadow-[0_0_25px_rgba(255,255,255,0.2)] pr-1.5"
+                  />
+                </motion.div>
+              </motion.div>
+            </div>
+          </div>
         </div>
 
-        {/* Subtitle / Cinematic Tagline */}
-        <motion.p
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 0.9, y: 0 }}
-          transition={{ delay: 3.4, duration: 1.0, ease: 'easeOut' }}
-          className="text-xs sm:text-sm font-black tracking-[0.4em] uppercase text-transparent bg-clip-text bg-gradient-to-r from-orange-200 via-orange-100 to-amber-200 font-sans select-none text-center"
+        {/* Sleek Animated Divider */}
+        <motion.div
+          initial={{ width: 0, opacity: 0 }}
+          animate={{
+            width: phase === 'launch' ? 0 : 240,
+            opacity: phase === 'launch' ? 0 : 0.8
+          }}
+          transition={{ duration: 0.8, delay: 0.2, ease: 'easeOut' }}
+          className="relative h-px bg-gradient-to-r from-transparent via-orange-500/60 to-transparent flex items-center justify-center"
         >
-          CREATE . CONNECT . GROW
+          <div className="w-2 h-2 rounded-full bg-amber-400 shadow-[0_0_10px_#F59E0B]" />
+        </motion.div>
+
+        {/* Cinematic Tagline */}
+        <motion.p
+          initial={{ opacity: 0, y: 10, letterSpacing: '0.25em' }}
+          animate={{
+            opacity: phase === 'launch' ? 0 : 0.9,
+            y: phase === 'launch' ? 10 : 0,
+            letterSpacing: '0.42em'
+          }}
+          transition={{ duration: 0.9, delay: 0.35, ease: 'easeOut' }}
+          className="text-[10px] sm:text-xs font-black tracking-[0.42em] uppercase text-transparent bg-clip-text bg-gradient-to-r from-orange-200 via-amber-100 to-orange-200 font-sans select-none text-center"
+        >
+          CREATE • CONNECT • GROW
         </motion.p>
       </div>
     </motion.div>

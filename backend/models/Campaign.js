@@ -39,6 +39,7 @@ const campaignSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 campaignSchema.index({ status: 1 });
+campaignSchema.index({ status: 1, createdAt: -1 });
 campaignSchema.index({ brandId: 1 });
 campaignSchema.index({ niche: 1 });
 campaignSchema.index({ title: 'text', description: 'text' });

@@ -105,4 +105,8 @@ dealSchema.pre('validate', function() {
   }
 });
 
+dealSchema.index({ creatorId: 1, status: 1 });
+dealSchema.index({ brandId: 1, status: 1 });
+dealSchema.index({ status: 1, createdAt: -1 });
+
 module.exports = mongoose.model('Deal', dealSchema);

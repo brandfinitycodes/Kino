@@ -31,7 +31,18 @@ const transactionSchema = new mongoose.Schema({
   referenceId: {
     type: String,
     default: ''
+  },
+  requestedAmount: {
+    type: Number
+  },
+  adminNote: {
+    type: String,
+    default: ''
   }
 }, { timestamps: true });
+
+transactionSchema.index({ userId: 1, createdAt: -1 });
+transactionSchema.index({ type: 1, status: 1 });
+transactionSchema.index({ status: 1 });
 
 module.exports = mongoose.model('Transaction', transactionSchema);

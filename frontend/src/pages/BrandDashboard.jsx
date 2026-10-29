@@ -363,9 +363,12 @@ const BrandDashboard = () => {
       {/* DESKTOP SIDEBAR */}
       <aside className="hidden md:flex flex-col fixed top-0 left-0 h-screen w-64 bg-white border-r border-gray-100 z-50">
         <div className="p-6">
-          <Link to="/" className="flex items-center gap-2.5 mb-8 hover:opacity-80 transition-opacity">
-            <div className="w-10 h-10 bg-gradient-to-tr from-orange-600 to-amber-500 rounded-xl flex items-center justify-center text-white font-black text-xl shadow-lg shadow-orange-500/20">K</div>
-            <span className="font-black text-[22px] tracking-tight lowercase">kino</span>
+          <Link to="/" className="flex items-center mb-8 hover:opacity-80 transition-opacity">
+            <img
+              src="/growfox.png"
+              alt="GrowFox"
+              className="h-8 w-auto object-contain"
+            />
           </Link>
 
           <nav className="flex flex-col gap-2">
@@ -425,11 +428,12 @@ const BrandDashboard = () => {
 
       {/* MOBILE HEADER */}
       <header className="md:hidden fixed top-0 left-0 right-0 w-full bg-white/95 backdrop-blur-xl z-40 border-b border-gray-100 flex items-center justify-between px-4 py-3.5 shadow-sm max-w-[500px] mx-auto">
-        <Link to="/" className="flex items-center gap-2.5">
-          <div className="w-9 h-9 bg-gradient-to-tr from-orange-600 to-amber-500 rounded-xl flex items-center justify-center text-white font-black text-xl shadow-md shadow-orange-500/20">
-            <span className="text-white font-sans font-black text-xl tracking-tighter">K</span>
-          </div>
-          <span className="font-sans font-black text-[18px] text-gray-900 tracking-tight lowercase">kino</span>
+        <Link to="/" className="flex items-center">
+          <img
+            src="/growfox.png"
+            alt="GrowFox"
+            className="h-7 w-auto object-contain"
+          />
         </Link>
         <div className="flex items-center gap-3">
           <Link to="/notifications" className="relative p-2 text-gray-500 hover:text-[#4f46e5] hover:bg-gray-50 rounded-xl transition-all">

@@ -52,7 +52,7 @@ const AdminDashboard = () => {
       return res.data;
     },
     enabled: !!user,
-    refetchInterval: 10000 // Polls stats every 10s to keep action badges up-to-date
+    refetchInterval: 30000 // Polls stats every 30s to keep action badges up-to-date without overloading DB
   });
   const stats = statsData || null;
 
@@ -301,6 +301,8 @@ const AdminDashboard = () => {
   const [rejectionReason, setRejectionReason] = useState('');
   const [utrRef, setUtrRef] = useState('');
   const [creatorSplitAmount, setCreatorSplitAmount] = useState(0);
+  const [depositApprovedAmount, setDepositApprovedAmount] = useState('');
+  const [depositAdminNote, setDepositAdminNote] = useState('');
 
   const showToast = (msg) => {
     setToast(msg);
@@ -444,15 +446,20 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleDepositAction = async (deposit, action) => {
+  const handleDepositAction = async (deposit, action, actualAmount = null, note = '') => {
     try {
       setActionLoading(true);
       let res;
       if (action === 'approve') {
-        res = await axios.post(`/admin/deposits/${deposit._id}/approve`);
+        res = await axios.post(`/admin/deposits/${deposit._id}/approve`, {
+          actualAmount: actualAmount !== null && actualAmount !== '' ? Number(actualAmount) : undefined,
+          note: note ? note.trim() : undefined
+        });
         showToast(res.data.message || 'Deposit approved.');
       } else {
-        res = await axios.post(`/admin/deposits/${deposit._id}/reject`);
+        res = await axios.post(`/admin/deposits/${deposit._id}/reject`, {
+          reason: note ? note.trim() : undefined
+        });
         showToast(res.data.message || 'Deposit rejected.');
       }
       await queryClient.invalidateQueries({ queryKey: ['admin', 'deposits'] });
@@ -461,6 +468,8 @@ const AdminDashboard = () => {
     } finally {
       setActionLoading(false);
       setConfirmModal({ show: false, type: '', data: null });
+      setDepositApprovedAmount('');
+      setDepositAdminNote('');
     }
   };
 
@@ -1259,13 +1268,22 @@ const AdminDashboard = () => {
                             <td className="px-6 py-5.5 text-right">
                               <div className="flex items-center justify-end gap-2.5">
                                 <button
-                                  onClick={() => setConfirmModal({ show: true, type: 'approveDeposit', data: d })}
+                                  onClick={() => {
+                                    setDepositApprovedAmount(d.amount);
+                                    setDepositAdminNote('');
+                                    setConfirmModal({ show: true, type: 'approveDeposit', data: d });
+                                  }}
+                                  title="Approve / Adjust Deposit"
                                   className="h-9 w-9 bg-emerald-50 text-emerald-600 hover:bg-emerald-500 hover:text-white border border-emerald-100 rounded-xl transition-all shadow-sm flex items-center justify-center active:scale-90"
                                 >
                                   <Check size={16} strokeWidth={2.5} />
                                 </button>
                                 <button
-                                  onClick={() => setConfirmModal({ show: true, type: 'rejectDeposit', data: d })}
+                                  onClick={() => {
+                                    setDepositAdminNote('');
+                                    setConfirmModal({ show: true, type: 'rejectDeposit', data: d });
+                                  }}
+                                  title="Reject Deposit"
                                   className="h-9 w-9 bg-red-50 text-red-500 hover:bg-red-500 hover:text-white border border-red-100 rounded-xl transition-all shadow-sm flex items-center justify-center active:scale-90"
                                 >
                                   <X size={16} strokeWidth={2.5} />
@@ -1997,7 +2015,9 @@ const AdminDashboard = () => {
                   confirmModal.type === 'disputeSplit' ? 'Partial Split Arbitration' :
                     confirmModal.type === 'approveWithdrawal' ? 'Approve Payout Request' :
                       confirmModal.type === 'rejectWithdrawal' ? 'Reject Payout Request' :
-                        'Confirm Action'}
+                        confirmModal.type === 'approveDeposit' ? 'Approve / Adjust Deposit' :
+                          confirmModal.type === 'rejectDeposit' ? 'Reject Deposit Request' :
+                            'Confirm Action'}
               </h3>
 
               <div className="text-xs sm:text-sm font-medium text-gray-500 mb-4 leading-relaxed">
@@ -2025,6 +2045,37 @@ const AdminDashboard = () => {
                     </div>
                   </div>
                 )}
+                {confirmModal.type === 'approveDeposit' && (
+                  <div>
+                    <div className="mb-3 text-xs font-semibold text-gray-600 leading-relaxed">
+                      Verify the received payment in your bank or UPI account using Reference ID <span className="text-gray-900 font-black">{confirmModal.data?.referenceId || 'N/A'}</span>.
+                    </div>
+                    <div className="mb-4 p-4 rounded-2xl bg-gray-50 border border-gray-200 text-xs space-y-2 text-left">
+                      <div className="flex justify-between text-gray-600 font-medium">
+                        <span>Brand Name:</span>
+                        <span className="font-bold text-gray-900">{confirmModal.data?.user?.name || 'Brand'}</span>
+                      </div>
+                      <div className="flex justify-between text-gray-600 font-medium">
+                        <span>Requested Amount:</span>
+                        <span className="font-bold text-gray-900">🪙{(confirmModal.data?.amount || 0).toLocaleString()} (₹{(confirmModal.data?.amount || 0).toLocaleString()})</span>
+                      </div>
+                      <div className="flex justify-between text-gray-600 font-medium">
+                        <span>UTR / Ref ID:</span>
+                        <span className="font-mono font-bold text-gray-900">{confirmModal.data?.referenceId || 'N/A'}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {confirmModal.type === 'rejectDeposit' && (
+                  <div>
+                    <p className="text-xs font-semibold text-gray-600 mb-2">
+                      Are you sure you want to reject this deposit request of 🪙{(confirmModal.data?.amount || 0).toLocaleString()} for {confirmModal.data?.user?.name || 'the brand'}?
+                    </p>
+                    <p className="text-[11px] text-gray-500">
+                      You can specify a reason below so the brand knows why the request was not approved.
+                    </p>
+                  </div>
+                )}
                 {confirmModal.type === 'rejectWithdrawal' && `Are you sure you want to reject this request of 🪙${confirmModal.data?.amount?.toLocaleString() || 0}? The money will be instantly refunded to the creator's wallet balance.`}
                 {confirmModal.type === 'disputeRelease' && `Arbitrator Notice: You are releasing 🪙${confirmModal.data?.budget?.toLocaleString() || 0} to the Creator. This will mark the Deal as Completed.`}
                 {confirmModal.type === 'disputeRefund' && `Arbitrator Notice: You are refunding 🪙${confirmModal.data?.budget?.toLocaleString() || 0} back to the Brand. Creator will receive no balance.`}
@@ -2043,6 +2094,65 @@ const AdminDashboard = () => {
                     value={rejectionReason}
                     onChange={e => setRejectionReason(e.target.value)}
                     className="w-full px-4 py-3 rounded-xl border border-gray-200 text-xs font-medium outline-none focus:border-[#EA580C]/50 focus:ring-4 focus:ring-[#EA580C]/5"
+                  />
+                </div>
+              )}
+
+              {confirmModal.type === 'approveDeposit' && (
+                <div className="space-y-4 mb-6 text-left">
+                  <div className="flex flex-col gap-1.5">
+                    <div className="flex justify-between items-center">
+                      <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                        Actual Amount Received (₹ / Coins)
+                      </label>
+                      {Number(depositApprovedAmount) !== Number(confirmModal.data?.amount) && Number(depositApprovedAmount) > 0 && (
+                        <span className="text-[10px] font-black text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+                          Adjusted: -🪙{Math.max(0, (confirmModal.data?.amount || 0) - Number(depositApprovedAmount)).toLocaleString()}
+                        </span>
+                      )}
+                    </div>
+                    <div className="relative">
+                      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-xs">🪙</span>
+                      <input
+                        type="number"
+                        min="1"
+                        placeholder="Amount received"
+                        value={depositApprovedAmount}
+                        onChange={e => setDepositApprovedAmount(e.target.value)}
+                        className="w-full pl-8 pr-4 py-2.5 rounded-xl border border-gray-200 text-xs font-bold outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 text-gray-900"
+                      />
+                    </div>
+                    <p className="text-[10px] text-gray-400 font-medium">
+                      If the brand paid less (e.g. ₹4,000 instead of ₹5,000), update this to the exact amount credited in your bank.
+                    </p>
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                      Admin Note / Mismatch Explanation (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. UTR received ₹4,000 only; adjusted accordingly"
+                      value={depositAdminNote}
+                      onChange={e => setDepositAdminNote(e.target.value)}
+                      className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-xs font-medium outline-none focus:border-[#EA580C]/50 focus:ring-4 focus:ring-[#EA580C]/5"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {confirmModal.type === 'rejectDeposit' && (
+                <div className="flex flex-col gap-1.5 text-left mb-6">
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                    Rejection Reason
+                  </label>
+                  <textarea
+                    rows="3"
+                    placeholder="e.g. UTR not found in bank statement / Amount invalid"
+                    value={depositAdminNote}
+                    onChange={e => setDepositAdminNote(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 text-xs font-medium outline-none focus:border-red-500 focus:ring-4 focus:ring-red-500/10"
                   />
                 </div>
               )}
@@ -2127,14 +2237,14 @@ const AdminDashboard = () => {
                   onClick={async () => {
                     if (confirmModal.type === 'approveWithdrawal') await handleWithdrawalAction(confirmModal.data, 'approve', utrRef);
                     if (confirmModal.type === 'rejectWithdrawal') await handleWithdrawalAction(confirmModal.data, 'reject');
-                    if (confirmModal.type === 'approveDeposit') await handleDepositAction(confirmModal.data, 'approve');
-                    if (confirmModal.type === 'rejectDeposit') await handleDepositAction(confirmModal.data, 'reject');
+                    if (confirmModal.type === 'approveDeposit') await handleDepositAction(confirmModal.data, 'approve', depositApprovedAmount, depositAdminNote);
+                    if (confirmModal.type === 'rejectDeposit') await handleDepositAction(confirmModal.data, 'reject', null, depositAdminNote);
                     if (confirmModal.type === 'disputeRelease') await handleDisputeResolution(confirmModal.data, 'release');
                     if (confirmModal.type === 'disputeRefund') await handleDisputeResolution(confirmModal.data, 'refund');
                     if (confirmModal.type === 'rejectCampaign') await handleCampaignModeration(confirmModal.data, 'paused', rejectionReason);
                     if (confirmModal.type === 'disputeSplit') await handleDisputeResolution(confirmModal.data, 'split', creatorSplitAmount, (confirmModal.data?.budget || 0) - creatorSplitAmount);
                   }}
-                  disabled={actionLoading || (confirmModal.type === 'rejectCampaign' && !rejectionReason.trim())}
+                  disabled={actionLoading || (confirmModal.type === 'rejectCampaign' && !rejectionReason.trim()) || (confirmModal.type === 'approveDeposit' && (!depositApprovedAmount || Number(depositApprovedAmount) <= 0))}
                   className={`w-full sm:w-1/2 py-3.5 text-white font-black rounded-xl shadow-lg text-xs uppercase tracking-widest transition-all ${confirmModal.type === 'rejectWithdrawal' || confirmModal.type === 'rejectDeposit' || confirmModal.type === 'disputeRefund' || confirmModal.type === 'rejectCampaign'
                       ? 'bg-red-500 hover:bg-red-600 shadow-red-500/20'
                       : confirmModal.type === 'disputeSplit'

@@ -85,7 +85,10 @@ app.get('/', (req, res) => {
 
 // Database Connection
 mongoose
-  .connect(process.env.MONGODB_URI)
+  .connect(process.env.MONGODB_URI, {
+    maxPoolSize: 10,
+    serverSelectionTimeoutMS: 5000
+  })
   .then(() => {
     console.log('Connected to MongoDB Atlas');
     server.listen(PORT, () => {

@@ -79,13 +79,12 @@ const Navbar = () => {
 
       {/* Brand Logo */}
       <div className="flex-1 flex items-center justify-start gap-3 sm:gap-4 shrink-0">
-        <Link to={logoPath} className="flex items-center gap-2.5 group">
-          <div className="relative w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-orange-600 to-amber-500 flex items-center justify-center transition-transform group-hover:scale-105 shadow-md shadow-orange-500/20 shrink-0">
-            <span className="text-white font-sans font-black text-xl sm:text-2xl tracking-tighter">K</span>
-          </div>
-          <span className="text-[22px] sm:text-[24px] font-display font-black text-gray-900 tracking-tight lowercase">
-            kino
-          </span>
+        <Link to={logoPath} className="flex items-center group transition-transform group-hover:scale-105">
+          <img
+            src="/growfox.png"
+            alt="GrowFox Logo"
+            className="h-8 sm:h-9 w-auto object-contain"
+          />
         </Link>
         {user && isAdminRole && (
           <div className="flex items-center gap-2 select-none">
