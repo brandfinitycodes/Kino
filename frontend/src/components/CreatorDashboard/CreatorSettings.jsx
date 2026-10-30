@@ -14,8 +14,6 @@ import {
 } from "lucide-react";
 import ChatOverlay from "../ChatOverlay";
 import KycRequiredModal from "../KycRequiredModal";
-import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
 import { useAuth } from "../../context/AuthContext";
 
 export const calculateProfileCompletion = (profile) => {

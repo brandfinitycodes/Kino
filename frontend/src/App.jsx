@@ -36,43 +36,6 @@ const CreatorGuidelines = lazy(() => import('./pages/CreatorGuidelines'));
 const BrandHandbook = lazy(() => import('./pages/BrandHandbook'));
 
 
-const ProtectedRoute = ({ children, role }) => {
-  const { user, loading } = useAuth();
-
-  if (loading) return <div className="p-12 text-center">Loading...</div>;
-  if (!user) return <Navigate to="/login" />;
-  
-  if (role) {
-    if (role === 'admin') {
-      const adminRoles = ['superadmin', 'admin', 'moderator', 'support'];
-      if (!adminRoles.includes(user.role)) return <Navigate to="/" />;
-    } else if (user.role !== role) {
-      return <Navigate to="/" />;
-    }
-  }
-
-  return children;
-};
-
-const GuestRoute = ({ children }) => {
-  const { user, loading } = useAuth();
-
-  if (loading) return <div className="p-12 text-center">Loading...</div>;
-  if (user) {
-    const adminRoles = ['superadmin', 'admin', 'moderator', 'support'];
-    if (adminRoles.includes(user.role)) return <Navigate to="/admin-dashboard" />;
-    const justRegistered = sessionStorage.getItem('justRegistered');
-    if (justRegistered === 'true') {
-      sessionStorage.removeItem('justRegistered');
-      return <Navigate to="/aadhaar-verification" />;
-    }
-    return <Navigate to={user.role === 'creator' ? '/creator-dashboard' : '/brand-dashboard'} />;
-  }
-
-  return children;
-};
-
-
 const PageLoader = () => (
   <div className="flex flex-col items-center justify-center min-h-[70vh] w-full px-4">
     <div className="relative w-16 h-16">
@@ -90,6 +53,47 @@ const PageLoader = () => (
     </span>
   </div>
 );
+
+const ProtectedRoute = ({ children, role }) => {
+  const { user, loading } = useAuth();
+
+  if (loading) return <PageLoader />;
+  if (!user) return <Navigate to="/login" />;
+  
+  if (role) {
+    if (role === 'admin') {
+      const adminRoles = ['superadmin', 'admin', 'moderator', 'support'];
+      if (!adminRoles.includes(user.role)) return <Navigate to="/" />;
+    } else if (user.role !== role) {
+      return <Navigate to="/" />;
+    }
+  }
+
+  return children;
+};
+
+const GuestRoute = ({ children }) => {
+  const { user, loading } = useAuth();
+  const hasToken = typeof window !== 'undefined' && Boolean(localStorage.getItem('token'));
+
+  // If there's no token, they are 100% a guest — do not show loading screen
+  if (loading && hasToken) {
+    return <PageLoader />;
+  }
+
+  if (user) {
+    const adminRoles = ['superadmin', 'admin', 'moderator', 'support'];
+    if (adminRoles.includes(user.role)) return <Navigate to="/admin-dashboard" />;
+    const justRegistered = sessionStorage.getItem('justRegistered');
+    if (justRegistered === 'true') {
+      sessionStorage.removeItem('justRegistered');
+      return <Navigate to="/aadhaar-verification" />;
+    }
+    return <Navigate to={user.role === 'creator' ? '/creator-dashboard' : '/brand-dashboard'} />;
+  }
+
+  return children;
+};
 
 const queryClient = new QueryClient({
   defaultOptions: {

@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Target, ArrowUpRight, Building2, Wallet, User, Clock, Zap, X, Send, AlertCircle, Loader2, CheckCircle } from 'lucide-react';
 import axios from '../utils/axios';
 import { useAuth } from '../context/AuthContext';
+import { optimizeImage } from '../utils/imageKit';
 
 const getPlaceholderImage = (niche) => {
   const map = {
@@ -105,7 +106,7 @@ const CampaignCard = ({ campaign }) => {
           {campaign.brandId?.logo && !logoError ? (
             <img
               loading="lazy"
-              src={campaign.brandId.logo}
+              src={optimizeImage(campaign.brandId.logo, { width: 120, quality: 80 })}
               alt={campaign.brandId?.businessName || 'Brand'}
               onError={() => setLogoError(true)}
               className="w-full h-full object-cover"

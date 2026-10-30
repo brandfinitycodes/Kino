@@ -15,11 +15,12 @@ const getPendingWithdrawals = async (req, res) => {
   try {
     const transactions = await Transaction.find({ type: { $in: ['debit', 'coin_withdrawal'] }, status: 'pending' })
       .populate('userId', 'email name')
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
 
     const userIds = transactions.map(t => t.userId ? t.userId._id : null).filter(Boolean);
-    const creatorProfiles = await CreatorProfile.find({ userId: { $in: userIds } });
-    const brandProfiles = await BrandProfile.find({ userId: { $in: userIds } });
+    const creatorProfiles = await CreatorProfile.find({ userId: { $in: userIds } }).lean();
+    const brandProfiles = await BrandProfile.find({ userId: { $in: userIds } }).lean();
 
     const creatorMap = {};
     creatorProfiles.forEach(profile => {

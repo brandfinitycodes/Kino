@@ -99,16 +99,16 @@ const getAllApplications = async (req, res) => {
   try {
     let applications = [];
     if (req.user.role === 'creator') {
-      const creatorProfile = await CreatorProfile.findOne({ userId: req.user.id });
+      const creatorProfile = await CreatorProfile.findOne({ userId: req.user.id }).select('_id').lean();
       if (creatorProfile) {
-        applications = await Application.find({ creatorId: creatorProfile._id }).populate('campaignId');
+        applications = await Application.find({ creatorId: creatorProfile._id }).populate('campaignId').lean();
       }
     } else if (req.user.role === 'brand') {
-      const brandProfile = await BrandProfile.findOne({ userId: req.user.id });
+      const brandProfile = await BrandProfile.findOne({ userId: req.user.id }).select('_id').lean();
       if (brandProfile) {
-        const campaigns = await Campaign.find({ brandId: brandProfile._id });
+        const campaigns = await Campaign.find({ brandId: brandProfile._id }).select('_id').lean();
         const campaignIds = campaigns.map(c => c._id);
-        applications = await Application.find({ campaignId: { $in: campaignIds } }).populate('creatorId campaignId');
+        applications = await Application.find({ campaignId: { $in: campaignIds } }).populate('creatorId campaignId').lean();
       }
     }
     res.json(applications);

@@ -5,7 +5,10 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  // If no token exists, the user is already known to be unauthenticated (no wait needed)
+  const [loading, setLoading] = useState(() => {
+    return typeof window !== 'undefined' && Boolean(localStorage.getItem('token'));
+  });
 
   useEffect(() => {
     const fetchUser = async () => {

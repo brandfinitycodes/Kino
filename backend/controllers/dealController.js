@@ -471,27 +471,27 @@ const getUserDeals = async (req, res) => {
     let queryConditions = [];
 
     if (req.user.role === 'creator') {
-      const creatorProfile = await CreatorProfile.findOne({ userId: req.user.id });
+      const creatorProfile = await CreatorProfile.findOne({ userId: req.user.id }).select('_id').lean();
       const possibleCreatorIds = [req.user.id];
       if (creatorProfile) {
         possibleCreatorIds.push(creatorProfile._id);
       }
       queryConditions.push({ creatorId: { $in: possibleCreatorIds } });
-      const applications = await Application.find({ creatorId: { $in: possibleCreatorIds } });
+      const applications = await Application.find({ creatorId: { $in: possibleCreatorIds } }).select('_id').lean();
       const applicationIds = applications.map(a => a._id);
       if (applicationIds.length > 0) {
         queryConditions.push({ applicationId: { $in: applicationIds } });
       }
     } else {
-      const brandProfiles = await BrandProfile.find({ userId: req.user.id });
+      const brandProfiles = await BrandProfile.find({ userId: req.user.id }).select('_id').lean();
       const brandProfileIds = brandProfiles.map(b => b._id);
       const possibleBrandIds = [...brandProfileIds, req.user.id];
 
       queryConditions.push({ brandId: { $in: possibleBrandIds } });
 
-      const campaigns = await Campaign.find({ brandId: { $in: possibleBrandIds } });
+      const campaigns = await Campaign.find({ brandId: { $in: possibleBrandIds } }).select('_id').lean();
       const campaignIds = campaigns.map(c => c._id);
-      const applications = await Application.find({ campaignId: { $in: campaignIds } });
+      const applications = await Application.find({ campaignId: { $in: campaignIds } }).select('_id').lean();
       const applicationIds = applications.map(a => a._id);
       if (applicationIds.length > 0) {
         queryConditions.push({ applicationId: { $in: applicationIds } });
@@ -516,7 +516,8 @@ const getUserDeals = async (req, res) => {
       .populate({
         path: 'brandId',
         populate: { path: 'userId', select: 'name email profilePicture' }
-      });
+      })
+      .lean();
 
     res.json(deals);
   } catch (error) {

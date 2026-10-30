@@ -128,7 +128,7 @@ const getCreatorById = async (req, res) => {
       possibleCreatorIds.push(creator.userId._id || creator.userId);
     }
 
-    const applications = await Application.find({ creatorId: { $in: possibleCreatorIds } });
+    const applications = await Application.find({ creatorId: { $in: possibleCreatorIds } }).select('_id').lean();
     const applicationIds = applications.map(a => a._id);
 
     const dealQuery = {
@@ -215,7 +215,7 @@ const getCreatorProfileMe = async (req, res) => {
     }
 
     const possibleCreatorIds = [creator._id, req.user.id];
-    const applications = await Application.find({ creatorId: { $in: possibleCreatorIds } });
+    const applications = await Application.find({ creatorId: { $in: possibleCreatorIds } }).select('_id').lean();
     const applicationIds = applications.map(a => a._id);
 
     const dealQuery = {

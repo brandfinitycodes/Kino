@@ -99,7 +99,9 @@ const Application = require('../models/Application');
 
 const getCampaignById = async (req, res) => {
   try {
-    const campaign = await Campaign.findById(req.params.id).populate('brandId', 'businessName website description logo');
+    const campaign = await Campaign.findById(req.params.id)
+      .populate('brandId', 'businessName website description logo')
+      .lean();
     if (!campaign) return res.status(404).json({ message: 'Campaign not found' });
 
     const applications = await Application.find({ campaignId: campaign._id })
@@ -116,7 +118,7 @@ const getCampaignById = async (req, res) => {
       stage = 'awaiting_reassurance';
     }
 
-    const campObj = campaign.toObject ? campaign.toObject() : campaign;
+    const campObj = campaign;
     res.json({
       ...campObj,
       applicationsCount: applications.length,
@@ -132,7 +134,7 @@ const getCampaignById = async (req, res) => {
 
 const getMyCampaigns = async (req, res) => {
   try {
-    const brandProfile = await BrandProfile.findOne({ userId: req.user.id });
+    const brandProfile = await BrandProfile.findOne({ userId: req.user.id }).lean();
     if (!brandProfile) {
       return res.status(404).json({ message: 'Brand profile not found' });
     }

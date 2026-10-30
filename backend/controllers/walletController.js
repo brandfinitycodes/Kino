@@ -22,7 +22,8 @@ const getMyTransactions = async (req, res) => {
   try {
     const transactions = await Transaction.find({ userId: req.user.id })
       .sort({ createdAt: -1 })
-      .limit(50);
+      .limit(50)
+      .lean();
     res.json(transactions);
   } catch (error) {
     res.status(500).json({ message: error.message });

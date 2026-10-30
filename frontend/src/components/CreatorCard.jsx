@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { User, CheckCircle, ExternalLink, MapPin } from 'lucide-react';
+import { optimizeImage } from '../utils/imageKit';
 
 const CreatorCard = ({ creator }) => {
   return (
@@ -9,7 +10,7 @@ const CreatorCard = ({ creator }) => {
       <div className="relative mb-6">
         <div className="w-24 h-24 sm:w-28 sm:h-28 bg-gray-50 rounded-[2rem] sm:rounded-[2.5rem] flex items-center justify-center overflow-hidden border-4 border-gray-50 shadow-md transition-transform group-hover:scale-105">
           {creator.profilePicture ? (
-            <img loading="lazy" src={creator.profilePicture} alt={creator.name} className="w-full h-full object-cover" />
+            <img loading="lazy" src={optimizeImage(creator.profilePicture, { width: 240, quality: 80 })} alt={creator.name} className="w-full h-full object-cover" />
           ) : (
             <User size={32} className="text-gray-300" />
           )}

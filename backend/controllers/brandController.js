@@ -42,9 +42,9 @@ const getBrandById = async (req, res) => {
   try {
     let brand = null;
     if (mongoose.Types.ObjectId.isValid(req.params.id)) {
-      brand = await BrandProfile.findById(req.params.id).populate('userId', 'email name profilePicture');
+      brand = await BrandProfile.findById(req.params.id).populate('userId', 'email name profilePicture').lean();
       if (!brand) {
-        brand = await BrandProfile.findOne({ userId: req.params.id }).populate('userId', 'email name profilePicture');
+        brand = await BrandProfile.findOne({ userId: req.params.id }).populate('userId', 'email name profilePicture').lean();
       }
     }
     if (!brand) return res.status(404).json({ message: 'Brand not found' });
@@ -56,16 +56,16 @@ const getBrandById = async (req, res) => {
 
 const getBrandProfileMe = async (req, res) => {
   try {
-    let brand = await BrandProfile.findOne({ userId: req.user.id }).populate('userId', 'email');
+    let brand = await BrandProfile.findOne({ userId: req.user.id }).populate('userId', 'email').lean();
     if (!brand) {
       // Lazy create on first login to avoid breaking dashboard and campaign links
-      brand = new BrandProfile({
+      const newBrand = new BrandProfile({
         userId: req.user.id,
         businessName: `Brand-${req.user.id.substring(req.user.id.length - 4)}`,
         description: null
       });
-      await brand.save();
-      brand = await BrandProfile.findOne({ userId: req.user.id }).populate('userId', 'email');
+      await newBrand.save();
+      brand = await BrandProfile.findOne({ userId: req.user.id }).populate('userId', 'email').lean();
     }
     res.json(brand);
   } catch (error) {

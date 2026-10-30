@@ -382,3 +382,23 @@ h6,
     padding: 0;
   }
 }
+
+/* Prevent iOS Safari from auto-zooming on input focus (< 16px triggers zoom) */
+@media screen and (max-width: 768px) {
+  input, 
+  select, 
+  textarea,
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="tel"] {
+    font-size: 16px !important;
+  }
+}
+
+/* Smooth touch scrolling & eliminate tap-flash on mobile WebKit */
+html, body {
+  -webkit-overflow-scrolling: touch;
+  -webkit-tap-highlight-color: transparent;
+}
