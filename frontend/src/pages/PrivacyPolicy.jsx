@@ -1,5 +1,5 @@
 import React from 'react';
-import { Lock, Eye, Users, FileText, Mail } from 'lucide-react';
+import { Lock, Eye, Users, FileText, Mail, MessageSquare } from 'lucide-react';
 
 const PrivacyPolicy = () => {
   return (
@@ -13,7 +13,7 @@ const PrivacyPolicy = () => {
         </div>
 
         <h1 className="text-4xl sm:text-5xl font-black text-center text-slate-900 mb-4 tracking-tight">Privacy Policy</h1>
-        <p className="text-center text-slate-500 font-medium mb-12">Last Updated: July 2026</p>
+        <p className="text-center text-slate-500 font-medium mb-12">Last Updated: November 2026</p>
 
         <div className="space-y-12">
           
@@ -22,48 +22,53 @@ const PrivacyPolicy = () => {
               <Eye className="text-blue-500" /> 1. Data Collection & KYC
             </h2>
             <p className="text-slate-600 leading-relaxed mb-4">
-              To operate securely and comply with local regulations, we collect necessary personal and business information.
+              To operate securely and comply with applicable laws and RBI Payment Aggregator standards, we collect necessary personal, business, and verification data:
             </p>
             <ul className="list-disc pl-5 text-slate-600 space-y-3 leading-relaxed">
-              <li><strong>Identity Data (KYC):</strong> We collect government-issued IDs (such as Aadhaar or PAN cards) to verify the identity of our users. This is legally required to prevent fraud, comply with Anti-Money Laundering (AML) laws, and ensure a safe ecosystem.</li>
-              <li><strong>Profile Data:</strong> We collect social media handles, email addresses, and professional portfolios to facilitate matchmaking between Brands and Creators.</li>
+              <li><strong>Identity Verification (KYC):</strong> Government-issued identifiers (such as Aadhaar or PAN) are collected and securely validated to confirm user identity, combat fraud, and fulfill statutory anti-money laundering (AML) responsibilities.</li>
+              <li><strong>Profile & Collaboration Data:</strong> Social media handles, follower statistics, contact emails, and creative portfolios are processed to power marketplace discovery and matching.</li>
+              <li><strong>On-Platform Communications & Evidence:</strong> Messages exchanged in on-platform chat, milestone deliverables, file uploads, timestamps, and negotiated deadline or revision amendments are recorded and retained to facilitate dispute resolution and defend against unauthorized chargebacks.</li>
             </ul>
           </section>
 
           <section>
             <h2 className="text-2xl font-black text-slate-900 mb-4 flex items-center gap-3">
-              <FileText className="text-blue-500" /> 2. Financial Information
+              <FileText className="text-blue-500" /> 2. Financial & Payment Information
             </h2>
             <p className="text-slate-600 leading-relaxed mb-4">
               Handling your payouts securely is our top priority.
             </p>
             <ul className="list-disc pl-5 text-slate-600 space-y-3 leading-relaxed">
-              <li><strong>We DO NOT store credit card numbers.</strong> All payment deposits are processed directly by our secure, third-party payment gateways (e.g., Razorpay, Stripe).</li>
-              <li><strong>Payout Information:</strong> We do store your provided bank account details or UPI IDs. This information is strictly used by our Administration team to process manual payout clearances once a deal is successfully completed.</li>
+              <li><strong>No Card Storage:</strong> We do not collect or store full credit or debit card numbers on our servers. All card and banking transactions are processed via PCI-DSS certified payment aggregators (e.g., Razorpay).</li>
+              <li><strong>Payout Coordinates:</strong> Bank account numbers, IFSC codes, and verified UPI IDs provided by Creators are stored encrypted solely for disbursing cleared milestone earnings and fulfilling tax reporting obligations (e.g., TDS under Section 194-O).</li>
             </ul>
           </section>
 
           <section>
             <h2 className="text-2xl font-black text-slate-900 mb-4 flex items-center gap-3">
-              <Users className="text-blue-500" /> 3. Third-Party Data Sharing
+              <Users className="text-blue-500" /> 3. Third-Party Data Sharing & Dispute Defense
             </h2>
             <p className="text-slate-600 leading-relaxed mb-4">
-              We do not sell your personal data. However, to facilitate our services, we may share specific information with the following third parties:
+              We never sell your personal data. We disclose information strictly in the following circumstances:
             </p>
             <ul className="list-disc pl-5 text-slate-600 space-y-3 leading-relaxed">
-              <li><strong>Payment Gateways:</strong> Necessary transaction data is shared with our payment processors to authorize and capture funds.</li>
-              <li><strong>Counterparties:</strong> When you enter into a deal, relevant profile information (such as your name, social links, and communication history on the platform) is shared with the other party (Brand or Creator) to facilitate the collaboration.</li>
-              <li><strong>Government & Law Enforcement:</strong> We may disclose KYC and transaction data to government authorities or law enforcement agencies if legally requested for fraud investigations, tax compliance, or legal disputes.</li>
+              <li><strong>Deal Counterparties:</strong> Contact names, brand briefs, submitted assets, and chat messages are shared between the Brand and Creator participating in an active deal.</li>
+              <li><strong>Payment Processors & Banking Partners:</strong> In the event of payment authorization, refund execution, or cardholder chargeback claims, necessary transaction proofs, delivery timestamps, and chat records are submitted to payment partners and issuing banks to substantiate milestone completion.</li>
+              <li><strong>Statutory & Regulatory Authorities:</strong> We disclose identity and transaction data when compelled by court orders, tax authorities, or law enforcement investigations under Indian law.</li>
             </ul>
           </section>
 
           <section>
             <h2 className="text-2xl font-black text-slate-900 mb-4 flex items-center gap-3">
-              <Lock className="text-blue-500" /> 4. Data Security
+              <Lock className="text-blue-500" /> 4. Data Retention & Security
             </h2>
-            <p className="text-slate-600 leading-relaxed">
-              We implement industry-standard security measures to protect your personal and financial information. While no system is completely impenetrable, we utilize encryption and secure server architectures to ensure your data is safeguarded against unauthorized access.
+            <p className="text-slate-600 leading-relaxed mb-4">
+              We deploy industry-standard encryption (in transit and at rest) and strict role-based access controls:
             </p>
+            <ul className="list-disc pl-5 text-slate-600 space-y-3 leading-relaxed">
+              <li><strong>Evidence Retention Period:</strong> Transaction history, KYC logs, deliverable assets, and deal chat logs are retained for a minimum of <strong>2 years (730 days)</strong> to cover statutory record-keeping periods and the 120+ day chargeback dispute window permitted by card networks.</li>
+              <li>Account data is protected using salted hashing, SSL/TLS transmission encryption, and isolated database clusters.</li>
+            </ul>
           </section>
 
           <section>
@@ -71,12 +76,13 @@ const PrivacyPolicy = () => {
               <Mail className="text-blue-500" /> 5. Contact Us & Grievance Officer
             </h2>
             <p className="text-slate-600 leading-relaxed mb-4">
-              If you have any questions or concerns regarding this Privacy Policy or your personal data, or if you need to file a grievance, please contact our Grievance Officer using the details below:
+              In accordance with the Information Technology Act, 2000 and the Digital Personal Data Protection Act, you may contact our designated Grievance Officer for data protection inquiries or concerns:
             </p>
             <ul className="list-disc pl-5 text-slate-600 space-y-3 leading-relaxed">
               <li><strong>Company Name:</strong> Brandfinity</li>
-              <li><strong>Email:</strong> hello@brandfinity.in</li>
-              <li><strong>Address:</strong> 1st floor Brandfinity, Vijayanand Society, P-15, near NIT Garden, Narendra Nagar square, Somalwada, Nagpur, Maharashtra 440015</li>
+              <li><strong>Grievance Email:</strong> hello@brandfinity.in</li>
+              <li><strong>Response Timeline:</strong> Acknowledged within 48 hours; targeted resolution within 30 days.</li>
+              <li><strong>Registered Address:</strong> 1st floor Brandfinity, Vijayanand Society, P-15, near NIT Garden, Narendra Nagar square, Somalwada, Nagpur, Maharashtra 440015</li>
             </ul>
           </section>
 

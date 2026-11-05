@@ -71,35 +71,54 @@ const CreatorDashboard = () => {
 
   const fetchData = async () => {
     try {
-      const [profRes, appsRes, campRes, dealsRes, wallRes, transRes, notifRes] = await Promise.all([
-        axios.get("/creators/me").catch((err) => { console.error(err); return { data: null }; }),
-        axios.get("/applications/creator").catch((err) => { console.error(err); return { data: [] }; }),
-        axios.get("/campaigns?match=true").catch((err) => { console.error(err); return { data: [] }; }),
-        axios.get("/deals/user").catch((err) => { console.error(err); return { data: [] }; }),
+      // Phase 1: Fetch critical profile & deals first to unblock dashboard immediately
+      const [profRes, dealsRes] = await Promise.allSettled([
+        axios.get("/creators/me"),
+        axios.get("/deals/user")
+      ]);
+
+      if (profRes.status === 'fulfilled' && profRes.value?.data) {
+        setProfile(profRes.value.data);
+        if (profRes.value.data.profilePicture) {
+          setUser(prev => prev ? { ...prev, profilePicture: profRes.value.data.profilePicture, name: profRes.value.data.name } : prev);
+        }
+      }
+      if (dealsRes.status === 'fulfilled' && dealsRes.value?.data) {
+        setDeals(Array.isArray(dealsRes.value.data) ? dealsRes.value.data : []);
+      }
+
+      // Unblock UI immediately so creator sees their dashboard instantly
+      setLoading(false);
+
+      // Phase 2: Fetch non-critical data in parallel in the background
+      Promise.allSettled([
+        axios.get("/applications/creator").catch(() => ({ data: [] })),
+        axios.get("/campaigns?match=true").catch(() => ({ data: [] })),
         axios.get("/wallet/my-wallet").catch(() => ({ data: null })),
         axios.get("/wallet/transactions").catch(() => ({ data: [] })),
         axios.get("/notifications").catch(() => ({ data: [] }))
-      ]);
-      if (profRes.data) {
-        setProfile(profRes.data);
-        if (profRes.data.profilePicture) {
-          setUser(prev => prev ? { ...prev, profilePicture: profRes.data.profilePicture, name: profRes.data.name } : prev);
+      ]).then(([appsRes, campRes, wallRes, transRes, notifRes]) => {
+        if (appsRes.status === 'fulfilled') {
+          setApplications(Array.isArray(appsRes.value?.data) ? appsRes.value.data : []);
         }
-      }
-      setApplications(Array.isArray(appsRes.data) ? appsRes.data : []);
-      setCampaigns(Array.isArray(campRes.data?.data) ? campRes.data.data : Array.isArray(campRes.data) ? campRes.data : []);
-      setDeals(Array.isArray(dealsRes.data) ? dealsRes.data : []);
-      if (wallRes && wallRes.data) setWallet(wallRes.data);
-      if (transRes && transRes.data) setTransactions(transRes.data);
-
-      if (notifRes && notifRes.data) {
-        const unreads = notifRes.data.filter(n => !n.read);
-        setHasUnread(unreads.length > 0);
-        setUnreadCount(unreads.length);
-      }
+        if (campRes.status === 'fulfilled') {
+          const cData = campRes.value?.data;
+          setCampaigns(Array.isArray(cData?.data) ? cData.data : Array.isArray(cData) ? cData : []);
+        }
+        if (wallRes.status === 'fulfilled' && wallRes.value?.data) {
+          setWallet(wallRes.value.data);
+        }
+        if (transRes.status === 'fulfilled' && transRes.value?.data) {
+          setTransactions(transRes.value.data);
+        }
+        if (notifRes.status === 'fulfilled' && notifRes.value?.data) {
+          const unreads = notifRes.value.data.filter(n => !n.read);
+          setHasUnread(unreads.length > 0);
+          setUnreadCount(unreads.length);
+        }
+      });
     } catch (err) {
       console.error(err);
-    } finally {
       setLoading(false);
     }
   };
@@ -265,7 +284,7 @@ const CreatorDashboard = () => {
 
   if (loading) return (
     <div className="flex items-center justify-center min-h-screen">
-      <div className="w-12 h-12 border-4 border-indigo-200 border-t-[#4F46E5] rounded-full animate-spin"></div>
+      <div className="w-12 h-12 border-4 border-indigo-200 border-t-[#4F46E5] rounded-full animate-[spin_0.6s_linear_infinite]"></div>
     </div>
   );
 

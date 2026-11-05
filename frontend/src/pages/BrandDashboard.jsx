@@ -99,54 +99,65 @@ const BrandDashboard = () => {
   
   const fetchData = async () => {
     try {
-      const results = await Promise.allSettled([
+      // Phase 1: Fetch critical profile, campaigns & deals first to unblock dashboard immediately
+      const [brandRes, campRes, dealsRes] = await Promise.allSettled([
         axios.get('/brands/me'),
         axios.get('/campaigns/mine'),
+        axios.get('/deals/user')
+      ]);
+
+      if (brandRes.status === 'fulfilled' && brandRes.value?.data) {
+        setProfile(brandRes.value.data || profile);
+        if (brandRes.value.data?.logo) {
+          setUser(prev => prev ? { ...prev, logo: brandRes.value.data.logo, name: brandRes.value.data.businessName } : prev);
+        }
+      }
+      if (campRes.status === 'fulfilled' && campRes.value?.data) {
+        setCampaigns(campRes.value.data);
+      }
+      if (dealsRes.status === 'fulfilled' && dealsRes.value?.data) {
+        setDeals(dealsRes.value.data || []);
+      }
+
+      // Unblock UI immediately so the user doesn't wait for heavy secondary endpoints
+      setLoading(false);
+      setProfileLoaded(true);
+
+      // Phase 2: Fetch non-critical data in parallel in the background
+      Promise.allSettled([
         axios.get('/creators'),
-        axios.get('/deals/user'),
         axios.get('/notifications').catch(() => ({ data: [] })),
         axios.get('/wallet/my-wallet').catch(() => ({ data: { balance: 0 } })),
         axios.get('/wallet/transactions').catch(() => ({ data: [] })),
         axios.get('/kyc/status').catch(() => null)
-      ]);
-
-      if (results[0].status === 'fulfilled') {
-        setProfile(results[0].value.data || profile);
-        if (results[0].value.data?.logo) {
-          setUser(prev => prev ? { ...prev, logo: results[0].value.data.logo, name: results[0].value.data.businessName } : prev);
+      ]).then(results => {
+        if (results[0].status === 'fulfilled' && results[0].value?.data) {
+          const cData = results[0].value.data;
+          setAllCreators(Array.isArray(cData) ? cData : (cData?.data || []));
         }
-      }
-      if (results[1].status === 'fulfilled') setCampaigns(results[1].value.data);
-      if (results[2].status === 'fulfilled') {
-        const cData = results[2].value.data;
-        setAllCreators(Array.isArray(cData) ? cData : (cData?.data || []));
-      }
-      if (results[3].status === 'fulfilled') {
-        setDeals(results[3].value.data || []);
-      }
-      if (results[4].status === 'fulfilled' && results[4].value?.data) {
-        const unreads = results[4].value.data.filter(n => !n.read);
-        setHasUnread(unreads.length > 0);
-        setUnreadCount(unreads.length);
-      }
-      if (results[5].status === 'fulfilled') {
-        setWallet(results[5].value.data);
-      }
-      if (results[6].status === 'fulfilled') {
-        setTransactions(results[6].value.data || []);
-      }
-      if (results[7]?.status === 'fulfilled' && results[7]?.value?.data) {
-        const kData = results[7].value.data;
-        setUser(prev => prev ? {
-          ...prev,
-          kycStatus: kData.status,
-          kycRejectionReason: kData.rejectionReason,
-          kycVerificationId: kData.verificationId
-        } : prev);
-      }
+        if (results[1].status === 'fulfilled' && results[1].value?.data) {
+          const unreads = results[1].value.data.filter(n => !n.read);
+          setHasUnread(unreads.length > 0);
+          setUnreadCount(unreads.length);
+        }
+        if (results[2].status === 'fulfilled' && results[2].value?.data) {
+          setWallet(results[2].value.data);
+        }
+        if (results[3].status === 'fulfilled' && results[3].value?.data) {
+          setTransactions(results[3].value.data || []);
+        }
+        if (results[4]?.status === 'fulfilled' && results[4].value?.data) {
+          const kData = results[4].value.data;
+          setUser(prev => prev ? {
+            ...prev,
+            kycStatus: kData.status,
+            kycRejectionReason: kData.rejectionReason,
+            kycVerificationId: kData.verificationId
+          } : prev);
+        }
+      });
     } catch (err) {
       console.error(err);
-    } finally {
       setLoading(false);
       setProfileLoaded(true);
     }
@@ -246,7 +257,7 @@ const BrandDashboard = () => {
 
   if (loading) return (
     <div className="flex items-center justify-center min-h-screen">
-      <div className="w-12 h-12 border-4 border-primary-100 border-t-primary-600 rounded-full animate-spin"></div>
+      <div className="w-12 h-12 border-4 border-primary-100 border-t-primary-600 rounded-full animate-[spin_0.6s_linear_infinite]"></div>
     </div>
   );
 

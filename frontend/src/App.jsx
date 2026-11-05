@@ -38,9 +38,9 @@ const BrandHandbook = lazy(() => import('./pages/BrandHandbook'));
 
 const PageLoader = () => (
   <div className="flex flex-col items-center justify-center min-h-[70vh] w-full px-4">
-    <div className="relative w-16 h-16">
-      {/* Outer spinning ring */}
-      <div className="absolute inset-0 border-4 border-solid border-primary border-t-transparent rounded-full animate-spin"></div>
+    <div className="relative w-14 h-14">
+      {/* Outer spinning ring - faster 0.6s rotation */}
+      <div className="absolute inset-0 border-4 border-solid border-primary border-t-transparent rounded-full animate-[spin_0.6s_linear_infinite]"></div>
       {/* Inner pulsing blur circle */}
       <div className="absolute inset-2 bg-gradient-to-tr from-primary/10 to-secondary/10 rounded-full animate-pulse blur-sm"></div>
       {/* Center pinging core */}
@@ -48,8 +48,8 @@ const PageLoader = () => (
         <div className="w-2.5 h-2.5 bg-primary rounded-full animate-ping"></div>
       </div>
     </div>
-    <span className="mt-6 font-display text-xs font-bold tracking-[0.25em] uppercase text-on-surface-variant animate-pulse text-center">
-      Loading Elevate Pulse...
+    <span className="mt-4 font-display text-xs font-bold tracking-[0.2em] uppercase text-on-surface-variant animate-pulse text-center">
+      Loading...
     </span>
   </div>
 );

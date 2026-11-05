@@ -313,7 +313,7 @@ const sendOtp = async (req, res) => {
     // Phase 2: Duplicate Check
     const existingUser = await User.findOne({ email: cleanEmail });
     if (existingUser) {
-      // User requested to show "Invalid credentials" instead of "Email already in use" to prevent account enumeration
+      // Prevent account enumeration
       return res.status(400).json({ message: 'Invalid credentials. Please try again or log in.' });
     }
 
@@ -324,18 +324,27 @@ const sendOtp = async (req, res) => {
     const otpDoc = new Otp({ email: cleanEmail, otp: generatedOtp });
     await otpDoc.save();
 
-    // REAL EMAIL SENDING DISABLED FOR TESTING
-    // Simply returning the devOtp to the frontend
-    console.log(`[DEV MODE] OTP generated for ${cleanEmail}: ${generatedOtp}`);
-
-    res.json({
-      message: 'Verification OTP sent to your email successfully.',
-      email: cleanEmail,
-      devOtp: generatedOtp
+    // Send Real OTP Email via Gmail App Password / SMTP
+    const emailResult = await sendEmail({
+      to: cleanEmail,
+      subject: `${generatedOtp} is your Kino verification code`,
+      otp: generatedOtp
     });
+
+    const responseData = {
+      message: 'Verification OTP sent to your email successfully.',
+      email: cleanEmail
+    };
+
+    // If email credentials are not yet configured in .env, supply devOtp as fallback
+    if (emailResult.simulated) {
+      responseData.devOtp = generatedOtp;
+    }
+
+    res.json(responseData);
   } catch (error) {
     console.error('Send OTP Error:', error);
-    res.status(500).json({ message: 'Failed to generate verification OTP. Please try again.' });
+    res.status(500).json({ message: 'Failed to send verification email. Please try again later.' });
   }
 };
 

@@ -541,7 +541,7 @@ const AdminDashboard = () => {
   if (loading) {
     return (
       <div className="min-h-[calc(100vh-80px)] bg-gray-50 flex items-center justify-center">
-        <div className="w-12 h-12 border-4 border-[#EA580C]/20 border-t-[#EA580C] rounded-full animate-spin"></div>
+        <div className="w-12 h-12 border-4 border-[#EA580C]/20 border-t-[#EA580C] rounded-full animate-[spin_0.6s_linear_infinite]"></div>
       </div>
     );
   }
