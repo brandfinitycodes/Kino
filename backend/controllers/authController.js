@@ -327,7 +327,7 @@ const sendOtp = async (req, res) => {
     // Send Real OTP Email via Gmail App Password / SMTP
     const emailResult = await sendEmail({
       to: cleanEmail,
-      subject: `${generatedOtp} is your Kino verification code`,
+      subject: `${generatedOtp} is your GrowFox verification code`,
       otp: generatedOtp
     });
 

@@ -16,7 +16,7 @@ const generateOtpHtml = (otp) => {
       <!-- Brand Header -->
       <div style="background: linear-gradient(135deg, #ea580c 0%, #f97316 100%); padding: 32px 24px; text-align: center;">
         <h1 style="margin: 0; color: #ffffff; font-size: 26px; font-weight: 800; letter-spacing: -0.5px;">
-          Kino
+          GrowFox
         </h1>
         <p style="margin: 6px 0 0; color: #ffedd5; font-size: 13px; font-weight: 500; text-transform: uppercase; letter-spacing: 1.5px;">
           Account Security Verification
@@ -50,7 +50,7 @@ const generateOtpHtml = (otp) => {
       <!-- Footer -->
       <div style="background: #f8fafc; padding: 20px; text-align: center; border-top: 1px solid #f1f5f9;">
         <p style="margin: 0; font-size: 11px; color: #94a3b8;">
-          © ${new Date().getFullYear()} Kino / Brandfinity. All rights reserved.
+          © ${new Date().getFullYear()} GrowFox. All rights reserved.
         </p>
       </div>
 
@@ -112,10 +112,10 @@ const sendEmail = async ({ to, subject, otp, html, text }) => {
   }
 
   const mailOptions = {
-    from: `"Kino Verification" <${process.env.EMAIL_USER.trim()}>`,
+    from: `"GrowFox" <${process.env.EMAIL_USER.trim()}>`,
     to,
     subject: subject || 'Your Verification Code',
-    text: text || (otp ? `Your verification code is: ${otp}. It expires in 10 minutes.` : ''),
+    text: text || (otp ? `Your GrowFox verification code is: ${otp}. It expires in 10 minutes.` : ''),
     html: html || (otp ? generateOtpHtml(otp) : undefined)
   };
 
