@@ -69,4 +69,6 @@ const brandProfileSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
+brandProfileSchema.index({ userId: 1 });
+
 module.exports = mongoose.model('BrandProfile', brandProfileSchema);

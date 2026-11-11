@@ -90,38 +90,43 @@ const CreatorDashboard = () => {
       // Unblock UI immediately so creator sees their dashboard instantly
       setLoading(false);
 
-      // Phase 2: Fetch non-critical data in parallel in the background
-      Promise.allSettled([
-        axios.get("/applications/creator").catch(() => ({ data: [] })),
-        axios.get("/campaigns?match=true").catch(() => ({ data: [] })),
-        axios.get("/wallet/my-wallet").catch(() => ({ data: null })),
-        axios.get("/wallet/transactions").catch(() => ({ data: [] })),
-        axios.get("/notifications").catch(() => ({ data: [] }))
-      ]).then(([appsRes, campRes, wallRes, transRes, notifRes]) => {
-        if (appsRes.status === 'fulfilled') {
-          setApplications(Array.isArray(appsRes.value?.data) ? appsRes.value.data : []);
-        }
-        if (campRes.status === 'fulfilled') {
-          const cData = campRes.value?.data;
-          setCampaigns(Array.isArray(cData?.data) ? cData.data : Array.isArray(cData) ? cData : []);
-        }
-        if (wallRes.status === 'fulfilled' && wallRes.value?.data) {
-          setWallet(wallRes.value.data);
-        }
-        if (transRes.status === 'fulfilled' && transRes.value?.data) {
-          setTransactions(transRes.value.data);
-        }
-        if (notifRes.status === 'fulfilled' && notifRes.value?.data) {
-          const unreads = notifRes.value.data.filter(n => !n.read);
+      // Phase 2: Fetch notifications in background for badge
+      axios.get("/notifications").then(notifRes => {
+        if (notifRes && notifRes.data) {
+          const unreads = notifRes.data.filter(n => !n.read);
           setHasUnread(unreads.length > 0);
           setUnreadCount(unreads.length);
         }
-      });
+      }).catch(() => {});
     } catch (err) {
       console.error(err);
       setLoading(false);
     }
   };
+
+  // Tab-by-tab lazy loading: only fetch heavy data for a tab when creator activates it
+  useEffect(() => {
+    if ((activeTab === 'discover' || activeTab === 'profile') && campaigns.length === 0) {
+      axios.get("/campaigns?match=true").then(res => {
+        const cData = res.data;
+        setCampaigns(Array.isArray(cData?.data) ? cData.data : Array.isArray(cData) ? cData : []);
+      }).catch(err => console.error('Failed to load campaigns:', err));
+    }
+    if ((activeTab === 'applications' || activeTab === 'profile') && applications.length === 0) {
+      axios.get("/applications/creator").then(res => {
+        setApplications(Array.isArray(res.data) ? res.data : []);
+      }).catch(err => console.error('Failed to load applications:', err));
+    }
+    if (activeTab === 'wallet' && (!wallet || transactions.length === 0)) {
+      Promise.allSettled([
+        axios.get("/wallet/my-wallet").catch(() => ({ data: null })),
+        axios.get("/wallet/transactions").catch(() => ({ data: [] }))
+      ]).then(([wallRes, transRes]) => {
+        if (wallRes.status === 'fulfilled' && wallRes.value?.data) setWallet(wallRes.value.data);
+        if (transRes.status === 'fulfilled' && transRes.value?.data) setTransactions(transRes.value.data);
+      });
+    }
+  }, [activeTab]);
 
   useEffect(() => {
     fetchData();

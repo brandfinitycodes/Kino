@@ -16,6 +16,7 @@ export const SocketProvider = ({ children }) => {
       const rawUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
       const socketUrl = rawUrl.replace(/\/api\/?$/, '');
       const newSocket = io(socketUrl, {
+        transports: ['websocket'],
         reconnectionAttempts: 5,
         timeout: 10000
       });

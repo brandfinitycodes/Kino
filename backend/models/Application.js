@@ -22,4 +22,8 @@ const applicationSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
+applicationSchema.index({ campaignId: 1, status: 1 });
+applicationSchema.index({ creatorId: 1, status: 1 });
+applicationSchema.index({ campaignId: 1, creatorId: 1 });
+
 module.exports = mongoose.model('Application', applicationSchema);

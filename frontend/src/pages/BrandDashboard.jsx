@@ -123,31 +123,18 @@ const BrandDashboard = () => {
       setLoading(false);
       setProfileLoaded(true);
 
-      // Phase 2: Fetch non-critical data in parallel in the background
+      // Phase 2: Fetch notifications and KYC status in background
       Promise.allSettled([
-        axios.get('/creators'),
         axios.get('/notifications').catch(() => ({ data: [] })),
-        axios.get('/wallet/my-wallet').catch(() => ({ data: { balance: 0 } })),
-        axios.get('/wallet/transactions').catch(() => ({ data: [] })),
         axios.get('/kyc/status').catch(() => null)
       ]).then(results => {
         if (results[0].status === 'fulfilled' && results[0].value?.data) {
-          const cData = results[0].value.data;
-          setAllCreators(Array.isArray(cData) ? cData : (cData?.data || []));
-        }
-        if (results[1].status === 'fulfilled' && results[1].value?.data) {
-          const unreads = results[1].value.data.filter(n => !n.read);
+          const unreads = results[0].value.data.filter(n => !n.read);
           setHasUnread(unreads.length > 0);
           setUnreadCount(unreads.length);
         }
-        if (results[2].status === 'fulfilled' && results[2].value?.data) {
-          setWallet(results[2].value.data);
-        }
-        if (results[3].status === 'fulfilled' && results[3].value?.data) {
-          setTransactions(results[3].value.data || []);
-        }
-        if (results[4]?.status === 'fulfilled' && results[4].value?.data) {
-          const kData = results[4].value.data;
+        if (results[1]?.status === 'fulfilled' && results[1].value?.data) {
+          const kData = results[1].value.data;
           setUser(prev => prev ? {
             ...prev,
             kycStatus: kData.status,
@@ -162,6 +149,25 @@ const BrandDashboard = () => {
       setProfileLoaded(true);
     }
   };
+
+  // Tab-by-tab lazy loading: only fetch data for a tab when user navigates to it
+  useEffect(() => {
+    if (activeTab === 'browse' && allCreators.length === 0) {
+      axios.get('/creators').then(res => {
+        const cData = res.data;
+        setAllCreators(Array.isArray(cData) ? cData : (cData?.data || []));
+      }).catch(err => console.error('Failed to load creators list:', err));
+    }
+    if ((activeTab === 'wallet' || activeTab === 'overview') && (!wallet || transactions.length === 0)) {
+      Promise.allSettled([
+        axios.get('/wallet/my-wallet').catch(() => ({ data: { balance: 0 } })),
+        axios.get('/wallet/transactions').catch(() => ({ data: [] }))
+      ]).then(([wRes, tRes]) => {
+        if (wRes.status === 'fulfilled' && wRes.value?.data) setWallet(wRes.value.data);
+        if (tRes.status === 'fulfilled' && tRes.value?.data) setTransactions(tRes.value.data || []);
+      });
+    }
+  }, [activeTab]);
 
   useEffect(() => {
     fetchData();

@@ -1,0 +1,29 @@
+# Allow Googlebot and all search engine crawlers
+User-agent: *
+Allow: /
+Allow: /campaigns
+Allow: /creators
+Allow: /brands
+Allow: /terms
+Allow: /privacy
+Allow: /refund-policy
+Allow: /creator-guidelines
+Allow: /brand-handbook
+Allow: /login
+Allow: /register
+
+# Disallow private user dashboards and authenticated routes
+Disallow: /creator-dashboard
+Disallow: /brand-dashboard
+Disallow: /admin-dashboard
+Disallow: /aadhaar-verification
+Disallow: /kyc-onboarding
+Disallow: /kyc-verification
+Disallow: /kyc
+Disallow: /notifications
+Disallow: /instagram-oauth
+Disallow: /api/
+
+# Sitemap location
+Sitemap: https://growfox.in/sitemap.xml
+

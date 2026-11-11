@@ -1,13 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import LottieComponent from "lottie-react";
-const Lottie = LottieComponent.default || LottieComponent;
 import { motion } from "framer-motion";
 import { TypeAnimation } from "react-type-animation";
 import { PlayCircle, BadgeCheck, FilePlus, Users, ClipboardCheck, TrendingUp, ArrowRight, ChevronRight, User, Building2, Globe, Share2, Mail, Target, Zap, Search, ShieldCheck, HelpCircle, Plus, Minus, Sparkles, Laptop, Gamepad2, Heart } from "lucide-react";
 import { Instagram, Twitter, Facebook, Youtube as YoutubeIcon } from "../components/SocialIcons";
 
-import animationCreator from "../assets/creator.json";
 import axios from "../utils/axios";
 
 // Retain framer-motion variants

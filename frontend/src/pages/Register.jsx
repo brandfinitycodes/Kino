@@ -247,7 +247,7 @@ const Register = () => {
 
       {/* Left Column: Form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-3 sm:p-6 md:p-8 relative overflow-y-auto h-full hide-scrollbar z-10">
-        <div className="w-full max-w-md bg-white/70 backdrop-blur-2xl border border-orange-100/60 rounded-[2rem] p-5 sm:p-6 md:p-8 shadow-[0_24px_50px_rgba(251,146,60,0.06)] hover:shadow-[0_32px_60px_rgba(251,146,60,0.12)] transition-all duration-300 animate-reveal-up pb-6 sm:pb-8">
+        <div className="w-full max-w-md bg-white/95 backdrop-blur-sm border border-orange-100/60 rounded-[2rem] p-5 sm:p-6 md:p-8 shadow-[0_24px_50px_rgba(251,146,60,0.06)] hover:shadow-[0_32px_60px_rgba(251,146,60,0.12)] transition-all duration-300 animate-reveal-up pb-6 sm:pb-8">
           
           {/* Rise & Shine Icon */}
           <div className="w-11 h-11 bg-gradient-to-tr from-amber-400 to-orange-500 rounded-2xl flex items-center justify-center mb-3 shadow-lg shadow-orange-500/10 text-white relative select-none">

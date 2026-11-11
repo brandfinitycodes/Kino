@@ -173,7 +173,7 @@ const Login = () => {
 
       {/* Left Column: Form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-4 sm:p-8 md:p-12 relative h-full z-10">
-        <div className="w-full max-w-md bg-white/70 backdrop-blur-2xl border border-orange-100/60 rounded-[2rem] p-8 sm:p-10 md:p-12 shadow-[0_24px_50px_rgba(251,146,60,0.06)] hover:shadow-[0_32px_60px_rgba(251,146,60,0.12)] transition-all duration-300 animate-reveal-up">
+        <div className="w-full max-w-md bg-white/95 backdrop-blur-sm border border-orange-100/60 rounded-[2rem] p-8 sm:p-10 md:p-12 shadow-[0_24px_50px_rgba(251,146,60,0.06)] hover:shadow-[0_32px_60px_rgba(251,146,60,0.12)] transition-all duration-300 animate-reveal-up">
           
           <div className="mb-6 sm:mb-8">
             <div className="w-14 h-14 bg-gradient-to-tr from-amber-400 to-orange-500 rounded-2xl flex items-center justify-center mb-5 shadow-lg shadow-orange-500/10 text-white relative">

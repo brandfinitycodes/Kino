@@ -504,18 +504,21 @@ const getUserDeals = async (req, res) => {
       .sort({ createdAt: -1 })
       .populate({
         path: 'applicationId',
+        select: 'campaignId creatorId status message',
         populate: [
-          { path: 'campaignId', populate: { path: 'brandId' } },
-          { path: 'creatorId', populate: { path: 'userId', select: 'name email profilePicture' } }
+          { path: 'campaignId', select: 'title budget requirements niche brandId' },
+          { path: 'creatorId', select: 'name profilePicture userId', populate: { path: 'userId', select: 'name email profilePicture' } }
         ]
       })
       .populate({
         path: 'creatorId',
+        select: 'name profilePicture userId packages niche',
         populate: { path: 'userId', select: 'name email profilePicture' }
       })
       .populate({
         path: 'brandId',
-        populate: { path: 'userId', select: 'name email profilePicture' }
+        select: 'businessName logo userId industry location',
+        populate: { path: 'userId', select: 'name email' }
       })
       .lean();
 

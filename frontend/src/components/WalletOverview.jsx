@@ -177,7 +177,7 @@ const WalletOverview = ({ profile, setProfile }) => {
         </motion.div>
 
         {/* All-Time Volume */}
-        <motion.div variants={itemVariants} className="md:col-span-1 lg:col-span-4 p-6 sm:p-10 rounded-[2rem] sm:rounded-[2.5rem_1rem_2.5rem_1rem] bg-[var(--bd-bg3)] backdrop-blur-xl border border-[var(--bd-border)] relative overflow-hidden flex flex-col justify-between group shadow-2xl hover:border-[var(--bd-purple)] transition-all duration-300">
+        <motion.div variants={itemVariants} className="md:col-span-1 lg:col-span-4 p-6 sm:p-10 rounded-[2rem] sm:rounded-[2.5rem_1rem_2.5rem_1rem] bg-[var(--bd-bg3)] border border-[var(--bd-border)] relative overflow-hidden flex flex-col justify-between group shadow-2xl hover:border-[var(--bd-purple)] transition-all duration-300">
           <div className="absolute -top-10 -right-10 w-40 h-40 bg-secondary/10 rounded-full blur-3xl group-hover:bg-secondary/20 transition-all duration-700" />
           <div className="relative z-10">
             <div className="flex items-center gap-3 mb-4 sm:mb-6">
@@ -198,7 +198,7 @@ const WalletOverview = ({ profile, setProfile }) => {
         </motion.div>
 
         {/* Funds-secured Card */}
-        <motion.div variants={itemVariants} className="md:col-span-1 lg:col-span-6 p-6 sm:p-10 rounded-[2rem] sm:rounded-[2.5rem_1rem_2.5rem_1rem] bg-[var(--bd-bg3)] backdrop-blur-xl border border-[var(--bd-border)] relative overflow-hidden flex flex-col justify-between group shadow-2xl hover:border-[var(--bd-yellow)] transition-all duration-300">
+        <motion.div variants={itemVariants} className="md:col-span-1 lg:col-span-6 p-6 sm:p-10 rounded-[2rem] sm:rounded-[2.5rem_1rem_2.5rem_1rem] bg-[var(--bd-bg3)] border border-[var(--bd-border)] relative overflow-hidden flex flex-col justify-between group shadow-2xl hover:border-[var(--bd-yellow)] transition-all duration-300">
           <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary/10 rounded-full blur-3xl group-hover:bg-primary/20 transition-all duration-700" />
           <div className="relative z-10">
             <div className="flex items-center justify-between mb-4 sm:mb-6">
@@ -222,7 +222,7 @@ const WalletOverview = ({ profile, setProfile }) => {
         </motion.div>
 
         {/* Pending Clearance Card */}
-        <motion.div variants={itemVariants} className="md:col-span-1 lg:col-span-6 p-6 sm:p-10 rounded-[2rem] sm:rounded-[2.5rem_1rem_2.5rem_1rem] bg-[var(--bd-bg3)] backdrop-blur-xl border border-[var(--bd-border)] relative overflow-hidden flex flex-col justify-between group shadow-2xl hover:border-emerald-500/50 transition-all duration-300">
+        <motion.div variants={itemVariants} className="md:col-span-1 lg:col-span-6 p-6 sm:p-10 rounded-[2rem] sm:rounded-[2.5rem_1rem_2.5rem_1rem] bg-[var(--bd-bg3)] border border-[var(--bd-border)] relative overflow-hidden flex flex-col justify-between group shadow-2xl hover:border-emerald-500/50 transition-all duration-300">
           <div className="absolute -top-10 -right-10 w-40 h-40 bg-emerald-500/10 rounded-full blur-3xl group-hover:bg-emerald-500/20 transition-all duration-700" />
           <div className="relative z-10">
             <div className="flex items-center justify-between mb-4 sm:mb-6">
@@ -247,7 +247,7 @@ const WalletOverview = ({ profile, setProfile }) => {
       </div>
 
       {/* Transactions Ledger */}
-      <motion.div variants={itemVariants} className="p-6 sm:p-8 rounded-[2rem] sm:rounded-[2.5rem_1rem_2.5rem_1rem] bg-[var(--bd-bg3)] backdrop-blur-xl border border-[var(--bd-border)] hover:border-[var(--bd-purple)] transition-all shadow-2xl overflow-hidden">
+      <motion.div variants={itemVariants} className="p-6 sm:p-8 rounded-[2rem] sm:rounded-[2.5rem_1rem_2.5rem_1rem] bg-[var(--bd-bg3)] border border-[var(--bd-border)] hover:border-[var(--bd-purple)] transition-all shadow-2xl overflow-hidden">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8 sm:mb-10">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-2xl bg-surface-container/20 backdrop-blur-md border border-outline-variant/10 flex items-center justify-center text-on-surface shadow-inner">
