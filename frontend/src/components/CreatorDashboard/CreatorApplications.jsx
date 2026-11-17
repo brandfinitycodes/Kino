@@ -28,20 +28,20 @@ export const calculateProfileCompletion = (profile) => {
   return score;
 };
 
-export 
-const getPlaceholderImage = (niche) => {
-  const map = {
-    'Tech': 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=400&q=80',
-    'Fashion': 'https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&w=400&q=80',
-    'Gaming': 'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=400&q=80',
-    'Lifestyle': 'https://images.unsplash.com/photo-1511988617509-a57c8a288659?auto=format&fit=crop&w=400&q=80',
-    'Food': 'https://images.unsplash.com/photo-1499028344343-cd173ffc68a9?auto=format&fit=crop&w=400&q=80',
-    'Travel': 'https://images.unsplash.com/photo-1488085061387-422e29b40080?auto=format&fit=crop&w=400&q=80',
-    'Beauty': 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=400&q=80',
-    'Other': 'https://images.unsplash.com/photo-1557683316-973673baf926?auto=format&fit=crop&w=400&q=80'
+export
+  const getPlaceholderImage = (niche) => {
+    const map = {
+      'Tech': 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=400&q=80',
+      'Fashion': 'https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&w=400&q=80',
+      'Gaming': 'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=400&q=80',
+      'Lifestyle': 'https://images.unsplash.com/photo-1511988617509-a57c8a288659?auto=format&fit=crop&w=400&q=80',
+      'Food': 'https://images.unsplash.com/photo-1499028344343-cd173ffc68a9?auto=format&fit=crop&w=400&q=80',
+      'Travel': 'https://images.unsplash.com/photo-1488085061387-422e29b40080?auto=format&fit=crop&w=400&q=80',
+      'Beauty': 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=400&q=80',
+      'Other': 'https://images.unsplash.com/photo-1557683316-973673baf926?auto=format&fit=crop&w=400&q=80'
+    };
+    return map[niche] || map['Other'];
   };
-  return map[niche] || map['Other'];
-};
 
 const ANIMATION_VARIANTS = {
   initial: { opacity: 0, y: 6 },
@@ -98,11 +98,11 @@ const CreatorApplications = ({ applications, deals, onConfirm, onNudge, onWithdr
 
   let filtered = [...applications];
   if (filterStatus !== 'All') {
-    const map = { 
-      'Pending': 'pending', 
-      'Shortlisted': 'shortlisted', 
-      'Accepted': 'accepted', 
-      'Rejected': 'rejected' 
+    const map = {
+      'Pending': 'pending',
+      'Shortlisted': 'shortlisted',
+      'Accepted': 'accepted',
+      'Rejected': 'rejected'
     };
     filtered = filtered.filter(a => a.status === map[filterStatus] || (filterStatus === 'Accepted' && a.status === 'confirmed_by_creator'));
   }
@@ -138,17 +138,16 @@ const CreatorApplications = ({ applications, deals, onConfirm, onNudge, onWithdr
           </div>
 
           <div className="absolute bottom-3 left-3 z-10">
-            <span className={`px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest backdrop-blur-md flex items-center gap-1.5 shadow-sm ${
-              app.status === 'accepted' ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white border border-emerald-400 shadow-md animate-pulse' :
+            <span className={`px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest backdrop-blur-md flex items-center gap-1.5 shadow-sm ${app.status === 'accepted' ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white border border-emerald-400 shadow-md animate-pulse' :
               app.status === 'confirmed_by_creator' ? 'bg-emerald-600 text-white border border-emerald-400' :
-              app.status === 'shortlisted' ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white border border-indigo-400 shadow-md animate-pulse' :
-              app.status === 'rejected' ? 'bg-[#eb4898] text-white border border-[#eb4898]' :
-              'bg-[#EA580C] text-white border border-[#EA580C]'
+                app.status === 'shortlisted' ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white border border-indigo-400 shadow-md animate-pulse' :
+                  app.status === 'rejected' ? 'bg-[#eb4898] text-white border border-[#eb4898]' :
+                    'bg-[#EA580C] text-white border border-[#EA580C]'
               }`}>
               {app.status === 'shortlisted' ? '⭐ Shortlisted' :
-               app.status === 'accepted' ? '🎉 Reassurance Needed' :
-               app.status === 'confirmed_by_creator' ? '✅ Reassurance Confirmed' :
-               app.status.replace(/_/g, ' ')}
+                app.status === 'accepted' ? '🎉 Reassurance Needed' :
+                  app.status === 'confirmed_by_creator' ? '✅ Reassurance Confirmed' :
+                    app.status.replace(/_/g, ' ')}
             </span>
           </div>
         </div>
@@ -161,7 +160,7 @@ const CreatorApplications = ({ applications, deals, onConfirm, onNudge, onWithdr
           <div className="flex items-center gap-2 mb-3">
             <span className="bg-gray-50 px-2 py-1 rounded-md text-[10px] font-bold text-gray-500 border border-gray-100">{new Date(app.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
             <div className="w-1 h-1 rounded-full bg-gray-300"></div>
-            <span className="text-[11px] font-bold text-gray-600 truncate flex items-center gap-1"><CheckCircle size={10} className="text-blue-500"/> {app.campaignId?.brandId?.businessName || 'Premium Brand'}</span>
+            <span className="text-[11px] font-bold text-gray-600 truncate flex items-center gap-1"><CheckCircle size={10} className="text-blue-500" /> {app.campaignId?.brandId?.businessName || 'Premium Brand'}</span>
           </div>
 
           {isShortlisted && (
@@ -210,7 +209,7 @@ const CreatorApplications = ({ applications, deals, onConfirm, onNudge, onWithdr
 
             {canEditOrWithdraw && (
               <div className="flex flex-col gap-2">
-                <button 
+                <button
                   onClick={() => {
                     setEditingApp(app);
                     setEditPitch(app.message || "");
@@ -267,42 +266,10 @@ const CreatorApplications = ({ applications, deals, onConfirm, onNudge, onWithdr
             <motion.h1 initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="text-4xl sm:text-5xl lg:text-6xl font-display font-black leading-[1.1] tracking-tight mb-4 text-gray-900">
               Pipeline <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">Manager</span>
             </motion.h1>
-            <motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="text-lg text-gray-600 font-medium leading-relaxed max-w-lg mx-auto md:mx-0">
+            <motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="text-lg text-gray-600 hidden md:block font-medium leading-relaxed max-w-lg mx-auto md:mx-0">
               Track your sent proposals, nudge brands, and kickstart your next big collaborations.
             </motion.p>
           </div>
-        </div>
-      </div>
-
-      {/* Colorful Success Metrics Banner */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
-        <div className="bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-100/50 rounded-[24px] p-6 flex items-center justify-between shadow-[0_10px_30px_rgba(59,130,246,0.05)] hover:-translate-y-1 transition-transform">
-          <div>
-            <p className="text-[11px] font-black text-blue-800/60 uppercase tracking-widest mb-1">Active Proposals</p>
-            <h4 className="text-3xl font-black text-gray-900">{pendingApps.length}</h4>
-          </div>
-          <div className="w-14 h-14 rounded-[16px] bg-white flex items-center justify-center text-blue-500 shadow-sm border border-blue-50"><Folder size={24} /></div>
-        </div>
-        <div className="bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-100/50 rounded-[24px] p-6 flex items-center justify-between shadow-[0_10px_30px_rgba(99,102,241,0.05)] hover:-translate-y-1 transition-transform">
-          <div>
-            <p className="text-[11px] font-black text-indigo-800/60 uppercase tracking-widest mb-1">Shortlisted</p>
-            <h4 className="text-3xl font-black text-indigo-900">{shortlistedApps.length}</h4>
-          </div>
-          <div className="w-14 h-14 rounded-[16px] bg-white flex items-center justify-center text-indigo-500 shadow-sm border border-indigo-50"><Star size={24} className="fill-indigo-500" /></div>
-        </div>
-        <div className="bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-100/50 rounded-[24px] p-6 flex items-center justify-between shadow-[0_10px_30px_rgba(16,185,129,0.05)] hover:-translate-y-1 transition-transform">
-          <div>
-            <p className="text-[11px] font-black text-emerald-800/60 uppercase tracking-widest mb-1">Win Rate</p>
-            <h4 className="text-3xl font-black text-gray-900">{winRate}%</h4>
-          </div>
-          <div className="w-14 h-14 rounded-[16px] bg-white flex items-center justify-center text-emerald-500 shadow-sm border border-emerald-50"><CheckCircle size={24} /></div>
-        </div>
-        <div className="bg-gradient-to-br from-purple-50 to-fuchsia-50 border border-purple-100/50 rounded-[24px] p-6 flex items-center justify-between shadow-[0_10px_30px_rgba(168,85,247,0.05)] hover:-translate-y-1 transition-transform">
-          <div>
-            <p className="text-[11px] font-black text-purple-800/60 uppercase tracking-widest mb-1">Pipeline Value</p>
-            <h4 className="text-3xl font-black text-gray-900">🪙{pipelineValue.toLocaleString()}</h4>
-          </div>
-          <div className="w-14 h-14 rounded-[16px] bg-white flex items-center justify-center text-purple-500 shadow-sm border border-purple-50"><TrendingUp size={24} /></div>
         </div>
       </div>
 
@@ -346,7 +313,7 @@ const CreatorApplications = ({ applications, deals, onConfirm, onNudge, onWithdr
       {/* EDIT PROPOSAL MODAL */}
       {editingApp && typeof document !== 'undefined' && createPortal(
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[99999] flex items-center justify-center p-4">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             className="bg-white rounded-[28px] border border-gray-200 p-6 sm:p-8 max-w-lg w-full relative shadow-2xl text-left"
@@ -361,7 +328,7 @@ const CreatorApplications = ({ applications, deals, onConfirm, onNudge, onWithdr
                   <p className="text-xs text-gray-500 font-medium">Refine your message for "{editingApp.campaignId?.title}"</p>
                 </div>
               </div>
-              <button 
+              <button
                 onClick={() => setEditingApp(null)}
                 className="p-2 text-gray-400 hover:text-gray-600 rounded-xl hover:bg-gray-100 transition-colors cursor-pointer"
               >
@@ -382,13 +349,13 @@ const CreatorApplications = ({ applications, deals, onConfirm, onNudge, onWithdr
             </div>
 
             <div className="flex gap-3">
-              <button 
+              <button
                 onClick={() => setEditingApp(null)}
                 className="flex-1 py-3 rounded-xl font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors text-xs uppercase tracking-widest cursor-pointer"
               >
                 Cancel
               </button>
-              <button 
+              <button
                 disabled={isSavingProposal || !editPitch.trim()}
                 onClick={handleSaveProposal}
                 className="flex-1 py-3 rounded-xl font-black text-white bg-gradient-to-r from-[#EA580C] to-orange-500 hover:from-orange-600 hover:to-orange-500 transition-all text-xs uppercase tracking-widest disabled:opacity-50 flex items-center justify-center gap-1.5 cursor-pointer shadow-lg shadow-orange-500/20"

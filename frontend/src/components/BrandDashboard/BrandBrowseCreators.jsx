@@ -4,15 +4,15 @@ import { Search, Filter, Star, Link as LinkIcon, Heart } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const BrandBrowseCreators = (props) => {
-  const { 
-    allCreators = [], 
-    profile, 
-    browseFilter, 
-    setBrowseFilter, 
-    browseSearch, 
-    setBrowseSearch 
+  const {
+    allCreators = [],
+    profile,
+    browseFilter,
+    setBrowseFilter,
+    browseSearch,
+    setBrowseSearch
   } = props;
-  
+
   const [browseSort, setBrowseSort] = useState('Highest Match Score');
 
   return (
@@ -33,7 +33,7 @@ const BrandBrowseCreators = (props) => {
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-xs font-bold text-gray-400 mr-2 uppercase tracking-widest">Filters:</span>
-              {['All', 'Tech', 'VFX', 'Lifestyle', 'Video Editing'].map(tag => (
+              {['All', 'Tech', 'Fashion', 'Lifestyle', 'Video Editing', 'Travel', 'Fitness', 'Food', 'Beauty'].map(tag => (
                 <button key={tag} onClick={() => setBrowseFilter(tag)} className={`px-4 py-1.5 rounded-full text-[11px] font-bold transition-all border ${browseFilter === tag ? 'bg-[#EA580C] text-white border-gray-900 shadow-[0_0_15px_rgba(234,88,12,0.3)]' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400 hover:bg-gray-50'}`}>
                   {tag}
                 </button>
@@ -50,7 +50,7 @@ const BrandBrowseCreators = (props) => {
         </div>
 
         {/* Top Picks Carousel */}
-        <div className="mb-10 relative">
+        {/* <div className="mb-10 relative">
           <div className="flex items-center gap-2 mb-4">
             <Star className="text-amber-400 fill-amber-400" size={16} />
             <h3 className="text-[13px] font-black text-gray-900 uppercase tracking-widest">Top Creators for Your Brand</h3>
@@ -64,7 +64,7 @@ const BrandBrowseCreators = (props) => {
                   let match = 70;
                   if (c.niche === profile?.industry) match += 20;
                   if (c.niche === profile?.preferences?.targetLocality) match += 5;
-                  return { ...c, matchScore: Math.min(99, match + (Math.random() * 5 | 0)) };
+                  return { ...c, matchScore: Math.min(99, match + (Math.random() * 1 | 0)) };
                 })
                 .sort((a, b) => b.matchScore - a.matchScore)
                 .slice(0, 5)
@@ -87,7 +87,7 @@ const BrandBrowseCreators = (props) => {
                 ))
             )}
           </div>
-        </div>
+        </div> */}
 
         {/* Creator Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-24 md:pb-0">
@@ -105,7 +105,7 @@ const BrandBrowseCreators = (props) => {
               const nameMatch = c.name ? String(c.name).toLowerCase().includes(search) : false;
               const bioMatch = c.bio ? String(c.bio).toLowerCase().includes(search) : false;
               const matchSearch = search === '' ? true : (nameMatch || bioMatch);
-              
+
               const matchFilter = browseFilter === 'All' || c.niche === browseFilter || (c.expertise && c.expertise.includes(browseFilter));
               return matchSearch && matchFilter;
             }).sort((a, b) => {
@@ -126,15 +126,15 @@ const BrandBrowseCreators = (props) => {
               const manualFollowers = Number(creator.followerCount) || 0;
               const activeFollowers = hasInstagram ? igFollowers : manualFollowers;
               const followersFormatted = activeFollowers > 0 ? `${(activeFollowers / 1000).toFixed(1)}k` : '0k';
-              
+
               return (
                 <div key={creator._id} className="bg-white rounded-[32px] overflow-hidden flex flex-col shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 group hover:-translate-y-1 hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] transition-all duration-300 relative">
                   {/* Cover Image with Gradient */}
                   <div className="w-full aspect-[21/9] relative bg-gray-200 overflow-hidden">
-                    <img 
-                      src={creator.instagramProfile?.profilePicture || creator.profilePicture || `https://api.dicebear.com/7.x/avataaars/svg?seed=${creator.name}&backgroundColor=f0f0f0`} 
-                      alt="Avatar" 
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
+                    <img
+                      src={creator.instagramProfile?.profilePicture || creator.profilePicture || `https://api.dicebear.com/7.x/avataaars/svg?seed=${creator.name}&backgroundColor=f0f0f0`}
+                      alt="Avatar"
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                     />
                     <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60 opacity-60"></div>
                   </div>
@@ -144,10 +144,10 @@ const BrandBrowseCreators = (props) => {
                     {/* Avatar & Stats */}
                     <div className="flex items-end justify-between mb-6">
                       <div className="w-[84px] h-[84px] rounded-[24px] border-4 border-white overflow-hidden bg-gray-100 -mt-12 relative z-20 shrink-0 shadow-lg">
-                        <img 
-                          src={creator.profilePicture || `https://api.dicebear.com/7.x/avataaars/svg?seed=${creator.name}&backgroundColor=f0f0f0`} 
-                          alt={creator.name} 
-                          className="w-full h-full object-cover" 
+                        <img
+                          src={creator.profilePicture || `https://api.dicebear.com/7.x/avataaars/svg?seed=${creator.name}&backgroundColor=f0f0f0`}
+                          alt={creator.name}
+                          className="w-full h-full object-cover"
                         />
                       </div>
 

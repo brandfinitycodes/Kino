@@ -6,7 +6,7 @@ import 'odometer/themes/odometer-theme-default.css';
 import BuyCoinsModal from './BuyCoinsModal';
 
 const BrandWallet = (props) => {
-  const { 
+  const {
     profile, setProfile, user, deals, campaigns, allCreators, activeTab, setActiveTab, showToast,
     chartTab, setChartTab, chartData, maxEarnings, hoveredBar, setHoveredBar, currentMonth, now,
     totalBudgetSpent, milestoneCoins, activeDeals, deliverableCounts, totalDealsChart,
@@ -33,9 +33,9 @@ const BrandWallet = (props) => {
                 <h3 className="text-white/80 font-black text-[11px] uppercase tracking-[0.2em] flex items-center gap-2">
                   <Wallet size={14} /> Available Balance
                 </h3>
-                <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-white backdrop-blur-sm cursor-pointer hover:bg-white/30 transition-colors">
+                {/* <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-white backdrop-blur-sm cursor-pointer hover:bg-white/30 transition-colors">
                   <Info size={12} />
-                </div>
+                </div> */}
               </div>
               <div>
                 <h1 className="text-4xl sm:text-5xl font-display font-black text-white tracking-tight drop-shadow-md">{(wallet?.balance || 0).toLocaleString()} 🪙</h1>
@@ -45,9 +45,9 @@ const BrandWallet = (props) => {
                 <button onClick={() => setShowBuyCoins(true)} className="flex-1 bg-white text-[#EA580C] font-black uppercase text-[12px] tracking-widest py-3.5 rounded-[12px] hover:bg-gray-50 transition-colors shadow-lg">
                   Add Funds
                 </button>
-                <button className="w-12 h-12 flex items-center justify-center bg-white/10 border border-white/20 text-white rounded-[12px] hover:bg-white/20 transition-colors backdrop-blur-md">
+                {/* <button className="w-12 h-12 flex items-center justify-center bg-white/10 border border-white/20 text-white rounded-[12px] hover:bg-white/20 transition-colors backdrop-blur-md">
                   <ExternalLink size={16} />
-                </button>
+                </button> */}
               </div>
             </div>
           </div>
@@ -97,20 +97,20 @@ const BrandWallet = (props) => {
                 d.setMonth(d.getMonth() - i);
                 months.push(d);
               }
-              
+
               return months.map((monthDate, i) => {
                 const monthIdx = monthDate.getMonth();
                 const yearIdx = monthDate.getFullYear();
-                
+
                 const monthTxs = transactions.filter(t => {
                   const tDate = new Date(t.createdAt);
                   return tDate.getMonth() === monthIdx && tDate.getFullYear() === yearIdx;
                 });
-                
+
                 const spend = monthTxs.filter(t => t.type === 'debit' || t.type === 'coin_withdrawal').reduce((acc, t) => acc + Math.abs(t.amount), 0);
                 const deposit = monthTxs.filter(t => t.type === 'credit' || t.type === 'coin_purchase').reduce((acc, t) => acc + Math.abs(t.amount), 0);
                 const maxVal = Math.max(spend, deposit, 1000); // 1000 minimum scale
-                
+
                 const spendHeight = (spend / maxVal) * 100;
                 const depositHeight = (deposit / maxVal) * 100;
 
@@ -172,9 +172,9 @@ const BrandWallet = (props) => {
         </div>
       </div>
 
-      <BuyCoinsModal 
-        isOpen={showBuyCoins} 
-        onClose={() => setShowBuyCoins(false)} 
+      <BuyCoinsModal
+        isOpen={showBuyCoins}
+        onClose={() => setShowBuyCoins(false)}
         onSuccess={(coins, newBalance) => {
           showToast(`Successfully purchased ${coins} Coins!`, 'success');
           if (wallet) {

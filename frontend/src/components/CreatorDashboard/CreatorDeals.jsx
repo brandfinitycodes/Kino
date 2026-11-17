@@ -123,7 +123,7 @@ const CreatorDeals = ({ deals, user, onUpdateDeal }) => {
       <div className="mb-8 relative rounded-[32px] overflow-hidden bg-white border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
         <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-orange-100/60 to-rose-100/60 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-blue-100/60 to-indigo-100/60 rounded-full blur-3xl translate-y-1/2 -translate-x-1/4 pointer-events-none" />
-        
+
         <div className="relative z-10 p-8 sm:p-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-orange-50 border border-orange-100 mb-4">
@@ -136,11 +136,11 @@ const CreatorDeals = ({ deals, user, onUpdateDeal }) => {
             <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight mb-3">
               Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-rose-500">Brand Deals</span>
             </h1>
-            <p className="text-gray-500 font-medium max-w-md">
+            <p className="text-gray-500 font-medium hidden md:block max-w-md">
               Manage your ongoing brand partnerships, track deliverables, and submit your work all in one place.
             </p>
           </div>
-          
+
           <div className="flex gap-4 self-stretch md:self-auto w-full md:w-auto">
             <div className="bg-white rounded-3xl p-6 border border-gray-100 flex-1 md:w-44 flex flex-col items-start shadow-sm relative overflow-hidden group/card hover:shadow-md transition-all duration-300">
               <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center text-[#9A3412] mb-4 border border-orange-100">
@@ -174,12 +174,12 @@ const CreatorDeals = ({ deals, user, onUpdateDeal }) => {
             <Calendar size={16} /> Calendar
           </button>
         </div>
-        
+
         <div className="flex items-center gap-2 w-full lg:w-auto overflow-x-auto hide-scrollbar px-2 py-1">
           {filters.map(f => (
-            <button 
-              key={f.id} 
-              onClick={() => setActiveFilter(f.id)} 
+            <button
+              key={f.id}
+              onClick={() => setActiveFilter(f.id)}
               className={`px-5 py-2.5 rounded-full text-[12px] font-bold transition-all duration-300 whitespace-nowrap border ${activeFilter === f.id ? 'bg-[#7c2d12] text-white border-transparent shadow-md hover:scale-105' : 'bg-white border-gray-200 text-gray-650 hover:text-gray-900 hover:bg-gray-50'}`}
             >
               {f.label}
@@ -192,7 +192,7 @@ const CreatorDeals = ({ deals, user, onUpdateDeal }) => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full mx-auto pb-8 min-h-[500px]">
           {filteredDeals.length > 0 ? filteredDeals.map((deal) => {
             const actionReq = deal.status === 'in_progress' || deal.status === 'revision_requested';
-            
+
             const campBrand = deal.brandId || deal.applicationId?.campaignId?.brandId;
             const brandName = campBrand?.businessName || campBrand?.userId?.name || deal.brandName || 'Brand Partner';
             const brandLogo = campBrand?.logo || campBrand?.userId?.profilePicture;
@@ -213,10 +213,10 @@ const CreatorDeals = ({ deals, user, onUpdateDeal }) => {
               >
                 {/* Cover Image Header */}
                 <div className="relative h-48 w-full rounded-[24px] overflow-hidden bg-gray-100 mb-4 shrink-0">
-                  <img 
-                    src={deal.applicationId?.campaignId?.coverImage || getPlaceholderImage(deal.applicationId?.campaignId?.niche || 'Other')} 
-                    alt={deal.applicationId?.campaignId?.title} 
-                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
+                  <img
+                    src={deal.applicationId?.campaignId?.coverImage || getPlaceholderImage(deal.applicationId?.campaignId?.niche || 'Other')}
+                    alt={deal.applicationId?.campaignId?.title}
+                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                   />
                   {/* Brand Pill */}
                   <div className="absolute top-3 left-3 h-8 px-2.5 rounded-full bg-white/95 backdrop-blur-md border border-white/60 flex items-center gap-1.5 shadow-md overflow-hidden z-10">
@@ -273,10 +273,10 @@ const CreatorDeals = ({ deals, user, onUpdateDeal }) => {
                     const reqUrl = deal.brandAssetsUrl || deal.requirementsUrl || deal.applicationId?.campaignId?.requirementsLink;
                     if (!reqUrl) return null;
                     return (
-                      <a 
-                        href={reqUrl} 
-                        target="_blank" 
-                        rel="noopener noreferrer" 
+                      <a
+                        href={reqUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
                         onClick={(e) => e.stopPropagation()}
                         className="mb-3 px-3.5 py-2.5 rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 text-amber-900 text-[11px] font-black uppercase tracking-wider flex items-center justify-between hover:bg-amber-100 transition-colors shadow-sm cursor-pointer"
                       >
@@ -298,27 +298,26 @@ const CreatorDeals = ({ deals, user, onUpdateDeal }) => {
                         e.stopPropagation();
                         setSelectedDeal(deal);
                       }}
-                      className={`flex-1 py-3.5 text-white text-[11px] font-black uppercase tracking-[0.15em] rounded-2xl hover:scale-[1.02] transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer ${
-                        actionReq
+                      className={`flex-1 py-3.5 text-white text-[11px] font-black uppercase tracking-[0.15em] rounded-2xl hover:scale-[1.02] transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer ${actionReq
                           ? 'bg-[#7c2d12] hover:bg-[#9a3412]'
                           : deal.status === 'pending_payment'
-                          ? 'bg-amber-500 hover:bg-amber-600'
-                          : deal.status === 'in_review'
-                          ? 'bg-blue-600 hover:bg-blue-700'
-                          : deal.status === 'completed'
-                          ? 'bg-emerald-600 hover:bg-emerald-700'
-                          : 'bg-gray-700 hover:bg-gray-800'
-                      }`}
+                            ? 'bg-amber-500 hover:bg-amber-600'
+                            : deal.status === 'in_review'
+                              ? 'bg-blue-600 hover:bg-blue-700'
+                              : deal.status === 'completed'
+                                ? 'bg-emerald-600 hover:bg-emerald-700'
+                                : 'bg-gray-700 hover:bg-gray-800'
+                        }`}
                     >
                       {actionReq
                         ? <><Edit3 size={14} /> Submit Deliverable</>
                         : deal.status === 'pending_payment'
-                        ? <><Clock size={14} /> Awaiting Brand Payment</>
-                        : deal.status === 'in_review'
-                        ? <><Clock size={14} /> In Review</>
-                        : deal.status === 'completed'
-                        ? <><CheckCircle size={14} /> View Deal</>
-                        : <><Briefcase size={14} /> Manage Deal</>}
+                          ? <><Clock size={14} /> Awaiting Brand Payment</>
+                          : deal.status === 'in_review'
+                            ? <><Clock size={14} /> In Review</>
+                            : deal.status === 'completed'
+                              ? <><CheckCircle size={14} /> View Deal</>
+                              : <><Briefcase size={14} /> Manage Deal</>}
                     </button>
                     <button
                       onClick={(e) => {
@@ -353,15 +352,15 @@ const CreatorDeals = ({ deals, user, onUpdateDeal }) => {
             <div className="flex items-center gap-6">
               <div className="flex gap-2">
                 <button className="w-10 h-10 flex items-center justify-center rounded-xl bg-white border border-gray-100 hover:border-gray-300 hover:shadow-md text-gray-500 transition-all hover:text-gray-900 hover:-translate-x-0.5">
-                   <ChevronDown size={18} className="rotate-90"/>
+                  <ChevronDown size={18} className="rotate-90" />
                 </button>
                 <button className="w-10 h-10 flex items-center justify-center rounded-xl bg-white border border-gray-100 hover:border-gray-300 hover:shadow-md text-gray-500 transition-all hover:text-gray-900 hover:translate-x-0.5">
-                   <ChevronDown size={18} className="-rotate-90"/>
+                  <ChevronDown size={18} className="-rotate-90" />
                 </button>
               </div>
               <h2 className="text-4xl font-black text-gray-900 tracking-tight">June <span className="text-gray-300">2026</span></h2>
             </div>
-            
+
             <div className="flex flex-wrap gap-3">
               <span className="px-4 py-2 rounded-xl bg-emerald-50/80 backdrop-blur-md text-emerald-700 text-[12px] font-black uppercase tracking-widest border border-emerald-100 shadow-sm flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.8)]" /> {deals.filter(d => d.status === 'completed').length} Completed
@@ -380,7 +379,7 @@ const CreatorDeals = ({ deals, user, onUpdateDeal }) => {
             {['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].map(day => (
               <div key={day} className="text-center font-black text-gray-400 text-[10px] sm:text-[12px] uppercase tracking-[0.2em] pb-2 border-b border-gray-100 mb-2">{day.slice(0, 3)}</div>
             ))}
-            
+
             <div className="min-h-[120px] sm:min-h-[140px] rounded-[24px] bg-white/20 border border-white/40 p-3 hidden sm:block backdrop-blur-sm"></div>
 
             {Array.from({ length: 30 }).map((_, i) => {
@@ -393,7 +392,7 @@ const CreatorDeals = ({ deals, user, onUpdateDeal }) => {
 
               return (
                 <div key={i} className={`min-h-[100px] sm:min-h-[140px] rounded-[24px] p-3 sm:p-4 relative group transition-all duration-300 flex flex-col gap-2 ${isToday ? 'bg-gradient-to-br from-orange-50 to-rose-50 border-2 border-orange-200 shadow-[0_10px_30px_rgba(249,115,22,0.15)] scale-[1.02] z-10' : 'border border-gray-100/50 hover:border-gray-300 hover:shadow-[0_10px_30px_rgba(0,0,0,0.05)] bg-white/60 backdrop-blur-md hover:-translate-y-1'}`}>
-                  
+
                   <div className="flex justify-between items-center mb-1">
                     <span className={`text-[14px] sm:text-[16px] font-black ${isToday ? 'text-white bg-gradient-to-r from-orange-500 to-rose-500 w-8 h-8 rounded-full flex items-center justify-center shadow-md' : 'text-gray-400 group-hover:text-gray-900'} transition-colors`}>
                       {dayNum}

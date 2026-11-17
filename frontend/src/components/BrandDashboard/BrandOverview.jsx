@@ -5,7 +5,7 @@ import Odometer from 'react-odometerjs';
 import 'odometer/themes/odometer-theme-default.css';
 
 const BrandOverview = (props) => {
-  const { 
+  const {
     profile, setProfile, user, deals = [], campaigns = [], allCreators = [], activeTab, setActiveTab, showToast,
     chartTab, setChartTab, chartData = [], maxEarnings = 1, hoveredBar, setHoveredBar, currentMonth, now = new Date(),
     totalBudgetSpent = 0, milestoneCoins = 0, activeDeals = [], deliverableCounts = { approved: 0, revisions: 0, drafts: 0, review: 0, total: 1 }, totalDealsChart = 1,
@@ -54,16 +54,12 @@ const BrandOverview = (props) => {
           </div>
           <div className="flex items-center justify-between w-full sm:w-auto gap-3">
             <div className="flex gap-2">
-              <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-full text-[11px] font-bold shadow-sm hover:bg-gray-50 transition-all">
-                <span className="w-3 h-3 rounded-full border border-gray-400 flex items-center justify-center text-[6px] text-gray-600">Y</span>
-                Filters
-              </button>
               <button onClick={() => setActiveTab('create')} className="flex items-center gap-2 px-4 py-2 bg-[#EA580C] text-white rounded-full text-[11px] font-bold shadow-lg shadow-[#EA580C]/20 hover:scale-105 transition-transform">
                 <Plus size={14} /> Add New
               </button>
             </div>
             <div className="text-[10px] font-medium text-gray-400 text-right leading-tight">
-              {currentMonth}<br/>{now.getFullYear()}
+              {currentMonth}<br />{now.getFullYear()}
             </div>
           </div>
         </div>
@@ -155,7 +151,7 @@ const BrandOverview = (props) => {
                 </div>
 
                 <svg className="absolute inset-0 w-full h-full pointer-events-none" preserveAspectRatio="none" viewBox="0 0 100 100">
-                  <path 
+                  <path
                     d={`M5,100 ${chartData.map((d, i) => {
                       const x = 5 + (i / Math.max(1, chartData.length - 1)) * 90;
                       const y = 100 - (((d.earnings || 0) / maxEarnings) * 100);
@@ -164,7 +160,7 @@ const BrandOverview = (props) => {
                     fill="url(#gradientEarnings)"
                     className="transition-all duration-1000 ease-in-out opacity-40 group-hover/chart:opacity-60"
                   />
-                  <path 
+                  <path
                     d={`M ${chartData.map((d, i) => {
                       const x = 5 + (i / Math.max(1, chartData.length - 1)) * 90;
                       const y = 100 - (((d.earnings || 0) / maxEarnings) * 100);
@@ -188,8 +184,8 @@ const BrandOverview = (props) => {
                   const isHovered = hoveredBar === i;
                   const xPos = 5 + (i / Math.max(1, chartData.length - 1)) * 90;
                   return (
-                    <div 
-                      key={i} 
+                    <div
+                      key={i}
                       className="absolute bottom-0 flex flex-col justify-end items-center h-full cursor-pointer z-10"
                       style={{ left: `calc(${xPos}% - 30px)`, width: '60px' }}
                       onMouseEnter={() => setHoveredBar && setHoveredBar(i)}
@@ -197,7 +193,7 @@ const BrandOverview = (props) => {
                     >
                       <div className="w-full h-full relative group/bar flex justify-center">
                         <div className={`absolute bottom-0 w-8 bg-orange-50/50 transition-all duration-300 rounded-t-xl ${isHovered ? 'h-full opacity-100' : 'h-0 opacity-0'}`}></div>
-                        <div 
+                        <div
                           className={`absolute left-1/2 -translate-x-1/2 w-3 h-3 bg-white border-2 border-[#EA580C] rounded-full transition-all duration-300 shadow-[0_0_10px_rgba(234,88,12,0.5)] ${isHovered ? 'opacity-100 scale-125' : 'opacity-0 scale-50'}`}
                           style={{ bottom: `calc(${heightPct}% - 6px)` }}
                         ></div>
@@ -205,10 +201,10 @@ const BrandOverview = (props) => {
                       <span className={`text-[9px] font-black uppercase mt-3 tracking-widest transition-colors ${isHovered ? 'text-[#EA580C]' : 'text-gray-400'}`}>
                         {d.name}
                       </span>
-                      
+
                       <AnimatePresence>
                         {isHovered && (
-                          <motion.div 
+                          <motion.div
                             initial={{ opacity: 0, y: 10, scale: 0.9 }}
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.9 }}
@@ -229,7 +225,7 @@ const BrandOverview = (props) => {
             {/* Donut Chart Block */}
             <div className="col-span-1 bg-white rounded-[32px] p-6 flex flex-col items-center justify-center relative overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 group lg:w-[360px]">
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-[#EA580C]/5 rounded-full blur-3xl opacity-50 group-hover:opacity-100 transition-opacity pointer-events-none z-0"></div>
-              
+
               <div className="w-full flex justify-between items-center mb-8 relative z-10">
                 <h3 className="text-gray-400 font-black text-xs uppercase tracking-[0.2em]">Campaign Stats</h3>
                 <span className="flex items-center gap-1 bg-blue-50 text-blue-500 px-2 py-0.5 rounded-full text-[10px] font-black tracking-widest">
@@ -275,7 +271,7 @@ const BrandOverview = (props) => {
                   <h3 className="font-black text-gray-900 text-lg tracking-tight">Target Demographics</h3>
                   <p className="text-xs font-medium text-gray-400 mt-1">Aggregated data across all active campaigns</p>
                 </div>
-                <button className="text-[10px] font-bold text-blue-500 bg-blue-50 px-3 py-1.5 rounded-full hover:bg-[#EA580C] hover:text-white transition-colors uppercase tracking-widest">Connect API</button>
+                {/* <button className="text-[10px] font-bold text-blue-500 bg-blue-50 px-3 py-1.5 rounded-full hover:bg-[#EA580C] hover:text-white transition-colors uppercase tracking-widest">Connect API</button> */}
               </div>
 
               <div className="flex flex-col sm:flex-row gap-8 items-center justify-between h-full relative z-10">
@@ -335,7 +331,7 @@ const BrandOverview = (props) => {
               <div className="absolute top-0 right-0 w-32 h-32 bg-[#EA580C]/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none group-hover:bg-[#EA580C]/10 transition-colors"></div>
               <div className="flex justify-between items-center mb-8 relative z-10">
                 <h3 className="text-gray-900 font-black text-lg tracking-tight">Activity Feed</h3>
-                <button className="text-[10px] font-bold text-blue-500 uppercase tracking-widest hover:underline">View All</button>
+                {/* <button className="text-[10px] font-bold text-blue-500 uppercase tracking-widest hover:underline">View All</button> */}
               </div>
               <div className="flex flex-col gap-6 relative z-10">
                 <div className="absolute left-[15px] top-4 bottom-4 w-px bg-gray-100 z-0"></div>

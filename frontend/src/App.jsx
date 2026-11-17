@@ -59,7 +59,7 @@ const ProtectedRoute = ({ children, role }) => {
 
   if (loading) return <PageLoader />;
   if (!user) return <Navigate to="/login" />;
-  
+
   if (role) {
     if (role === 'admin') {
       const adminRoles = ['superadmin', 'admin', 'moderator', 'support'];
@@ -109,7 +109,7 @@ const App = () => {
   // Wake up Render free tier backend on initial load
   React.useEffect(() => {
     fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/health`)
-      .catch(() => {}); // Fire and forget
+      .catch(() => { }); // Fire and forget
   }, []);
 
   const [showSplash, setShowSplash] = React.useState(() => {
@@ -125,130 +125,127 @@ const App = () => {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <ThemeProvider>
-        <SocketProvider>
-          <Router>
-            <AnimatePresence>
-              {showSplash && <KinoWelcome onComplete={handleSplashComplete} />}
-            </AnimatePresence>
-            {!showSplash && (
-              <>
-                <ScrollToTop />
-                <div className="min-h-screen flex flex-col">
-                  <Navbar />
-              <main className="grow relative">
-                <Suspense fallback={<PageLoader />}>
-                  <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/oldhome" element={<OldHome />} />
-                    <Route path="/newhome" element={<NewHome />} />
-                    <Route path="/newhomestatic" element={<NewHomeStatic />} />
-                    <Route
-                      path="/login"
-                      element={
-                        <GuestRoute>
-                          <Login />
-                        </GuestRoute>
-                      }
-                    />
-                    <Route
-                      path="/register"
-                      element={
-                        <GuestRoute>
-                          <Register />
-                        </GuestRoute>
-                      }
-                    />
+          <SocketProvider>
+            <Router>
+              <AnimatePresence>
+                {showSplash && <KinoWelcome onComplete={handleSplashComplete} />}
+              </AnimatePresence>
+              {!showSplash && (
+                <>
+                  <ScrollToTop />
+                  <div className="min-h-screen flex flex-col">
+                    <Navbar />
+                    <main className="grow relative">
+                      <Suspense fallback={<PageLoader />}>
+                        <Routes>
+                          <Route path="/" element={<NewHome />} />
+                          <Route
+                            path="/login"
+                            element={
+                              <GuestRoute>
+                                <Login />
+                              </GuestRoute>
+                            }
+                          />
+                          <Route
+                            path="/register"
+                            element={
+                              <GuestRoute>
+                                <Register />
+                              </GuestRoute>
+                            }
+                          />
 
-                    <Route path="/campaigns" element={<CampaignListing />} />
-                    <Route path="/campaigns/:id" element={<CampaignDetail />} />
-                    <Route path="/creators" element={<CreatorListing />} />
-                    <Route path="/creators/:id" element={<CreatorProfile />} />
-                    <Route path="/brands" element={<BrandListing />} />
-                    <Route path="/brands/:id" element={<BrandProfile />} />
+                          <Route path="/campaigns" element={<CampaignListing />} />
+                          <Route path="/campaigns/:id" element={<CampaignDetail />} />
+                          <Route path="/creators" element={<CreatorListing />} />
+                          <Route path="/creators/:id" element={<CreatorProfile />} />
+                          <Route path="/brands" element={<BrandListing />} />
+                          <Route path="/brands/:id" element={<BrandProfile />} />
 
-                    <Route
-                      path="/notifications"
-                      element={
-                        <ProtectedRoute>
-                          <Notifications />
-                        </ProtectedRoute>
-                      }
-                    />
+                          <Route
+                            path="/notifications"
+                            element={
+                              <ProtectedRoute>
+                                <Notifications />
+                              </ProtectedRoute>
+                            }
+                          />
 
-                    <Route
-                      path="/creator-dashboard"
-                      element={
-                        <ProtectedRoute role="creator">
-                          <CreatorDashboard />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/brand-dashboard"
-                      element={
-                        <ProtectedRoute role="brand">
-                          <BrandDashboard />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/admin-dashboard"
-                      element={
-                        <ProtectedRoute role="admin">
-                          <AdminDashboard />
-                        </ProtectedRoute>
-                      }
-                    />
+                          <Route
+                            path="/creator-dashboard"
+                            element={
+                              <ProtectedRoute role="creator">
+                                <CreatorDashboard />
+                              </ProtectedRoute>
+                            }
+                          />
+                          <Route
+                            path="/brand-dashboard"
+                            element={
+                              <ProtectedRoute role="brand">
+                                <BrandDashboard />
+                              </ProtectedRoute>
+                            }
+                          />
+                          <Route
+                            path="/admin-dashboard"
+                            element={
+                              <ProtectedRoute role="admin">
+                                <AdminDashboard />
+                              </ProtectedRoute>
+                            }
+                          />
 
-                    <Route
-                      path="/aadhaar-verification"
-                      element={
-                        <ProtectedRoute>
-                          <AadhaarVerification />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/kyc-onboarding"
-                      element={
-                        <ProtectedRoute>
-                          <AadhaarVerification />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/kyc-verification"
-                      element={
-                        <ProtectedRoute>
-                          <AadhaarVerification />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/kyc"
-                      element={
-                        <ProtectedRoute>
-                          <AadhaarVerification />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route path="/instagram-oauth" element={<InstagramOauth />} />
-                    <Route path="/terms" element={<Terms />} />
-                    <Route path="/privacy" element={<PrivacyPolicy />} />
-                    <Route path="/refund-policy" element={<RefundPolicy />} />
-                    <Route path="/creator-guidelines" element={<CreatorGuidelines />} />
-                    <Route path="/brand-handbook" element={<BrandHandbook />} />
+                          <Route
+                            path="/aadhaar-verification"
+                            element={
+                              <ProtectedRoute>
+                                <AadhaarVerification />
+                              </ProtectedRoute>
+                            }
+                          />
+                          <Route
+                            path="/kyc-onboarding"
+                            element={
+                              <ProtectedRoute>
+                                <AadhaarVerification />
+                              </ProtectedRoute>
+                            }
+                          />
+                          <Route
+                            path="/kyc-verification"
+                            element={
+                              <ProtectedRoute>
+                                <AadhaarVerification />
+                              </ProtectedRoute>
+                            }
+                          />
+                          <Route
+                            path="/kyc"
+                            element={
+                              <ProtectedRoute>
+                                <AadhaarVerification />
+                              </ProtectedRoute>
+                            }
+                          />
+                          <Route path="/instagram-oauth" element={<InstagramOauth />} />
+                          <Route path="/terms" element={<Terms />} />
+                          <Route path="/privacy" element={<PrivacyPolicy />} />
+                          <Route path="/refund-policy" element={<RefundPolicy />} />
+                          <Route path="/creator-guidelines" element={<CreatorGuidelines />} />
+                          <Route path="/brand-handbook" element={<BrandHandbook />} />
 
-                  </Routes>
-                </Suspense>
-              </main>
-              <Footer />
-            </div>
-            </>
-            )}
-          </Router>
-        </SocketProvider>
-      </ThemeProvider>
+                        </Routes>
+                      </Suspense>
+                    </main>
+                    <Footer />
+                  </div>
+                </>
+              )}
+            </Router>
+          </SocketProvider>
+        </ThemeProvider>
       </AuthProvider>
     </QueryClientProvider>
   );

@@ -41,9 +41,9 @@ const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('stats');
   const [activeChatDeal, setActiveChatDeal] = useState(null);
 
-  
+
   const queryClient = useQueryClient();
-  
+
   // Data States (React Query)
   const { data: statsData } = useQuery({
     queryKey: ['admin', 'stats'],
@@ -155,7 +155,7 @@ const AdminDashboard = () => {
     getNextPageParam: (lastPage) => lastPage.currentPage < lastPage.totalPages ? lastPage.currentPage + 1 : undefined,
     enabled: !!user
   });
-  
+
   const { data: clearanceData, fetchNextPage: fetchNextClearance, hasNextPage: hasNextClearance, isFetchingNextPage: isFetchingClearance } = useInfiniteQuery({
     queryKey: ['admin', 'clearance', searchQuery],
     queryFn: async ({ pageParam = 1 }) => {
@@ -573,12 +573,11 @@ const AdminDashboard = () => {
                   <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em]">Console Management</span>
                   <div className="flex items-center gap-3">
                     <h1 className="text-3xl sm:text-4xl font-black font-display text-gray-900 tracking-tight">System Statistics</h1>
-                    <span className={`text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full border ${
-                      user?.role === 'superadmin' ? 'bg-red-50 text-red-600 border-red-100' :
+                    <span className={`text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full border ${user?.role === 'superadmin' ? 'bg-red-50 text-red-600 border-red-100' :
                       user?.role === 'admin' ? 'bg-[#EA580C]/10 text-[#EA580C] border-[#EA580C]/20' :
-                      user?.role === 'moderator' ? 'bg-indigo-50 text-indigo-600 border-indigo-100' :
-                      'bg-blue-50 text-blue-600 border-blue-100'
-                    }`}>
+                        user?.role === 'moderator' ? 'bg-indigo-50 text-indigo-600 border-indigo-100' :
+                          'bg-blue-50 text-blue-600 border-blue-100'
+                      }`}>
                       {user?.role ? user.role.replace('admin', ' Admin') : 'Staff'}
                     </span>
                   </div>
@@ -804,13 +803,11 @@ const AdminDashboard = () => {
                             </td>
 
                             <td className="px-6 py-5.5">
-                              <button
-                                onClick={() => handleToggleVerification(u)}
-                                disabled={actionLoading}
+                              <p
                                 className={`px-4 py-2 border rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2 ${u.isVerified ? 'bg-emerald-50 text-emerald-600 border-emerald-100 hover:bg-emerald-100' : 'bg-gray-50 text-gray-400 border-gray-200 hover:bg-gray-100'}`}
                               >
                                 {u.isVerified ? 'Verified' : 'Verify Account'}
-                              </button>
+                              </p>
                             </td>
 
                             <td className="px-6 py-5.5 text-right">
@@ -897,9 +894,9 @@ const AdminDashboard = () => {
                             </div>
                           </div>
                           <span className={`text-[9px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded border ${c.status === 'pending' ? 'bg-amber-50 text-amber-600 border-amber-100' :
-                              c.status === 'active' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
-                                c.status === 'paused' ? 'bg-rose-50 text-rose-600 border-rose-100' :
-                                  'bg-blue-50 text-blue-600 border-blue-100'
+                            c.status === 'active' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
+                              c.status === 'paused' ? 'bg-rose-50 text-rose-600 border-rose-100' :
+                                'bg-blue-50 text-blue-600 border-blue-100'
                             }`}>
                             {c.status}
                           </span>
@@ -1383,9 +1380,9 @@ const AdminDashboard = () => {
                             <td className="px-6 py-5.5">
                               <div className="flex items-start gap-4">
                                 <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-sm border ${t.type === 'credit' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
-                                    t.type === 'debit' ? 'bg-red-50 text-red-500 border-red-100' :
-                                      t.type === 'funds_secured_hold' ? 'bg-indigo-50 text-indigo-500 border-indigo-100' :
-                                        'bg-purple-50 text-purple-500 border-purple-100'
+                                  t.type === 'debit' ? 'bg-red-50 text-red-500 border-red-100' :
+                                    t.type === 'funds_secured_hold' ? 'bg-indigo-50 text-indigo-500 border-indigo-100' :
+                                      'bg-purple-50 text-purple-500 border-purple-100'
                                   }`}>
                                   {t.type === 'credit' ? <ArrowUpRight size={18} /> :
                                     t.type === 'debit' ? <ArrowDownLeft size={18} /> :
@@ -1548,11 +1545,10 @@ const AdminDashboard = () => {
                             </td>
 
                             <td className="px-6 py-5.5">
-                              <span className={`text-[9px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded border ${
-                                p.status === 'PENDING' ? 'bg-amber-50 text-amber-600 border-amber-100' :
+                              <span className={`text-[9px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded border ${p.status === 'PENDING' ? 'bg-amber-50 text-amber-600 border-amber-100' :
                                 p.status === 'APPROVED' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
-                                'bg-red-50 text-red-500 border-red-100'
-                              }`}>
+                                  'bg-red-50 text-red-500 border-red-100'
+                                }`}>
                                 {p.status}
                               </span>
                             </td>
@@ -1639,20 +1635,19 @@ const AdminDashboard = () => {
                             </td>
 
                             <td className="px-6 py-5.5">
-                              <span className={`text-[9px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded border ${
-                                c.instagramProfile?.connected ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-gray-50 text-gray-400 border-gray-200'
-                              }`}>
+                              <span className={`text-[9px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded border ${c.instagramProfile?.connected ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-gray-50 text-gray-400 border-gray-200'
+                                }`}>
                                 {c.instagramProfile?.connected ? 'CONNECTED' : 'DISCONNECTED'}
                               </span>
                             </td>
 
                             <td className="px-6 py-5.5">
                               <span className="text-xs font-bold text-gray-900 font-mono select-all">
-                                {c.instagramProfile?.username 
-                                  ? `@${c.instagramProfile.username}` 
-                                  : c.socialLinks?.find(s => s.platform === 'instagram')?.handle 
+                                {c.instagramProfile?.username
+                                  ? `@${c.instagramProfile.username}`
+                                  : c.socialLinks?.find(s => s.platform === 'instagram')?.handle
                                     ? `@${c.socialLinks.find(s => s.platform === 'instagram').handle.replace('@', '')}`
-                                    : c.socialLinks?.find(s => s.platform === 'instagram')?.url 
+                                    : c.socialLinks?.find(s => s.platform === 'instagram')?.url
                                       ? `@${c.socialLinks.find(s => s.platform === 'instagram').url.split('/').filter(Boolean).pop()}`
                                       : '—'}
                               </span>
@@ -1660,8 +1655,8 @@ const AdminDashboard = () => {
 
                             <td className="px-6 py-5.5">
                               <span className="text-xs font-bold text-gray-900">
-                                {c.instagramProfile?.connected 
-                                  ? (c.instagramProfile.followers || 0).toLocaleString() 
+                                {c.instagramProfile?.connected
+                                  ? (c.instagramProfile.followers || 0).toLocaleString()
                                   : (c.followerCount ? c.followerCount.toLocaleString() : '—')}
                               </span>
                             </td>
@@ -1735,12 +1730,11 @@ const AdminDashboard = () => {
                               {log.adminEmail}
                             </td>
                             <td className="px-6 py-5.5">
-                              <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded border ${
-                                log.adminRole === 'superadmin' ? 'bg-red-50 text-red-600 border-red-100' :
+                              <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded border ${log.adminRole === 'superadmin' ? 'bg-red-50 text-red-600 border-red-100' :
                                 log.adminRole === 'admin' ? 'bg-[#EA580C]/10 text-[#EA580C] border-[#EA580C]/20' :
-                                log.adminRole === 'moderator' ? 'bg-indigo-50 text-indigo-600 border-indigo-100' :
-                                'bg-blue-50 text-blue-600 border-blue-100'
-                              }`}>
+                                  log.adminRole === 'moderator' ? 'bg-indigo-50 text-indigo-600 border-indigo-100' :
+                                    'bg-blue-50 text-blue-600 border-blue-100'
+                                }`}>
                                 {log.adminRole}
                               </span>
                             </td>
@@ -1771,7 +1765,7 @@ const AdminDashboard = () => {
             </motion.div>
           )}
 
-        
+
         </AnimatePresence>
 
         {/* Global Pagination Controls */}
@@ -2246,10 +2240,10 @@ const AdminDashboard = () => {
                   }}
                   disabled={actionLoading || (confirmModal.type === 'rejectCampaign' && !rejectionReason.trim()) || (confirmModal.type === 'approveDeposit' && (!depositApprovedAmount || Number(depositApprovedAmount) <= 0))}
                   className={`w-full sm:w-1/2 py-3.5 text-white font-black rounded-xl shadow-lg text-xs uppercase tracking-widest transition-all ${confirmModal.type === 'rejectWithdrawal' || confirmModal.type === 'rejectDeposit' || confirmModal.type === 'disputeRefund' || confirmModal.type === 'rejectCampaign'
-                      ? 'bg-red-500 hover:bg-red-600 shadow-red-500/20'
-                      : confirmModal.type === 'disputeSplit'
-                        ? 'bg-indigo-500 hover:bg-indigo-600 shadow-indigo-500/20'
-                        : 'bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/20'
+                    ? 'bg-red-500 hover:bg-red-600 shadow-red-500/20'
+                    : confirmModal.type === 'disputeSplit'
+                      ? 'bg-indigo-500 hover:bg-indigo-600 shadow-indigo-500/20'
+                      : 'bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/20'
                     }`}
                 >
                   Confirm Action
@@ -2334,12 +2328,11 @@ const AdminDashboard = () => {
                   <div className="flex flex-col gap-2 mb-4">
                     <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Identity Documents ({kycDocs.length})</span>
                     {kycDocs.map(d => (
-                      <div 
-                        key={d._id} 
+                      <div
+                        key={d._id}
                         onClick={() => setActiveDocUrl(d.fileUrl)}
-                        className={`p-3 border rounded-xl flex items-center justify-between cursor-pointer transition-all ${
-                          activeDocUrl === d.fileUrl ? 'border-[#EA580C] bg-[#EA580C]/5' : 'border-gray-200 hover:bg-gray-50'
-                        }`}
+                        className={`p-3 border rounded-xl flex items-center justify-between cursor-pointer transition-all ${activeDocUrl === d.fileUrl ? 'border-[#EA580C] bg-[#EA580C]/5' : 'border-gray-200 hover:bg-gray-50'
+                          }`}
                       >
                         <div className="flex items-center gap-2">
                           <FileText size={16} className="text-[#EA580C]" />
@@ -2348,11 +2341,10 @@ const AdminDashboard = () => {
                             <p className="text-[9px] text-gray-400 font-bold uppercase mt-0.5">Uploaded {new Date(d.uploadedAt).toLocaleDateString()}</p>
                           </div>
                         </div>
-                        <span className={`text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded border ${
-                          d.verificationStatus === 'APPROVED' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
+                        <span className={`text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded border ${d.verificationStatus === 'APPROVED' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
                           d.verificationStatus === 'REJECTED' ? 'bg-red-50 text-red-500 border-red-100' :
-                          'bg-amber-50 text-amber-600 border-amber-100'
-                        }`}>{d.verificationStatus}</span>
+                            'bg-amber-50 text-amber-600 border-amber-100'
+                          }`}>{d.verificationStatus}</span>
                       </div>
                     ))}
                   </div>
@@ -2389,9 +2381,9 @@ const AdminDashboard = () => {
                       </div>
                     ) : (
                       <div className="w-full h-[400px] border border-gray-200 rounded-[2rem] bg-gray-900 overflow-hidden flex items-center justify-center relative">
-                        <img 
-                          src={activeDocUrl} 
-                          alt="Verification Document" 
+                        <img
+                          src={activeDocUrl}
+                          alt="Verification Document"
                           className="max-w-full max-h-full object-contain transition-transform duration-200"
                           style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }}
                         />

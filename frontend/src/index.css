@@ -12,8 +12,8 @@
   --color-primary-800: #8eb300;
   --color-primary-900: #7a9900;
 
-  --font-sans: "Manrope", "system-ui", "sans-serif";
-  --font-display: "Space Grotesk", sans-serif;
+  --font-sans: "Plus Jakarta Sans", "Manrope", "system-ui", "sans-serif";
+  --font-display: "Bricolage Grotesque", sans-serif;
 
   --color-error: #ffb4ab;
   --color-error-container: #93000a;
@@ -45,8 +45,9 @@
   --color-inverse-surface: var(--theme-inverse-surface);
   --color-inverse-on-surface: var(--theme-inverse-on-surface);
 
-  --font-headline: "Space Grotesk", sans-serif;
-  --font-manrope: "Manrope", sans-serif;
+  --font-headline: "Bricolage Grotesque", sans-serif;
+  --font-manrope: "Plus Jakarta Sans", "Manrope", sans-serif;
+  --font-moderustic: "Moderustic", sans-serif;
 
   --color-accent-yellow: #CCFF00;
   --color-accent-purple: #BF00FF;
@@ -286,6 +287,10 @@ h6,
   letter-spacing: -0.02em;
 }
 
+.font-moderustic {
+  font-family: var(--font-moderustic) !important;
+}
+
 
 
 /* Background Grid & Glow Effect - CUSTOMIZE HERE */
@@ -368,10 +373,12 @@ h6,
   body.printing-media-kit * {
     visibility: hidden;
   }
-  body.printing-media-kit #profile-dashboard-content, 
+
+  body.printing-media-kit #profile-dashboard-content,
   body.printing-media-kit #profile-dashboard-content * {
     visibility: visible;
   }
+
   body.printing-media-kit #profile-dashboard-content {
     position: absolute;
     left: 0;
@@ -384,8 +391,9 @@ h6,
 
 /* Prevent iOS Safari from auto-zooming on input focus (< 16px triggers zoom) */
 @media screen and (max-width: 768px) {
-  input, 
-  select, 
+
+  input,
+  select,
   textarea,
   input[type="text"],
   input[type="email"],
@@ -397,7 +405,8 @@ h6,
 }
 
 /* Smooth touch scrolling & eliminate tap-flash on mobile WebKit */
-html, body {
+html,
+body {
   -webkit-overflow-scrolling: touch;
   -webkit-tap-highlight-color: transparent;
 }
