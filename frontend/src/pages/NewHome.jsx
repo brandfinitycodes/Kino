@@ -134,63 +134,63 @@ const reelsData = [
     image:
       "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=700&q=80",
     video:
-      "https://ik.imagekit.io/0bfnjkavl/New%20Folder/From%20Klickpin.com-%20Need%20fresh%20inspiration%20Save%20these%20dreamy%20brand%20identity%20ideas%20to%20make%20your%20next%20project%20easier%20and%20prettier%20with%20realistic%20idea.mp4",
+      "https://ik.imagekit.io/9hwpxbgrw/Homepage%20Assets/cb722b01b691323a8a2b9e8dd0a4698c_720w.mp4?updatedAt=1794909614382",
   },
   {
     id: 2,
     image:
       "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=700&q=80",
     video:
-      "https://ik.imagekit.io/0bfnjkavl/New%20Folder/From%20Klickpin.com-%20From%20beginner%20to%20obsessed%20Style%20these%20budget-friendly%20kids%20craft%20ideas%20that%20bring%20style%20function%20and%20personality%20together%20for%20a.mp4",
+      "https://ik.imagekit.io/9hwpxbgrw/Homepage%20Assets/68cfcfbef24b3b55effbd88963ac780b_720w.mp4?updatedAt=1794909608898",
   },
   {
     id: 3,
     image:
       "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?auto=format&fit=crop&w=700&q=80",
     video:
-      "https://ik.imagekit.io/0bfnjkavl/New%20Folder/From%20Klickpin.com-%20Tender%20romance%20ideas%20for%20thoughtful%20sharing%20for%20boards%20that%20feel%20current%20and%20for%20love-filled%20days-pin-id-1087900853718974195.mp4",
+      "https://ik.imagekit.io/9hwpxbgrw/Homepage%20Assets/c6ae7ae77ed7cf61a5b8d5bc0b6c7c0e_720w.mp4?updatedAt=1794909610358",
   },
   {
     id: 4,
     image:
       "https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&w=700&q=80",
     video:
-      "https://ik.imagekit.io/0bfnjkavl/New%20Folder/From%20Klickpin.com-%20Need%20fresh%20inspiration%20Save%20these%20dreamy%20brand%20identity%20ideas%20to%20make%20your%20next%20project%20easier%20and%20prettier%20with%20realistic%20idea.mp4",
+      "https://ik.imagekit.io/9hwpxbgrw/Homepage%20Assets/1a0249c7f295d5dae9001bd0c8563e20.mp4?updatedAt=1794909615168",
   },
   {
     id: 5,
     image:
       "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=700&q=80",
     video:
-      "https://ik.imagekit.io/0bfnjkavl/portfolio_videos/portfolio_6adef9fe07a058391d45201b_1792998148521_q2x9kzv72.mp4",
+      "https://ik.imagekit.io/9hwpxbgrw/Homepage%20Assets/f05239a28684d7bfa6f25e37eb837320.mp4?updatedAt=1794909610163",
   },
   {
     id: 6,
     image:
       "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=700&q=80",
     video:
-      "https://ik.imagekit.io/0bfnjkavl/portfolio_videos/portfolio_69d38b9a11275420ee331598_1777893698673_kx77zxcso1/ik-video.mp4",
+      "https://ik.imagekit.io/9hwpxbgrw/Homepage%20Assets/c6d1bccfdd72e2c5a9a2f14e0b6f058a_720w.mp4?updatedAt=1794909614166",
   },
   {
     id: 7,
     image:
       "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=700&q=80",
     video:
-      "https://ik.imagekit.io/0bfnjkavl/portfolio_videos/portfolio_69d38b9a11275420ee331598_1777893896533_Jl0i5beEN/ik-video.mp4",
+      "https://ik.imagekit.io/9hwpxbgrw/Homepage%20Assets/9ef051c1acd4abefa57681073c0b29ae.mp4?updatedAt=1794909610392",
   },
   {
     id: 8,
     image:
       "https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=700&q=80",
     video:
-      "https://ik.imagekit.io/0bfnjkavl/portfolio_videos/portfolio_69d38b9a11275420ee331598_1777895950268_Dw_fa3Lpk/ik-video.mp4",
+      "https://ik.imagekit.io/9hwpxbgrw/Homepage%20Assets/260f5eba2310fd463dcff9db5eea9f66_720w.mp4?updatedAt=1794909608719",
   },
   {
     id: 9,
     image:
       "https://images.unsplash.com/photo-1469334031218-e382a71b716b?auto=format&fit=crop&w=700&q=80",
     video:
-      "https://ik.imagekit.io/0bfnjkavl/portfolio_videos/portfolio_69d38b9a11275420ee331598_1777896942481_x-ZMfjpPU/ik-video.mp4",
+      "https://ik.imagekit.io/9hwpxbgrw/Homepage%20Assets/9c093292d15e88d039d8846973387852_720w.mp4?updatedAt=1794909608664",
   },
 ];
 
@@ -769,7 +769,7 @@ const NewHome = () => {
           className="absolute inset-0 w-full h-full object-cover pointer-events-none z-0"
         >
           <source
-            src="https://ik.imagekit.io/0bfnjkavl/New%20Folder/Grid_Video.mp4"
+            src="https://ik.imagekit.io/9hwpxbgrw/Homepage%20Assets/Grid_Video.mp4"
             type="video/mp4"
           />
         </video>

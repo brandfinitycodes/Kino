@@ -4,6 +4,14 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const compression = require('compression');
 const helmet = require('helmet');
+const dns = require('dns');
+
+// Configure public DNS servers to resolve MongoDB SRV records (fixes querySrv ECONNREFUSED on Windows/router DNS)
+try {
+  dns.setServers(['8.8.8.8', '1.1.1.1', '8.8.4.4']);
+} catch (err) {
+  console.warn('Could not configure custom DNS servers:', err.message);
+}
 
 dotenv.config();
 

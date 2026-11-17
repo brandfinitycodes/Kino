@@ -743,7 +743,7 @@ const Home = () => {
     },
     {
       title: 'Automated Payment Security',
-      desc: 'Never work without payment security. Brands fund deals in advance ; funds are locked securely until deliverable approval.',
+      desc: 'Never work without payment security. Brands fund deals in advance; Funds are locked securely until deliverable approval.',
       screen: 'funds-secured',
     },
     {
