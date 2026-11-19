@@ -7,8 +7,6 @@ import { SocketProvider } from './context/SocketContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import ScrollToTop from './components/ScrollToTop';
-import KinoWelcome from './components/KinoWelcome';
-import { AnimatePresence } from 'framer-motion';
 
 // Lazy load page components
 const Home = lazy(() => import('./pages/Home'));
@@ -112,30 +110,16 @@ const App = () => {
       .catch(() => { }); // Fire and forget
   }, []);
 
-  const [showSplash, setShowSplash] = React.useState(() => {
-    return !sessionStorage.getItem('growfox_splash_v5');
-  });
-
-  const handleSplashComplete = () => {
-    sessionStorage.setItem('growfox_splash_v5', 'true');
-    setShowSplash(false);
-  };
-
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <ThemeProvider>
           <SocketProvider>
             <Router>
-              <AnimatePresence>
-                {showSplash && <KinoWelcome onComplete={handleSplashComplete} />}
-              </AnimatePresence>
-              {!showSplash && (
-                <>
-                  <ScrollToTop />
-                  <div className="min-h-screen flex flex-col">
-                    <Navbar />
-                    <main className="grow relative">
+              <ScrollToTop />
+              <div className="min-h-screen flex flex-col">
+                <Navbar />
+                <main className="grow relative">
                       <Suspense fallback={<PageLoader />}>
                         <Routes>
                           <Route path="/" element={<NewHome />} />
@@ -241,8 +225,6 @@ const App = () => {
                     </main>
                     <Footer />
                   </div>
-                </>
-              )}
             </Router>
           </SocketProvider>
         </ThemeProvider>

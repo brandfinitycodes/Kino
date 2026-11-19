@@ -7,12 +7,6 @@ const helmet = require('helmet');
 const dns = require('dns');
 
 // Configure public DNS servers to resolve MongoDB SRV records (fixes querySrv ECONNREFUSED on Windows/router DNS)
-try {
-  dns.setServers(['8.8.8.8', '1.1.1.1', '8.8.4.4']);
-} catch (err) {
-  console.warn('Could not configure custom DNS servers:', err.message);
-}
-
 dotenv.config();
 
 // Validate required environment variables at startup
@@ -30,7 +24,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "*", 
+    origin: "*",
     methods: ["GET", "POST"]
   }
 });
@@ -110,7 +104,7 @@ mongoose
 // Global Error Handler
 app.use((err, req, res, next) => {
   console.error('Unhandled Error:', err);
-  
+
   if (err.code === 'LIMIT_FILE_SIZE') {
     return res.status(413).json({ message: 'File too large. Maximum allowed is 80MB (subject to ImageKit plan limits).' });
   }

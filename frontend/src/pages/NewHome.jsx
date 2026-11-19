@@ -134,63 +134,63 @@ const reelsData = [
     image:
       "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=700&q=80",
     video:
-      "https://ik.imagekit.io/9hwpxbgrw/Homepage%20Assets/cb722b01b691323a8a2b9e8dd0a4698c_720w.mp4?updatedAt=1794909614382",
+      "https://ik.imagekit.io/9hwpxbgrw/Homepage%20Assets/cb722b01b691323a8a2b9e8dd0a4698c_720w.mp4?tr=orig",
   },
   {
     id: 2,
     image:
       "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=700&q=80",
     video:
-      "https://ik.imagekit.io/9hwpxbgrw/Homepage%20Assets/68cfcfbef24b3b55effbd88963ac780b_720w.mp4?updatedAt=1794909608898",
+      "https://ik.imagekit.io/9hwpxbgrw/Homepage%20Assets/68cfcfbef24b3b55effbd88963ac780b_720w.mp4?tr=orig",
   },
   {
     id: 3,
     image:
       "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?auto=format&fit=crop&w=700&q=80",
     video:
-      "https://ik.imagekit.io/9hwpxbgrw/Homepage%20Assets/c6ae7ae77ed7cf61a5b8d5bc0b6c7c0e_720w.mp4?updatedAt=1794909610358",
+      "https://ik.imagekit.io/9hwpxbgrw/Homepage%20Assets/c6ae7ae77ed7cf61a5b8d5bc0b6c7c0e_720w.mp4?tr=orig",
   },
   {
     id: 4,
     image:
       "https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&w=700&q=80",
     video:
-      "https://ik.imagekit.io/9hwpxbgrw/Homepage%20Assets/1a0249c7f295d5dae9001bd0c8563e20.mp4?updatedAt=1794909615168",
+      "https://ik.imagekit.io/9hwpxbgrw/Homepage%20Assets/1a0249c7f295d5dae9001bd0c8563e20.mp4?tr=orig",
   },
   {
     id: 5,
     image:
       "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=700&q=80",
     video:
-      "https://ik.imagekit.io/9hwpxbgrw/Homepage%20Assets/f05239a28684d7bfa6f25e37eb837320.mp4?updatedAt=1794909610163",
+      "https://ik.imagekit.io/9hwpxbgrw/Homepage%20Assets/f05239a28684d7bfa6f25e37eb837320.mp4?tr=orig",
   },
   {
     id: 6,
     image:
       "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=700&q=80",
     video:
-      "https://ik.imagekit.io/9hwpxbgrw/Homepage%20Assets/c6d1bccfdd72e2c5a9a2f14e0b6f058a_720w.mp4?updatedAt=1794909614166",
+      "https://ik.imagekit.io/9hwpxbgrw/Homepage%20Assets/c6d1bccfdd72e2c5a9a2f14e0b6f058a_720w.mp4?tr=orig",
   },
   {
     id: 7,
     image:
       "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=700&q=80",
     video:
-      "https://ik.imagekit.io/9hwpxbgrw/Homepage%20Assets/9ef051c1acd4abefa57681073c0b29ae.mp4?updatedAt=1794909610392",
+      "https://ik.imagekit.io/9hwpxbgrw/Homepage%20Assets/9ef051c1acd4abefa57681073c0b29ae.mp4?tr=orig",
   },
   {
     id: 8,
     image:
       "https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=700&q=80",
     video:
-      "https://ik.imagekit.io/9hwpxbgrw/Homepage%20Assets/260f5eba2310fd463dcff9db5eea9f66_720w.mp4?updatedAt=1794909608719",
+      "https://ik.imagekit.io/9hwpxbgrw/Homepage%20Assets/260f5eba2310fd463dcff9db5eea9f66_720w.mp4?tr=orig",
   },
   {
     id: 9,
     image:
       "https://images.unsplash.com/photo-1469334031218-e382a71b716b?auto=format&fit=crop&w=700&q=80",
     video:
-      "https://ik.imagekit.io/9hwpxbgrw/Homepage%20Assets/9c093292d15e88d039d8846973387852_720w.mp4?updatedAt=1794909608664",
+      "https://ik.imagekit.io/9hwpxbgrw/Homepage%20Assets/9c093292d15e88d039d8846973387852_720w.mp4?tr=orig",
   },
 ];
 
@@ -760,18 +760,27 @@ const NewHome = () => {
         onMouseMove={handleMouseMove}
         className="relative px-6 py-28 sm:py-36 lg:py-44 h-[700px] flex items-center justify-center border-b border-white/10"
       >
-        {/* Autoplay & Looping Background Video (Streamed via ImageKit CDN) */}
+        {/* Autoplay & Looping Background Video (ImageKit CDN with Local /public Fallback) */}
         <video
           autoPlay
           loop
           muted
           playsInline
           className="absolute inset-0 w-full h-full object-cover pointer-events-none z-0"
+          onError={(e) => {
+            const fallback = "/Grid_Video.mp4";
+            if (e.currentTarget.src !== window.location.origin + fallback) {
+              e.currentTarget.src = fallback;
+              e.currentTarget.play().catch(() => { });
+            }
+          }}
         >
           <source
-            src="https://ik.imagekit.io/9hwpxbgrw/Homepage%20Assets/Grid_Video.mp4"
+            src="https://ik.imagekit.io/9hwpxbgrw/Homepage%20Assets/Grid_Video.mp4?tr=orig"
             type="video/mp4"
           />
+          <source src="/Grid_Video.mp4" type="video/mp4" />
+          <source src="/grid_vedio.mp4" type="video/mp4" />
         </video>
 
         {/* Ambient Dark Overlay for High-Contrast Text Legibility */}
@@ -854,7 +863,7 @@ const NewHome = () => {
               <img
                 src="/creator.png"
                 alt="Creator"
-                className="absolute -bottom-14 -right-4 sm:right-0 w-56 sm:w-64 md:w-64 lg:w-80 object-contain pointer-events-none select-none z-10"
+                className="absolute -bottom-14 -right-4 sm:right-0 w-48 sm:w-64 md:w-64 lg:w-80 object-contain pointer-events-none select-none z-10"
               />
             </div>
 
@@ -1393,7 +1402,7 @@ const NewHome = () => {
                   </div>
 
                   {/* Right Floating 3D Graphic */}
-                  <div className="absolute -right-2 -bottom-2 sm:right-1 sm:bottom-1 w-28 h-28 sm:w-34 sm:h-34 pointer-events-none select-none flex items-end justify-end group-hover:scale-105 transition-transform duration-300">
+                  <div className="absolute -right-2 -bottom-2 sm:right-1 sm:bottom-1 w-20 h-20 sm:w-34 sm:h-34 pointer-events-none select-none flex items-end justify-end group-hover:scale-105 transition-transform duration-300">
                     {renderBentoGraphic(item.type)}
                   </div>
                 </motion.div>
@@ -1749,14 +1758,24 @@ const NewHome = () => {
               className="w-[200px] sm:w-[220px] md:w-[240px] aspect-[9/16] shrink-0 rounded-2xl overflow-hidden relative border border-white/10 bg-[#121417] shadow-2xl transition-all duration-300 hover:border-white/30 hover:scale-[1.02]"
             >
               <video
-                src={reel.video}
                 poster={reel.image}
                 autoPlay
                 loop
                 muted
                 playsInline
                 className="w-full h-full object-cover select-none pointer-events-none"
-              />
+                onError={(e) => {
+                  const fallback = "/Grid_Video.mp4";
+                  if (e.currentTarget.src !== window.location.origin + fallback) {
+                    e.currentTarget.src = fallback;
+                    e.currentTarget.play().catch(() => { });
+                  }
+                }}
+              >
+                <source src={reel.video} type="video/mp4" />
+                <source src="/Grid_Video.mp4" type="video/mp4" />
+                <source src="/grid_vedio.mp4" type="video/mp4" />
+              </video>
             </div>
           ))}
         </div>
@@ -1782,8 +1801,14 @@ const NewHome = () => {
             </p>
 
             {/* Check Eligibility Link */}
-            <div>
-              <p>buttons</p>
+            <div className="flex flex-row items-center gap-3 sm:gap-4 mt-8">
+              <Link
+                to="/register"
+                className="px-6 py-3 sm:px-10 sm:py-4 rounded-xl bg-orange-500 text-white font-bold text-xs sm:text-sm tracking-widest uppercase hover:bg-orange-600 shadow-[0_10px_30px_rgba(249,115,22,0.35)] transition-all duration-300 active:scale-95 flex items-center gap-2"
+              >
+                <span>Get Started</span>
+                <ArrowRight size={14} />
+              </Link>
             </div>
           </div>
 
