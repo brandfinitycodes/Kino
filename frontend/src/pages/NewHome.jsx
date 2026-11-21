@@ -798,14 +798,15 @@ const NewHome = () => {
             <h1 className="text-4xl sm:text-6xl lg:text-[4.5rem] font-black font-display tracking-tight leading-[1.05] text-white drop-shadow-md">
               The Platform Where <br />
               <span className="relative inline-block text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-amber-400">
-                Content Meets
+                Brands Find Their
               </span>{" "}
               <br />
-              Performance
+              Creators
             </h1>
 
             <p className="mt-5 text-sm sm:text-base lg:text-lg text-gray-200 max-w-xl mx-auto font-medium leading-relaxed drop-shadow">
-              Every campaign protected with upfront Milestone Coins
+              Bring your vision to life.
+              Build meaningful collaborations, and turn great ideas into campaigns that make an impact.
             </p>
 
             <div className="flex flex-row items-center justify-center gap-3 sm:gap-4 mt-8">
@@ -973,8 +974,13 @@ const NewHome = () => {
       </section>
 
       {/* ================= 4. DEAL CYCLE (EVERYTHING IN ONE WORKFLOW) ================= */}
-      <section className="py-20 sm:py-24 px-6 sm:px-12 lg:px-20 bg-[#FAF9F6] select-none">
+      <section className="py-14 sm:py-12 px-6 sm:px-12 lg:px-20 bg-[#FAF9F6] select-none">
         <div className="max-w-6xl mx-auto">
+          <img
+            src="/growfox.png"
+            alt="GrowFox Logo"
+            className="mx-auto h-20  sm:h-24 my-5 w-auto object-contain"
+          />
           {/* Centered Heading */}
           <div className="text-center max-w-2xl mx-auto mb-8 sm:mb-10">
             <h2 className="text-3xl sm:text-5xl lg:text-6xl font-black font-moderustic tracking-tight text-slate-900">
@@ -1757,6 +1763,11 @@ const NewHome = () => {
               key={`${reel.id}-${idx}`}
               className="w-[200px] sm:w-[220px] md:w-[240px] aspect-[9/16] shrink-0 rounded-2xl overflow-hidden relative border border-white/10 bg-[#121417] shadow-2xl transition-all duration-300 hover:border-white/30 hover:scale-[1.02]"
             >
+              <img
+                src="/growfox-icon.png"
+                alt="GrowFox Logo"
+                className="h-8 absolute top-0 right-0 z-10 m-3"
+              />
               <video
                 poster={reel.image}
                 autoPlay
@@ -1790,6 +1801,7 @@ const NewHome = () => {
         <div className="relative z-10 max-w-7xl mx-auto px-6 sm:px-12 lg:px-16 flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-16">
           {/* Left Column: Headline, Description, Download Badges & Eligibility Link */}
           <div className="flex-1 text-left max-w-2xl lg:max-w-xl">
+
             <h2 className="text-4xl sm:text-6xl lg:text-[4.5rem] font-black font-moderustic text-white tracking-tight leading-[1.08] mb-6">
               Your influence, <br />
               your income.

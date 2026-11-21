@@ -83,7 +83,7 @@ const Navbar = () => {
           <img
             src="/growfox.png"
             alt="GrowFox Logo"
-            className="h-8 sm:h-9 w-auto object-contain"
+            className="h-11 sm:h-14 w-auto object-contain"
           />
         </Link>
         {user && isAdminRole && (
@@ -107,11 +107,10 @@ const Navbar = () => {
             <div className="h-4 w-px bg-gray-200 mr-3"></div>
             <Link
               to={dashboardPath}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-[13px] font-bold transition-all border ${
-                location.pathname === dashboardPath || isDashboardRoute
-                  ? 'bg-orange-50 text-orange-600 border-orange-200/80 shadow-xs'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100/70 border-gray-200/70 bg-white/60 shadow-xs'
-              }`}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-[13px] font-bold transition-all border ${location.pathname === dashboardPath || isDashboardRoute
+                ? 'bg-orange-50 text-orange-600 border-orange-200/80 shadow-xs'
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100/70 border-gray-200/70 bg-white/60 shadow-xs'
+                }`}
             >
               <LayoutDashboard size={14} className={location.pathname === dashboardPath || isDashboardRoute ? 'text-orange-600' : 'text-gray-500'} />
               <span>Dashboard</span>
@@ -203,7 +202,7 @@ const Navbar = () => {
                 </span>
               )}
             </Link>
-            <div 
+            <div
               className="relative ml-1"
               onMouseEnter={() => { if (window.innerWidth >= 640) setIsProfileOpen(true); }}
               onMouseLeave={() => { if (window.innerWidth >= 640) setIsProfileOpen(false); }}
