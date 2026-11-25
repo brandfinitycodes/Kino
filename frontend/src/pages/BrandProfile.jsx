@@ -9,6 +9,7 @@ import {
   Building2,
   Globe,
   ShieldCheck,
+  ShieldAlert,
   ExternalLink,
   MapPin,
   Target,
@@ -21,8 +22,63 @@ import {
   Sparkles,
   Search,
   HelpCircle,
-  Bell
+  Bell,
+  Share2,
+  Check
 } from 'lucide-react';
+
+const FormattedBrandDescription = ({ description }) => {
+  if (!description || !description.trim()) {
+    return (
+      <p className="text-gray-400 text-sm font-medium italic">
+        No description provided yet. Complete your profile to add detailed brand information.
+      </p>
+    );
+  }
+
+  // Split into raw lines / paragraphs
+  const rawParagraphs = description.split(/\n+/).map(p => p.trim()).filter(Boolean);
+
+  return (
+    <div className="space-y-4 text-left">
+      {rawParagraphs.map((para, idx) => {
+        // Case 1: Heading (ends with colon, starts with #, or all caps)
+        const isHeading = para.endsWith(':') || para.startsWith('#') || (para.length < 50 && para === para.toUpperCase() && /[A-Z]/.test(para));
+        if (isHeading) {
+          const cleanHeading = para.replace(/^[#*\s]+|[:]+$/g, '').trim();
+          return (
+            <div key={idx} className="pt-2">
+              <h4 className="text-xs font-black uppercase tracking-wider text-gray-900 flex items-center gap-1.5 pb-1 border-b border-gray-100">
+                <Sparkles size={12} className="text-[#EA580C]" /> {cleanHeading}
+              </h4>
+            </div>
+          );
+        }
+
+        // Case 2: Bullet point (starts with -, *, •, or 1., 2.)
+        const isBullet = /^[-*•]\s+|^\d+\.\s+/.test(para);
+        if (isBullet) {
+          const cleanBullet = para.replace(/^[-*•\d.]+\s*/, '').trim();
+          return (
+            <div key={idx} className="flex items-start gap-2.5 pl-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#EA580C] mt-2 shrink-0"></span>
+              <p className="text-gray-600 text-sm leading-relaxed font-medium">
+                {cleanBullet}
+              </p>
+            </div>
+          );
+        }
+
+        // Case 3: Standard paragraph
+        return (
+          <p key={idx} className="text-gray-600 text-sm leading-relaxed font-medium">
+            {para}
+          </p>
+        );
+      })}
+    </div>
+  );
+};
 
 const getNicheIcon = (niche) => {
   const n = (niche || '').toLowerCase();
@@ -47,6 +103,19 @@ const BrandProfile = () => {
   const [campaigns, setCampaigns] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [copied, setCopied] = useState(false);
+
+  const handleShare = () => {
+    navigator.clipboard.writeText(window.location.href);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2200);
+  };
+
+  const isBrandVerified = Boolean(
+    profile?.isVerified ||
+    profile?.userId?.isVerified ||
+    profile?.userId?.kycStatus === 'APPROVED'
+  );
 
   useEffect(() => {
     const handleResize = () => {
@@ -70,8 +139,8 @@ const BrandProfile = () => {
           : (Array.isArray(campaignsRes.data) ? campaignsRes.data : []);
 
         const brandProfileId = brandRes.data?._id ? String(brandRes.data._id) : String(id);
-        const brandUserId = brandRes.data?.userId?._id 
-          ? String(brandRes.data.userId._id) 
+        const brandUserId = brandRes.data?.userId?._id
+          ? String(brandRes.data.userId._id)
           : (brandRes.data?.userId ? String(brandRes.data.userId) : '');
 
         const filteredCampaigns = rawCampaigns.filter(c => {
@@ -132,9 +201,11 @@ const BrandProfile = () => {
               ) : (
                 <span className="text-4xl font-black text-[#EA580C]">{brandInitial}</span>
               )}
-              <span className="absolute bottom-[-10px] px-3 py-1 bg-black text-white text-[9px] font-black uppercase tracking-wider rounded-full shadow-sm">
-                VERIFIED
-              </span>
+              {isBrandVerified && (
+                <span className="absolute bottom-[-10px] px-3 py-1 bg-black text-white text-[9px] font-black uppercase tracking-wider rounded-full shadow-sm flex items-center gap-1">
+                  <ShieldCheck size={10} className="text-emerald-400" /> VERIFIED
+                </span>
+              )}
             </div>
 
             <span className="text-[10px] font-black text-[#EA580C] uppercase tracking-[0.25em] mb-1">Brand Profile</span>
@@ -144,9 +215,15 @@ const BrandProfile = () => {
 
             {/* Badges */}
             <div className="flex flex-wrap justify-center gap-2 mb-6">
-              <span className="px-3 py-1 bg-blue-50 text-blue-600 border border-blue-100 rounded-xl font-black text-[9px] uppercase tracking-wider flex items-center gap-1">
-                <ShieldCheck size={11} /> Verified Partner
-              </span>
+              {isBrandVerified ? (
+                <span className="px-3 py-1 bg-blue-50 text-blue-600 border border-blue-100 rounded-xl font-black text-[9px] uppercase tracking-wider flex items-center gap-1">
+                  <ShieldCheck size={11} /> Verified Partner
+                </span>
+              ) : (
+                <span className="px-3 py-1 bg-gray-50 text-gray-500 border border-gray-200 rounded-xl font-black text-[9px] uppercase tracking-wider flex items-center gap-1">
+                  <ShieldAlert size={11} /> Community Brand
+                </span>
+              )}
               <span className="px-3.5 py-1 bg-orange-50 text-orange-600 border border-orange-150 rounded-xl font-black text-[9px] uppercase tracking-wider flex items-center gap-1">
                 <MapPin size={11} /> {profile.location || 'Not Specified'}
               </span>
@@ -160,22 +237,26 @@ const BrandProfile = () => {
               <a href="#missions-list" className="flex-1 py-3.5 bg-[#EA580C] hover:bg-orange-600 text-white font-black text-[12px] uppercase tracking-widest rounded-xl transition-all shadow-[0_8px_25px_rgba(234,88,12,0.3)] active:scale-95 text-center">
                 Explore Missions
               </a>
-              <button className="p-3 bg-white hover:bg-gray-55 border border-gray-200 text-gray-500 hover:text-gray-950 rounded-xl transition-colors shadow-sm">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><polyline points="16 6 12 2 8 6"></polyline><line x1="12" y1="2" x2="12" y2="15"></line></svg>
+              <button
+                onClick={handleShare}
+                title="Share Brand Profile"
+                className="p-3 bg-white hover:bg-gray-50 border border-gray-200 text-gray-500 hover:text-gray-950 rounded-xl transition-colors shadow-sm flex items-center justify-center cursor-pointer"
+              >
+                {copied ? <Check size={18} className="text-emerald-500" /> : <Share2 size={18} />}
               </button>
             </div>
           </div>
 
           {/* Stats card row */}
           <div className="grid grid-cols-3 gap-3">
-            <div className="bg-white rounded-[1.5rem] border border-gray-150 py-4 px-2 flex flex-col items-center justify-center shadow-sm">
-              <span className="text-[8px] font-black text-gray-400 uppercase tracking-wider mb-1">Est. Payouts</span>
-              <span className="text-sm font-black text-gray-955">{(() => { const completed = campaigns.length > 0 ? Math.floor(campaigns.reduce((s, c) => s + (c.budget || 0), 0) / 1000) : 0; return completed > 0 ? `🪙${completed}K+` : '🪙0'; })()}</span>
+            <div className="bg-white rounded-[1.5rem] border border-gray-150 py-4 px-2 flex flex-col items-center justify-center shadow-sm text-center">
+              <span className="text-[8px] font-black text-gray-400 uppercase tracking-wider mb-1">Industry Focus</span>
+              <span className="text-xs font-black text-gray-900 truncate max-w-[90px]">{profile.industry || profile.businessType || 'General'}</span>
             </div>
             <div className="bg-white rounded-[1.5rem] border-2 border-[#EA580C] py-4 px-2 flex flex-col items-center justify-center shadow-sm">
               <span className="text-[8px] font-black text-gray-400 uppercase tracking-wider mb-1">Active Missions</span>
               <span className="text-lg font-black text-[#EA580C]">{campaigns.length}</span>
-              <span className="text-[8px] font-black text-[#EA580C] uppercase mt-0.5">Milestone Coins</span>
+              <span className="text-[8px] font-black text-gray-400 uppercase mt-0.5">Open Now</span>
             </div>
             <div className="bg-white rounded-[1.5rem] border border-gray-150 py-4 px-2 flex flex-col items-center justify-center shadow-sm">
               <span className="text-[8px] font-black text-gray-400 uppercase tracking-wider mb-1">Operating</span>
@@ -186,10 +267,8 @@ const BrandProfile = () => {
 
           {/* Pitch description */}
           <div className="bg-white rounded-[1.5rem] border border-gray-150 p-6 text-left shadow-sm mt-4">
-            <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">About the Brand</h3>
-            <p className="text-gray-600 text-sm leading-relaxed font-medium">
-              {profile.description || 'No description provided yet. Complete your profile to add a description.'}
-            </p>
+            <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">About the Brand</h3>
+            <FormattedBrandDescription description={profile.description} />
           </div>
 
           {/* Active Missions section */}
@@ -230,12 +309,11 @@ const BrandProfile = () => {
                         </div>
                       </div>
                       <div className="flex items-center justify-between border-t border-gray-50 pt-3">
-                        <div>
-                          <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest block">Budget</span>
-                          <span className="text-[18px] font-black text-gray-955">🪙{c.budget?.toLocaleString()}</span>
-                        </div>
-                        <Link to={`/campaigns/${c._id}`} className="px-5 py-2 bg-gray-50 hover:bg-orange-55 border border-gray-200 hover:border-orange-200 text-gray-700 hover:text-orange-600 font-black text-[9px] uppercase tracking-widest rounded-xl transition-all flex items-center gap-1">
-                          Analyze <ArrowRight size={10} />
+                        <span className="text-[9px] font-black text-orange-600 bg-orange-50 border border-orange-100 px-3 py-1 rounded-lg uppercase tracking-wider">
+                          Active Mission
+                        </span>
+                        <Link to={`/campaigns/${c._id}`} className="px-5 py-2 bg-gray-50 hover:bg-orange-50 border border-gray-200 hover:border-orange-200 text-gray-700 hover:text-orange-600 font-black text-[9px] uppercase tracking-widest rounded-xl transition-all flex items-center gap-1">
+                          View Details <ArrowRight size={10} />
                         </Link>
                       </div>
                     </div>
@@ -339,10 +417,10 @@ const BrandProfile = () => {
 
       <div className="max-w-7xl mx-auto px-6 sm:px-12 mt-10">
 
-        {/* Main Grid: Header & Circular Logo Card */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center mb-16">
+        {/* Main Grid: Brand Metadata & Right-Aligned Logo Card */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center mb-12">
 
-          {/* Left: Brand Metadata & Pitch */}
+          {/* Left: Brand Metadata */}
           <div className="lg:col-span-8 space-y-6 text-left">
             <div className="flex items-center gap-2 text-[10px] font-black text-[#EA580C] uppercase tracking-[0.3em]">
               <span className="w-2 h-2 rounded-full bg-[#EA580C]"></span>
@@ -355,9 +433,15 @@ const BrandProfile = () => {
 
             {/* Tags Group */}
             <div className="flex flex-wrap gap-2.5">
-              <span className="px-3.5 py-1.5 bg-blue-50 text-blue-600 border border-blue-100 rounded-xl font-black text-[9px] uppercase tracking-wider flex items-center gap-1.5 shadow-sm">
-                <ShieldCheck size={12} /> Verified Partner
-              </span>
+              {isBrandVerified ? (
+                <span className="px-3.5 py-1.5 bg-blue-50 text-blue-600 border border-blue-100 rounded-xl font-black text-[9px] uppercase tracking-wider flex items-center gap-1.5 shadow-sm">
+                  <ShieldCheck size={12} /> Verified Partner
+                </span>
+              ) : (
+                <span className="px-3.5 py-1.5 bg-gray-50 text-gray-500 border border-gray-200 rounded-xl font-black text-[9px] uppercase tracking-wider flex items-center gap-1.5 shadow-sm">
+                  <ShieldAlert size={12} /> Community Brand
+                </span>
+              )}
               <span className="px-3.5 py-1.5 bg-orange-50 text-orange-600 border border-orange-100 rounded-xl font-black text-[9px] uppercase tracking-wider flex items-center gap-1.5 shadow-sm">
                 <MapPin size={12} /> {profile.location || 'Not Specified'}
               </span>
@@ -380,17 +464,26 @@ const BrandProfile = () => {
                   target="_blank"
                   rel="noreferrer"
                   className="p-3 bg-white hover:bg-gray-50 border border-gray-200 text-gray-500 hover:text-gray-900 rounded-xl transition-colors shadow-sm cursor-pointer"
+                  title="Visit Website"
                 >
                   <ExternalLink size={16} />
                 </a>
               )}
+              <button
+                onClick={handleShare}
+                title="Share Brand Profile"
+                className="p-3 bg-white hover:bg-gray-50 border border-gray-200 text-gray-500 hover:text-gray-900 rounded-xl transition-colors shadow-sm cursor-pointer flex items-center justify-center"
+              >
+                {copied ? <Check size={16} className="text-emerald-500" /> : <Share2 size={16} />}
+              </button>
             </div>
 
-            {/* Four Metric Cards Row */}
-            <div className="flex flex-wrap gap-5 mt-10 pt-4">
-              <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-[1.5rem] border-2 border-dashed border-gray-200 flex flex-col items-center justify-center p-3 text-center transition-transform hover:scale-105">
-                <span className="text-[8px] font-black text-gray-400 uppercase tracking-wider mb-1 leading-tight">Est. Payouts</span>
-                <span className="text-base sm:text-lg font-black text-gray-955">{(() => { const completed = campaigns.length > 0 ? Math.floor(campaigns.reduce((s, c) => s + (c.budget || 0), 0) / 1000) : 0; return completed > 0 ? `🪙${completed}K+` : '🪙0'; })()}</span>
+            {/* Metric Cards Row */}
+            <div className="flex flex-wrap gap-5 pt-4">
+              <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-[1.5rem] border border-gray-200 flex flex-col items-center justify-center p-3 text-center transition-transform hover:scale-105">
+                <span className="text-[8px] font-black text-gray-400 uppercase tracking-wider mb-1 leading-tight">Industry</span>
+                <span className="text-xs sm:text-sm font-black text-gray-900 truncate max-w-full px-1">{profile.industry || profile.businessType || 'General'}</span>
+                <span className="text-[7px] font-bold text-gray-400 uppercase mt-0.5">Focus</span>
               </div>
               <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-[1.5rem] border border-orange-500 flex flex-col items-center justify-center p-3 text-center relative transition-transform hover:scale-105">
                 <span className="text-[8px] font-black text-gray-400 uppercase tracking-wider mb-1 leading-tight">Active Missions</span>
@@ -407,18 +500,10 @@ const BrandProfile = () => {
                 <span className="text-xs sm:text-sm font-black text-gray-955">{profile.preferences?.targetAgeGroup || 'Not Set'}</span>
               </div>
             </div>
-
-            {/* Description */}
-            <div className="mt-8 bg-white border border-gray-150 rounded-[1.5rem] p-6 shadow-sm">
-              <h3 className="text-[10px] font-black text-[#EA580C] uppercase tracking-widest mb-3">About the Brand</h3>
-              <p className="text-gray-600 text-base leading-relaxed font-medium">
-                {profile.description || 'No description provided yet. Complete your profile to add a description.'}
-              </p>
-            </div>
           </div>
 
-          {/* Right: Square Large Logo Card */}
-          <div className="lg:col-span-4 flex justify-center lg:justify-center">
+          {/* Right: Square Large Logo Card aligned right to Brand Metadata */}
+          <div className="lg:col-span-4 flex justify-center lg:justify-end">
             <div className="w-56 h-56 sm:w-64 sm:h-64 rounded-[2rem] bg-white border border-gray-100 shadow-[0_20px_50px_rgba(0,0,0,0.06)] flex flex-col items-center justify-center relative p-6 transition-all duration-300 hover:scale-105 group">
               <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/5 rounded-full blur-2xl pointer-events-none"></div>
               {profile.logo ? (
@@ -428,27 +513,36 @@ const BrandProfile = () => {
               ) : (
                 <span className="text-8xl font-black text-[#EA580C] select-none">{brandInitial}</span>
               )}
-              <span className="absolute bottom-6 px-4 py-1.5 bg-[#1E293B] text-white text-[9px] font-black uppercase tracking-wider rounded-full shadow-sm">
-                Verified
-              </span>
+              {isBrandVerified && (
+                <span className="absolute bottom-6 px-4 py-1.5 bg-[#1E293B] text-white text-[9px] font-black uppercase tracking-wider rounded-full shadow-sm flex items-center gap-1.5">
+                  <ShieldCheck size={12} className="text-emerald-400" /> Verified
+                </span>
+              )}
             </div>
           </div>
         </div>
 
         {/* Two Columns Main Workspace */}
-        <div id="discovery-console" className="grid grid-cols-1 lg:grid-cols-12 gap-12 mt-16 pt-16 border-t border-gray-100">
+        <div id="discovery-console" className="grid grid-cols-1 lg:grid-cols-12 gap-12 mt-12 pt-12 border-t border-gray-100 items-start">
 
-          {/* Left Column: Bento List of Active Missions */}
-          <div className="lg:col-span-8 space-y-8 text-left">
-            <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-black font-display text-gray-900 tracking-tight flex items-center gap-3">
-                <span className="w-1.5 h-8 bg-[#EA580C] rounded-full"></span>
-                Active Missions
-              </h2>
-              <span className="text-[9px] font-black text-orange-600 bg-orange-50 border border-orange-100 px-3 py-1 rounded-xl shadow-sm">
-                {campaigns.length} Live
-              </span>
+          {/* Left Column: About the Brand & Active Missions */}
+          <div className="lg:col-span-8 space-y-10 text-left">
+            {/* About the Brand */}
+            <div className="bg-white border border-gray-150 rounded-[2rem] p-8 shadow-sm">
+              <h3 className="text-[10px] font-black text-[#EA580C] uppercase tracking-widest mb-4">About the Brand</h3>
+              <FormattedBrandDescription description={profile.description} />
             </div>
+
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-black font-display text-gray-900 tracking-tight flex items-center gap-3">
+                  <span className="w-1.5 h-8 bg-[#EA580C] rounded-full"></span>
+                  Active Missions
+                </h2>
+                <span className="text-[9px] font-black text-orange-600 bg-orange-50 border border-orange-100 px-3 py-1 rounded-xl shadow-sm">
+                  {campaigns.length} Live
+                </span>
+              </div>
 
             <div className="space-y-4">
               {campaigns.length > 0 ? (
@@ -487,17 +581,16 @@ const BrandProfile = () => {
                         </div>
                       </div>
 
-                      {/* Right Block with Budget & Button */}
-                      <div className="flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto border-t sm:border-none pt-4 sm:pt-0">
-                        <div className="text-left sm:text-right">
-                          <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest block mb-0.5 leading-none">Budget</span>
-                          <span className="text-xl font-black text-gray-900">🪙{campaign.budget?.toLocaleString() || '0'}</span>
-                        </div>
+                      {/* Right Block with Badge & Button */}
+                      <div className="flex items-center justify-between sm:justify-end gap-4 w-full sm:w-auto border-t sm:border-none pt-4 sm:pt-0">
+                        <span className="text-[9px] font-black text-orange-600 bg-orange-50 border border-orange-100 px-3.5 py-1.5 rounded-xl uppercase tracking-wider">
+                          Open Mission
+                        </span>
                         <Link
                           to={`/campaigns/${campaign._id}`}
                           className="px-6 py-2.5 bg-gray-50 group-hover:bg-orange-50 border border-gray-200 group-hover:border-orange-200 text-gray-700 group-hover:text-orange-600 font-black text-[9px] uppercase tracking-widest rounded-xl transition-all shadow-sm active:scale-95 flex items-center gap-1.5"
                         >
-                          Analyze <ArrowRight size={10} />
+                          View Details <ArrowRight size={10} />
                         </Link>
                       </div>
                     </div>
@@ -512,6 +605,7 @@ const BrandProfile = () => {
                   <p className="text-gray-500 font-medium text-sm max-w-md">This brand doesn't currently have any public missions available. Check back soon for new opportunities!</p>
                 </div>
               )}
+              </div>
             </div>
           </div>
 

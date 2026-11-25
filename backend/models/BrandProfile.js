@@ -43,6 +43,10 @@ const brandProfileSchema = new mongoose.Schema({
     type: String,
     default: null
   },
+  isVerified: {
+    type: Boolean,
+    default: false
+  },
   website: {
     type: String,
     default: ''
